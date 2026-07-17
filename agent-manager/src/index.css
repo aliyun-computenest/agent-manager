@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-md p-6 border border-gray-100;
+  }
+  
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-gray-200;
+  }
+  
+  .table-base {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-active {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .status-inactive {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .summary-label {
+    @apply text-xs font-medium uppercase tracking-wide text-gray-500;
+  }
+
+  .summary-value {
+    @apply mt-1 break-all text-sm font-semibold text-gray-900;
+  }
+
+  .message-box {
+    @apply flex items-start gap-3 rounded-xl border px-4 py-3;
+  }
+
+  .mode-pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-200;
+  }
+
+  .mode-literal {
+    @apply bg-blue-100 text-blue-700;
+  }
+
+  .mode-secret {
+    @apply bg-amber-100 text-amber-800;
+  }
+
+  .inline-icon-btn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-600;
+  }
+
+  .code-panel {
+    @apply whitespace-pre-wrap break-all rounded-lg border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-800;
+  }
+
+  .readonly-field {
+    @apply flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 font-mono text-sm text-gray-900;
+  }
+
+  .link-item {
+    @apply flex items-center gap-2 text-sm text-primary-600 transition-colors duration-200 hover:text-primary-700;
+  }
+}
+
+/* README markdown rendering styles */
+.readme-content h1,
+.readme-content h2,
+.readme-content h3,
+.readme-content h4,
+.readme-content h5,
+.readme-content h6 {
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+.readme-content h1 { font-size: 1.75em; }
+.readme-content h2 { font-size: 1.5em; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.3em; }
+.readme-content h3 { font-size: 1.25em; }
+.readme-content p { margin-bottom: 1em; }
+.readme-content ul, .readme-content ol { padding-left: 2em; margin-bottom: 1em; }
+.readme-content li { margin-bottom: 0.25em; }
+.readme-content code {
+  background: #f5f5f5;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.875em;
+  color: #d4380d;
+}
+.readme-content pre {
+  background: #f5f5f5;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+.readme-content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+.readme-content a { color: #1890ff; text-decoration: none; }
+.readme-content a:hover { text-decoration: underline; }
+.readme-content blockquote {
+  border-left: 4px solid #d9d9d9;
+  padding-left: 1em;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 1em;
+}
+.readme-content table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
+.readme-content th, .readme-content td { border: 1px solid #e8e8e8; padding: 0.5em 0.75em; text-align: left; }
+.readme-content th { background: #fafafa; font-weight: 600; }
+.readme-content img { max-width: 100%; }

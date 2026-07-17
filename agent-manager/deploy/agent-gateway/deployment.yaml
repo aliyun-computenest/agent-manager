@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw-agent-gateway
+  labels:
+    app: openclaw-agent-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: openclaw-agent-gateway
+  template:
+    metadata:
+      labels:
+        app: openclaw-agent-gateway
+    spec:
+      initContainers:
+        - name: fetch-agent-gateway-bundle
+          image: mirrors-ssl.aliyuncs.com/openresty/openresty:alpine
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              if [ -z "$AGENT_GATEWAY_BUNDLE_URL" ]; then
+                echo "AGENT_GATEWAY_BUNDLE_URL is required" >&2
+                exit 1
+              fi
+
+              WORK_DIR="$(mktemp -d)"
+              cleanup() {
+                rm -rf "$WORK_DIR" /tmp/agent-gateway-bundle.tar.gz
+              }
+              trap cleanup EXIT
+
+              if command -v curl >/dev/null 2>&1; then
+                curl -fsSL -o /tmp/agent-gateway-bundle.tar.gz "$AGENT_GATEWAY_BUNDLE_URL"
+              elif command -v wget >/dev/null 2>&1; then
+                wget -O /tmp/agent-gateway-bundle.tar.gz "$AGENT_GATEWAY_BUNDLE_URL"
+              else
+                echo "Neither curl nor wget is available in initContainer image" >&2
+                exit 1
+              fi
+
+              tar -xzf /tmp/agent-gateway-bundle.tar.gz -C "$WORK_DIR"
+              for file in openresty.conf.template agent_gateway_client.js start-openresty.sh; do
+                if [ ! -f "$WORK_DIR/$file" ]; then
+                  echo "Missing gateway runtime file in bundle: $file" >&2
+                  exit 1
+                fi
+                cp "$WORK_DIR/$file" "/etc/openclaw-agent-gateway/$file"
+                case "$file" in
+                  *.sh) chmod 0755 "/etc/openclaw-agent-gateway/$file" ;;
+                  *) chmod 0644 "/etc/openclaw-agent-gateway/$file" ;;
+                esac
+              done
+          env:
+            - name: AGENT_GATEWAY_BUNDLE_URL
+              value: "__AGENT_GATEWAY_BUNDLE_URL__"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/openclaw-agent-gateway
+      containers:
+        - name: openclaw-agent-gateway
+          image: mirrors-ssl.aliyuncs.com/openresty/openresty:alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          command: ["/bin/sh", "/etc/openclaw-agent-gateway/start-openresty.sh"]
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PLATFORM_API
+              value: http://openclaw-platform-internal.$(POD_NAMESPACE).svc.cluster.local:3001
+            - name: PLATFORM_PUBLIC_URL
+              value: "__PLATFORM_PUBLIC_URL__"
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/openclaw-agent-gateway
+            - name: e2b-ca-cert
+              mountPath: /etc/openclaw-agent-gateway/e2b-ca
+              readOnly: true
+            - name: tls
+              mountPath: /etc/openclaw-agent-gateway/tls
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /__agent_gateway_health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /__agent_gateway_health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+      volumes:
+        - name: config
+          emptyDir: {}
+        - name: e2b-ca-cert
+          secret:
+            secretName: e2b-ca-cert
+        - name: tls
+          secret:
+            secretName: openclaw-agent-gateway-tls
+            optional: true

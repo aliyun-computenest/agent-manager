@@ -1,0 +1,124 @@
+# 内置 QwenPaw SandboxSet 模板。
+# 由 init-db.js → ensureSandboxSets() 在 init-admin 时创建。
+#
+# 动态注入字段（在创建时由 buildSandboxSet 从集群已有 SandboxSet 读取覆盖）：
+#   1. metadata.annotations.network.alibabacloud.com/*
+#   2. metadata.annotations.image.alibabacloud.com/*
+#   3. spec.template.spec.containers[0].image
+#
+# 其余字段全部固定。
+apiVersion: agents.kruise.io/v1alpha1
+kind: SandboxSet
+metadata:
+  name: agent-manager-qwenpaw
+  namespace: default
+spec:
+  persistentContents:
+    - filesystem
+  replicas: 1
+  runtimes:
+    - name: agent-runtime
+    - name: csi
+  template:
+    metadata:
+      labels:
+        app: agent-manager-qwenpaw
+        alibabacloud.com/acs: "true"
+      annotations:
+        image.alibabacloud.com/enable-image-cache: "true"
+        network.alibabacloud.com/network-policy-mode: "traffic-policy"
+        network.alibabacloud.com/enable-network-policy-agent: "true"
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      shareProcessNamespace: false
+      hostname: qwenpaw
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: agent-manager-qwenpaw
+          image: compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agent-manager-qwenpaw-test:2026.7.16.2128
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/local/bin/entrypoint.sh"]
+          ports:
+            - name: qwenpaw
+              containerPort: 8088
+              protocol: TCP
+            - name: runtime
+              containerPort: 49983
+              protocol: TCP
+          env:
+            - name: ENVD_DIR
+              value: /mnt/envd
+            # Pod name for ARMS service identification (Downward API)
+            - name: SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # 强制 UTF-8 locale，避免 Python 默认用 ASCII 编码读写 I/O。
+            # 历史问题：qwenpaw 镜像 LANG 为空 → api_key 转成 \ufffd → httpx
+            # 编 Authorization header 在 ASCII 下抛 UnicodeEncodeError。
+            - name: LANG
+              value: C.UTF-8
+            - name: LC_ALL
+              value: C.UTF-8
+            - name: PYTHONIOENCODING
+              value: utf-8
+            # 显式置空 Kubernetes 注入的环境变量，避免 SDK 误以为运行在 Pod 内
+            - name: KUBERNETES_SERVICE_PORT_HTTPS
+              value: ""
+            - name: KUBERNETES_SERVICE_PORT
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_PROTO
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_ADDR
+              value: ""
+            - name: KUBERNETES_SERVICE_HOST
+              value: ""
+            - name: KUBERNETES_PORT
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_PORT
+              value: ""
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          securityContext:
+            readOnlyRootFilesystem: false
+            runAsUser: 0
+            runAsGroup: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          # qwenpaw 无专用健康探针端点，`/api/version` 返回版本号即代表就绪。
+          startupProbe:
+            httpGet:
+              path: /api/version
+              port: 8088
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            failureThreshold: 150
+          volumeMounts:
+            - name: qwenpaw-data
+              mountPath: /app/working
+            - name: qwenpaw-data-secret
+              mountPath: /app/working.secret
+            - name: qwenpaw-data-backups
+              mountPath: /app/working.backups
+      volumes:
+        - name: qwenpaw-data
+          emptyDir: {}
+        - name: qwenpaw-data-secret
+          emptyDir: {}
+        - name: qwenpaw-data-backups
+          emptyDir: {}

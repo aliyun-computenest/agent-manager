@@ -1,0 +1,79 @@
+{
+    "agents": {
+        "defaults": {
+            "model": {
+                "primary": "${MODEL_PROVIDER}/${MODEL_NAME}"
+            },
+            "workspace": "/home/node/.openclaw/workspace"
+        }
+    },
+    "models": {
+        "mode": "merge",
+        "providers": {
+            "bailian": {
+                "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+                "apiKey": "${DASHSCOPE_API_KEY}",
+                "api": "openai-completions",
+                "models": []
+            },
+            "api_gateway": {
+                "baseUrl": "http://${AI_GATEWAY_DOMAIN}/v1",
+                "apiKey": "${CONSUMER_API_KEY}",
+                "api": "openai-completions",
+                "models": []
+            },
+            "litellm": {
+                "baseUrl": "http://${LITELLM_PROXY_URL}",
+                "apiKey": "${LITELLM_API_KEY}",
+                "api": "openai-completions",
+                "models": []
+            }
+        }
+    },
+    "commands": {
+        "native": "auto",
+        "nativeSkills": "auto",
+        "restart": true,
+        "ownerDisplay": "raw"
+    },
+    "gateway": {
+        "port": 18789,
+        "bind": "lan",
+        "http": {
+            "endpoints": {
+                "chatCompletions": {
+                    "enabled": true
+                }
+            }
+        },
+        "controlUi": {
+            "allowedOrigins": [
+                "*"
+            ],
+            "dangerouslyAllowHostHeaderOriginFallback": true,
+            "allowInsecureAuth": true,
+            "dangerouslyDisableDeviceAuth": true
+        },
+        "auth": {
+            "mode": "token",
+            "token": "${GATEWAY_TOKEN}"
+        }
+    },
+    "plugins": {
+        "entries": {
+            "openclaw-lark": {
+                "enabled": true
+            },
+            "dingtalk-connector": {
+                "enabled": true
+            },
+            "wecom-openclaw-plugin": {
+                "enabled": true
+            },
+            "openclaw-qqbot": {
+                "enabled": true
+            }
+        }
+    },
+    "channels": {}
+}

@@ -1,0 +1,102 @@
+# 内置 Hermes SandboxSet 模板。
+# 由 init-db.js → ensureSandboxSets() 在 init-admin 时创建。
+#
+# 动态注入字段（在创建时由 buildSandboxSet 从集群已有 SandboxSet 读取覆盖）：
+#   1. metadata.annotations.network.alibabacloud.com/*
+#   2. metadata.annotations.image.alibabacloud.com/*
+#   3. spec.template.spec.containers[0].image
+#
+# 其余字段全部固定。
+apiVersion: agents.kruise.io/v1alpha1
+kind: SandboxSet
+metadata:
+  name: agent-manager-hermes
+  namespace: default
+spec:
+  persistentContents:
+    - filesystem
+  replicas: 1
+  runtimes:
+    - name: agent-runtime
+    - name: csi
+  template:
+    metadata:
+      labels:
+        app: agent-manager-hermes
+        alibabacloud.com/acs: "true"
+      annotations:
+        image.alibabacloud.com/enable-image-cache: "true"
+        network.alibabacloud.com/network-policy-mode: "traffic-policy"
+        network.alibabacloud.com/enable-network-policy-agent: "true"
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      shareProcessNamespace: false
+      hostname: hermes
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: agent-manager-hermes
+          image: compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/openclaw-manager-hermes-test:2026.7.17.1002
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/local/bin/entrypoint.sh"]
+          ports:
+            - name: hermes
+              containerPort: 8080
+              protocol: TCP
+            - name: dashboard
+              containerPort: 9119
+              protocol: TCP
+            - name: runtime
+              containerPort: 49983
+              protocol: TCP
+          env:
+            - name: ENVD_DIR
+              value: /mnt/envd
+            # Pod name for ARMS service identification (Downward API)
+            - name: SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # 显式置空 Kubernetes 注入的环境变量，避免 SDK 误以为运行在 Pod 内
+            - name: KUBERNETES_SERVICE_PORT_HTTPS
+              value: ""
+            - name: KUBERNETES_SERVICE_PORT
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_PROTO
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_ADDR
+              value: ""
+            - name: KUBERNETES_SERVICE_HOST
+              value: ""
+            - name: KUBERNETES_PORT
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_PORT
+              value: ""
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          securityContext:
+            readOnlyRootFilesystem: false
+            runAsUser: 0
+            runAsGroup: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: hermes-data
+              mountPath: /opt/data
+      volumes:
+        - name: hermes-data
+          emptyDir: {}

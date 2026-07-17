@@ -1,0 +1,11 @@
+*node_modules/*
+server/node_modules/*
+# OpenAPI spec 由 server/scripts/generate-openapi.js 生成,runtime 即时生成
+# (setup.js 调 generateOpenAPIDocument()),不需要进 git。客户从 /api/docs.json 拿
+server/openapi.json
+scripts/setup-oauth.sh
+# 本地一次性 e2e 验证脚本（包含临时凭据，不入库）
+scripts/verify-admin-auto-create-user.mjs
+# 集成测试本地环境变量与报告产物
+.env.test
+tests/integration/reports/

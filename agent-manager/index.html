@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Manager</title>
+  <!-- Injected Error Handler -->
+    <script id="error-handler-script">
+      function postParentError(message, source, lineno, colno, error) {
+        if (window.parent) {
+          window.parent.postMessage({
+            type: 'iframe-error',
+            message: message,
+            file: source,
+            line: lineno,
+            column: colno,
+            stack: error ? error.stack : 'no stack'
+          }, '*');
+        }
+      }
+
+      window.onerror = function(message, source, lineno, colno, error) {
+        postParentError(message, source, lineno, colno, error);
+        return false;
+      };
+      
+      window.addEventListener('unhandledrejection', function(event) {
+        if (window.parent) {
+          var reason = event.reason;
+          var message = '';
+          var stack = '';
+          
+          if (reason instanceof Error) {
+            message = reason.message;
+            stack = reason.stack || '';
+          } else if (typeof reason === 'string') {
+            message = reason;
+          } else {
+            try {
+              message = JSON.stringify(reason);
+            } catch (e) {
+              message = String(reason);
+            }
+          }
+          
+          window.parent.postMessage({
+            type: 'iframe-unhandledrejection',
+            message: message,
+            stack: stack,
+          }, '*');
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/env-config.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

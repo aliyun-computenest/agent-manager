@@ -1,0 +1,58 @@
+# ============================================================
+# Production Dockerfile - Single Port Deployment
+# Backend serves both API and static frontend files
+# ============================================================
+
+# Stage 1: Build frontend (Vite + React)
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app
+
+# Install frontend dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --include=optional --ignore-scripts
+
+# Copy frontend source and build
+COPY src/ src/
+COPY index.html tsconfig.json tsconfig.node.json vite.config.ts tailwind.config.js postcss.config.js ./
+
+# Build frontend (environment variables will be injected at runtime)
+RUN npm run build
+
+# Stage 2: Build backend dependencies
+FROM node:20-alpine AS backend-builder
+
+WORKDIR /app/server
+
+COPY server/package.json server/package-lock.json ./
+RUN npm ci --include=optional --omit=dev --ignore-scripts
+
+# Stage 3: Production image
+FROM node:20-alpine
+
+RUN apk add --no-cache tini
+
+WORKDIR /app
+
+# Copy built frontend assets
+COPY --from=frontend-builder /app/dist ./dist
+
+# Copy backend server and dependencies
+COPY --from=backend-builder /app/server/node_modules ./server/node_modules
+COPY server/ ./server/
+
+# Copy data files
+COPY data/ ./data/
+
+# Copy entrypoint script
+COPY docker-entrypoint.production.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Expose single port for both frontend and API
+EXPOSE 3000
+
+ENV NODE_ENV=production
+ENV SERVER_PORT=3000
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["/docker-entrypoint.sh"]

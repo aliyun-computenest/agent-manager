@@ -1,0 +1,39 @@
+{
+  "nav": {
+    "welcome": "欢迎，{{name}}",
+    "userCenter": "用户中心",
+    "adminCenter": "管理中心",
+    "logout": "退出登录",
+    "login": "登录",
+    "admin": "管理员"
+  },
+  "hero": {
+    "title": "企业级 AI 智能体管理平台",
+    "description": "Agent Manager 提供完整的 AI 智能体创建、配置和管理能力，支持多模型接入、多渠道集成，助力企业快速构建智能客服系统",
+    "userLogin": "用户登录",
+    "adminLogin": "管理员登录",
+    "enterConsole": "进入控制台"
+  },
+  "features": {
+    "title": "核心功能",
+    "agentManagement": {
+      "title": "智能体管理",
+      "description": "创建、配置和管理您的 AI 智能体，支持多实例部署"
+    },
+    "multiModel": {
+      "title": "多模型支持",
+      "description": "支持 Qwen、DeepSeek 等多个主流 AI 大模型"
+    },
+    "userManagement": {
+      "title": "用户管理",
+      "description": "精细化用户实例配额管理，Token 配额管理"
+    }
+  },
+  "welcome": {
+    "userCenter": "用户中心",
+    "adminCenter": "管理中心"
+  },
+  "admin": {
+    "adminCenter": "管理中心"
+  }
+}

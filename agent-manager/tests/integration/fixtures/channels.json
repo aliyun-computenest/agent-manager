@@ -1,0 +1,11 @@
+{
+  "basic": {
+    "channelType": "feishu",
+    "name": "集成测试飞书渠道模板",
+    "description": "Integration test fixture - feishu channel template",
+    "configFields": [
+      { "name": "clientId", "label": "Client ID", "type": "text", "required": true },
+      { "name": "clientSecret", "label": "Client Secret", "type": "password", "required": true }
+    ]
+  }
+}

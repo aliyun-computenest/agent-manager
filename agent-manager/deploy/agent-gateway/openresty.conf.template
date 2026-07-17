@@ -1,0 +1,331 @@
+worker_processes auto;
+
+events {
+  worker_connections 4096;
+}
+
+http {
+  resolver __DNS_RESOLVER__ valid=30s ipv6=off;
+  client_max_body_size 1024m;
+  client_body_buffer_size 1024k;
+  large_client_header_buffers 4 1024k;
+
+  log_format gateway '$remote_addr $host "$request_method $uri" $status $body_bytes_sent "$http_user_agent"';
+  access_log /dev/stdout gateway;
+  error_log /dev/stderr warn;
+  limit_req_zone $binary_remote_addr zone=agent_gateway_auth:10m rate=5r/s;
+  limit_req_zone $binary_remote_addr zone=agent_gateway_health:10m rate=10r/s;
+
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+
+  map $args $openclaw_upstream_token_prefix {
+    default "&";
+    "" "?";
+  }
+
+  map $openclaw_upstream_token_param $openclaw_upstream_token_suffix {
+    default "$openclaw_upstream_token_prefix$openclaw_upstream_token_param";
+    "" "";
+  }
+
+  server {
+    listen 8080;
+    __TLS_LISTEN__
+    __TLS_CERTIFICATE__
+    server_name _;
+    absolute_redirect off;
+
+    set $platform_api __PLATFORM_API__;
+    set $platform_login_url "__PLATFORM_LOGIN_URL__";
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+
+    location = /__agent_gateway_health {
+      access_log off;
+      limit_req zone=agent_gateway_health burst=30 nodelay;
+      return 204;
+    }
+
+    location = /__agent_gateway_client.js {
+      access_log off;
+      default_type application/javascript;
+      add_header Cache-Control "no-store";
+      alias /etc/openclaw-agent-gateway/agent_gateway_client.js;
+    }
+
+    location = /__agent_gateway_auth {
+      limit_req zone=agent_gateway_auth burst=20 nodelay;
+      if ($request_method != POST) {
+        return 405;
+      }
+
+      default_type text/plain;
+      content_by_lua_block {
+        local function has_parent_segment(path)
+          local path_only = path:match("^[^?#]*") or path
+          for segment in path_only:gmatch("[^/]+") do
+            if segment == ".." then
+              return true
+            end
+          end
+          return false
+        end
+
+        local function normalize_next_path(value)
+          if type(value) ~= "string" or value == "" then
+            return "/"
+          end
+          local next_path = value
+          for _ = 1, 3 do
+            if not next_path:match("^/")
+                or next_path:match("^//")
+                or next_path:find("[%c%s]")
+                or has_parent_segment(next_path) then
+              return "/"
+            end
+            local decoded = ngx.unescape_uri(next_path)
+            if decoded == next_path then
+              return next_path
+            end
+            next_path = decoded
+          end
+          if not next_path:match("^/")
+              or next_path:match("^//")
+              or next_path:find("[%c%s]")
+              or has_parent_segment(next_path) then
+            return "/"
+          end
+          return next_path
+        end
+
+        ngx.req.read_body()
+        local args = ngx.req.get_post_args(16)
+        local token = args and args.access_token
+        local instance_id = args and args.instance_id
+        local next_path = args and args.next
+
+        if type(token) == "table" then token = token[1] end
+        if type(instance_id) == "table" then instance_id = instance_id[1] end
+        if type(next_path) == "table" then next_path = next_path[1] end
+
+        if type(token) ~= "string" or token == "" or token:find("[;%s]") then
+          ngx.status = ngx.HTTP_UNAUTHORIZED
+          ngx.say("Unauthorized")
+          return
+        end
+        if type(instance_id) ~= "string" or not instance_id:match("^[A-Za-z0-9_-]+$") then
+          ngx.status = ngx.HTTP_BAD_REQUEST
+          ngx.say("Bad request")
+          return
+        end
+        next_path = normalize_next_path(next_path)
+
+        ngx.req.set_header("Authorization", "Bearer " .. token)
+
+        local res = ngx.location.capture("/__agent_gateway_validate/" .. instance_id)
+        if not res or res.status < 200 or res.status >= 300 then
+          ngx.status = res and res.status or ngx.HTTP_UNAUTHORIZED
+          ngx.say("Unauthorized")
+          return
+        end
+
+        local request_scheme = ngx.var.scheme
+        local forwarded_proto = ngx.var.http_x_forwarded_proto
+        if type(forwarded_proto) == "string" then
+          forwarded_proto = forwarded_proto:match("^%s*([^,%s]+)")
+          if forwarded_proto == "https" then
+            request_scheme = "https"
+          end
+        end
+
+        local instance_prefix = "/" .. instance_id
+        if next_path == instance_prefix or next_path:sub(1, #instance_prefix + 1) == instance_prefix .. "/" then
+          -- keep caller-provided in-instance path
+        else
+          next_path = instance_prefix .. "/"
+        end
+
+        local secure_attr = request_scheme == "https" and "; Secure" or ""
+        local http_only_attrs = "Path=/; Max-Age=3600; HttpOnly; SameSite=Lax" .. secure_attr
+        local scoped_token_cookie = "__agent_gateway_token_" .. instance_id
+        local cookies = {
+          scoped_token_cookie .. "=" .. ngx.escape_uri(token) .. "; " .. http_only_attrs,
+          "__agent_gateway_current=" .. instance_id .. "; " .. http_only_attrs
+        }
+
+        local upstream_token_param = res.header["X-Agent-Gateway-Upstream-Token-Param"]
+        local upstream_token_cookie = "__agent_gateway_upstream_token_" .. instance_id
+        local upstream_token_attrs = "Path=" .. instance_prefix .. "/; Max-Age=60; SameSite=Lax" .. secure_attr
+        if type(upstream_token_param) == "string"
+            and upstream_token_param:match("^token=[^#%s\"'<>]+$") then
+          table.insert(cookies, upstream_token_cookie .. "=" .. ngx.escape_uri(upstream_token_param) .. "; " .. upstream_token_attrs)
+        else
+          table.insert(cookies, upstream_token_cookie .. "=; Path=" .. instance_prefix .. "/; Max-Age=0; SameSite=Lax" .. secure_attr)
+        end
+
+        ngx.header["Set-Cookie"] = cookies
+        ngx.header["Cache-Control"] = "no-store"
+        ngx.header["Referrer-Policy"] = "no-referrer"
+
+        return ngx.redirect(next_path, ngx.HTTP_MOVED_TEMPORARILY)
+      }
+    }
+
+    location ~ ^/__agent_gateway_validate/(.+)$ {
+      internal;
+      proxy_pass $platform_api/internal/agent-gateway/instances/$1;
+      proxy_pass_request_body off;
+      proxy_set_header Content-Length "";
+      proxy_set_header Authorization $http_authorization;
+      proxy_set_header X-Agent-Gateway-Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Cookie "";
+    }
+
+    location ~ ^/__agent_gateway_ {
+      return 404;
+    }
+
+    location / {
+      set $openclaw_gateway_instance_id "";
+      set $openclaw_upstream_host "";
+      set $openclaw_upstream_uri $uri;
+      set $openclaw_upstream_token_param "";
+      set $openclaw_upstream_authorization "";
+      error_page 401 403 = @gateway_unauthorized;
+
+      access_by_lua_block {
+        local function read_cookie(name)
+          local cookie_header = ngx.var.http_cookie
+          if type(cookie_header) ~= "string" or type(name) ~= "string" or name == "" then
+            return nil
+          end
+          for part in cookie_header:gmatch("[^;]+") do
+            local key, value = part:match("^%s*([^=]+)=(.*)$")
+            if key == name then
+              return ngx.unescape_uri(value or "")
+            end
+          end
+          return nil
+        end
+
+        local function is_instance_prefix(value)
+          return type(value) == "string"
+            and #value == 36
+            and value:sub(9, 9) == "-"
+            and value:sub(14, 14) == "-"
+            and value:sub(19, 19) == "-"
+            and value:sub(24, 24) == "-"
+            and value:match("^[0-9A-Fa-f%-]+$") ~= nil
+        end
+
+        local function with_safe_query(target)
+          local redirect_args = ngx.req.get_uri_args(64)
+          redirect_args["token"] = nil
+          local encoded = ngx.encode_args(redirect_args)
+          return encoded ~= "" and target .. "?" .. encoded or target
+        end
+
+        local original_uri = ngx.var.uri or "/"
+        local path_instance_id = original_uri:match("^/([^/]+)")
+        local instance_id = is_instance_prefix(path_instance_id) and path_instance_id or nil
+        if not instance_id then
+          local current_instance_id = read_cookie("__agent_gateway_current")
+          if ngx.req.get_method() == "GET" and is_instance_prefix(current_instance_id) then
+            return ngx.redirect(with_safe_query("/" .. current_instance_id .. original_uri), ngx.HTTP_MOVED_TEMPORARILY)
+          end
+          return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+        end
+
+        local token = read_cookie("__agent_gateway_token_" .. instance_id)
+        if type(token) ~= "string" or token == "" or token:find("[;%s]") then
+          return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+        end
+
+        local client_authorization = ngx.var.http_authorization
+        if type(client_authorization) == "string" then
+          ngx.var.openclaw_upstream_authorization = client_authorization
+        end
+
+        ngx.req.set_header("Authorization", "Bearer " .. token)
+
+        local res = ngx.location.capture("/__agent_gateway_validate/" .. instance_id)
+        if not res or res.status < 200 or res.status >= 300 then
+          return ngx.exit(res and res.status or ngx.HTTP_UNAUTHORIZED)
+        end
+
+        local upstream_host = res.header["X-Agent-Gateway-Upstream-Host"]
+        if type(upstream_host) ~= "string" or not upstream_host:match("^[0-9]+%-[A-Za-z0-9][A-Za-z0-9%-]*%.") then
+          return ngx.exit(ngx.HTTP_BAD_GATEWAY)
+        end
+
+        local upstream_uri = ngx.var.uri or "/"
+        ngx.req.set_header("Accept-Encoding", "")
+        local instance_prefix = "/" .. instance_id
+        if original_uri == instance_prefix then
+          upstream_uri = "/"
+        else
+          upstream_uri = original_uri:sub(#instance_prefix + 1)
+        end
+
+        ngx.req.clear_header("Authorization")
+
+        local query_args = ngx.req.get_uri_args(64)
+        if query_args["token"] ~= nil then
+          query_args["token"] = nil
+          ngx.req.set_uri_args(query_args)
+        end
+
+        ngx.var.openclaw_gateway_instance_id = instance_id
+        ngx.var.openclaw_upstream_host = upstream_host
+        ngx.var.openclaw_upstream_uri = upstream_uri
+        ngx.var.openclaw_upstream_token_param = res.header["X-Agent-Gateway-Upstream-Token-Param"] or ""
+      }
+
+      proxy_http_version 1.1;
+      proxy_request_buffering off;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $openclaw_upstream_host;
+      proxy_set_header Authorization $openclaw_upstream_authorization;
+      proxy_set_header Cookie "";
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_ssl_server_name on;
+      proxy_ssl_name $openclaw_upstream_host;
+      proxy_ssl_trusted_certificate /etc/openclaw-agent-gateway/e2b-ca/ca-fullchain.pem;
+      proxy_ssl_verify on;
+      proxy_ssl_verify_depth 3;
+      proxy_read_timeout 3600s;
+      proxy_send_timeout 3600s;
+      proxy_socket_keepalive on;
+      proxy_buffer_size 1024k;
+      proxy_buffers 8 1024k;
+      proxy_busy_buffers_size 1024k;
+      proxy_redirect ~^https?://[^/]+(/.*)$ /$openclaw_gateway_instance_id$1;
+      proxy_redirect ~^(/.*)$ /$openclaw_gateway_instance_id$1;
+      sub_filter_last_modified on;
+      sub_filter_once off;
+      sub_filter 'src="/' 'src="/$openclaw_gateway_instance_id/';
+      sub_filter 'href="/' 'href="/$openclaw_gateway_instance_id/';
+      sub_filter '</head>' '<script>window.__agent_gateway_prefix="/$openclaw_gateway_instance_id";window.__OPENCLAW_CONTROL_UI_BASE_PATH__="/$openclaw_gateway_instance_id";</script><script src="/__agent_gateway_client.js"></script></head>';
+      proxy_pass https://$openclaw_upstream_host$openclaw_upstream_uri$is_args$args$openclaw_upstream_token_suffix;
+    }
+
+    location @gateway_unauthorized {
+      default_type text/html;
+      add_header Cache-Control "no-store";
+      if ($platform_login_url != "") {
+        return 302 $platform_login_url;
+      }
+      return 401 "<!doctype html><meta charset=\"utf-8\"><title>需要从平台打开</title><body style=\"font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;padding:40px\"><h1>需要从 Agent Manager 平台打开</h1><p>当前地址需要先通过平台完成访问授权。请回到 Agent Manager 实例详情页，点击应用访问入口重新打开。</p></body>";
+    }
+  }
+}

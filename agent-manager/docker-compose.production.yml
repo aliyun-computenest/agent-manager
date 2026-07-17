@@ -1,0 +1,43 @@
+services:
+  agent-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: agent-manager
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - SERVER_PORT=3000
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - VITE_APP_ID=${VITE_APP_ID:-public}
+      - OPENCLAW_TEMPLATE_PATH=${OPENCLAW_TEMPLATE_PATH:-/app/data/openclaw-template.json}
+      - E2B_DOMAIN=${E2B_DOMAIN}
+      - E2B_API_KEY=${E2B_API_KEY}
+      - SSL_CERT_FILE=${SSL_CERT_FILE}
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - ENABLE_AI_GATEWAY=${ENABLE_AI_GATEWAY:-false}
+      - APIG_GATEWAY_ID=${APIG_GATEWAY_ID}
+      - APIG_HTTP_API_ID=${APIG_HTTP_API_ID}
+      - APIG_ENVIRONMENT_ID=${APIG_ENVIRONMENT_ID}
+      - APIG_REGION_ID=${APIG_REGION_ID:-cn-shanghai}
+      - AI_GATEWAY_DOMAIN=${AI_GATEWAY_DOMAIN}
+      - API_ENCRYPTION_KEY=${API_ENCRYPTION_KEY}
+      - ALIBABA_CLOUD_ACCESS_KEY_ID=${ALIBABA_CLOUD_ACCESS_KEY_ID}
+      - ALIBABA_CLOUD_ACCESS_KEY_SECRET=${ALIBABA_CLOUD_ACCESS_KEY_SECRET}
+      - VITE_ACS_CLUSTER_ID=${VITE_ACS_CLUSTER_ID}
+      - DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-production}
+      - RUN_MIGRATIONS=${RUN_MIGRATIONS:-true}
+      - INIT_ADMIN=${INIT_ADMIN:-true}
+    volumes:
+      - ./data:/app/data:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,7 @@
+{
+	"qqbot": {
+		"enabled": true,
+		"appId": "${CHANNEL_CLIENT_ID}",
+		"clientSecret": "${CHANNEL_CLIENT_SECRET}"
+	}
+}

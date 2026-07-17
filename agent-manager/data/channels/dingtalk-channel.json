@@ -1,0 +1,11 @@
+{
+	"dingtalk-connector": {
+		"ackText": "任务已接收",
+		"enabled": true,
+		"clientId": "${CHANNEL_CLIENT_ID}",
+		"clientSecret": "${CHANNEL_CLIENT_SECRET}",
+		"groupSessionScope": "group",
+		"separateSessionByConversation": true,
+		"sharedMemoryAcrossConversations": false
+	}
+}
