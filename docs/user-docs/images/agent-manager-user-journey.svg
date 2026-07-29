@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">企业级 Agent 管控平台的用户路径</title>
+  <desc id="desc">展示用户从计算巢部署 Agent Manager，到完成初始化、配置能力、创建 Agent 实例，再到升级和排障的完整路径。</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#111827" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .bg { fill: #f7f9fc; }
+      .card { fill: #ffffff; stroke: #e5e7eb; stroke-width: 1; }
+      .text { fill: #111827; }
+      .muted { fill: #6b7280; }
+      .blue { fill: #2563eb; }
+      .line { stroke: #2563eb; stroke-width: 3; marker-end: url(#arrow); }
+      .admin { fill: #eff6ff; stroke: #bfdbfe; stroke-width: 1; }
+      .user { fill: #ecfdf5; stroke: #bbf7d0; stroke-width: 1; }
+      .ops { fill: #fffbeb; stroke: #fde68a; stroke-width: 1; }
+      .step1 { fill: #eef2ff; stroke: #c7d2fe; stroke-width: 1.2; }
+      .step2 { fill: #eff6ff; stroke: #bfdbfe; stroke-width: 1.2; }
+      .step3 { fill: #f5f3ff; stroke: #ddd6fe; stroke-width: 1.2; }
+      .step4 { fill: #ecfdf5; stroke: #bbf7d0; stroke-width: 1.2; }
+      .step5 { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1.2; }
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+      .h1 { font-size: 34px; font-weight: 700; }
+      .h2 { font-size: 22px; font-weight: 700; }
+      .h3 { font-size: 17px; font-weight: 700; }
+      .body { font-size: 15px; }
+      .small { font-size: 13px; }
+      .tiny { font-size: 12px; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1280" height="720"/>
+
+  <g filter="url(#shadow)">
+    <rect class="card" x="54" y="50" width="1172" height="620" rx="18"/>
+  </g>
+
+  <text class="text h1" x="92" y="106">企业级 Agent 管控平台</text>
+  <text class="muted body" x="92" y="140">从计算巢部署到日常使用，按任务顺序阅读文档；应用内的 Agent 备份升级放在使用与配置中。</text>
+
+  <rect class="admin" x="92" y="174" width="260" height="34" rx="17"/>
+  <text class="blue small" x="116" y="197">管理员主路径：部署、配置、创建实例、备份升级</text>
+  <rect class="user" x="370" y="174" width="190" height="34" rx="17"/>
+  <text fill="#047857" class="small" x="394" y="197">普通用户主路径：创建和使用</text>
+  <rect class="ops" x="578" y="174" width="178" height="34" rx="17"/>
+  <text fill="#b45309" class="small" x="602" y="197">排障入口：按症状定位</text>
+
+  <g>
+    <rect class="step1" x="92" y="256" width="190" height="180" rx="14"/>
+    <circle cx="126" cy="292" r="18" fill="#4f46e5"/>
+    <text x="120" y="298" fill="#ffffff" class="h3">1</text>
+    <text class="text h3" x="152" y="299">部署服务实例</text>
+    <text class="muted small" x="118" y="336">阅读部署与计费</text>
+    <text class="muted small" x="118" y="364">确认费用、权限、参数</text>
+    <text class="muted small" x="118" y="392">完成计算巢创建</text>
+  </g>
+
+  <line class="line" x1="282" y1="346" x2="326" y2="346"/>
+
+  <g>
+    <rect class="step2" x="336" y="256" width="190" height="180" rx="14"/>
+    <circle cx="370" cy="292" r="18" fill="#2563eb"/>
+    <text x="364" y="298" fill="#ffffff" class="h3">2</text>
+    <text class="text h3" x="396" y="299">管理用户分组</text>
+    <text class="muted small" x="362" y="336">管理员首次登录</text>
+    <text class="muted small" x="362" y="364">创建用户和分组</text>
+    <text class="muted small" x="362" y="392">配置 OAuth / SAML</text>
+  </g>
+
+  <line class="line" x1="526" y1="346" x2="570" y2="346"/>
+
+  <g>
+    <rect class="step3" x="580" y="256" width="190" height="180" rx="14"/>
+    <circle cx="614" cy="292" r="18" fill="#7c3aed"/>
+    <text x="608" y="298" fill="#ffffff" class="h3">3</text>
+    <text class="text h3" x="640" y="299">配置运行能力</text>
+    <text class="muted small" x="606" y="336">Agent 类型和沙箱</text>
+    <text class="muted small" x="606" y="364">Skill 和网关</text>
+    <text class="muted small" x="606" y="392">Token 统计与限流</text>
+  </g>
+
+  <line class="line" x1="770" y1="346" x2="814" y2="346"/>
+
+  <g>
+    <rect class="step4" x="824" y="256" width="190" height="180" rx="14"/>
+    <circle cx="858" cy="292" r="18" fill="#059669"/>
+    <text x="852" y="298" fill="#ffffff" class="h3">4</text>
+    <text class="text h3" x="884" y="299">创建和使用实例</text>
+    <text class="muted small" x="850" y="336">创建 Agent 实例</text>
+    <text class="muted small" x="850" y="364">打开应用访问链接</text>
+    <text class="muted small" x="850" y="392">上传文件、启停、删除</text>
+  </g>
+
+  <line class="line" x1="1014" y1="346" x2="1026" y2="346"/>
+
+  <g>
+    <rect class="step5" x="1036" y="256" width="150" height="180" rx="14"/>
+    <circle cx="1070" cy="292" r="18" fill="#ea580c"/>
+    <text x="1064" y="298" fill="#ffffff" class="h3">5</text>
+    <text class="text h3" x="1096" y="299">备份升级</text>
+    <text class="muted small" x="1062" y="336">配置 pre/post 命令</text>
+    <text class="muted small" x="1062" y="364">升级 Sandbox</text>
+    <text class="muted small" x="1062" y="392">查看历史和失败</text>
+  </g>
+
+  <rect x="92" y="490" width="1094" height="92" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  <text class="text h3" x="124" y="526">阅读顺序</text>
+  <text class="muted body" x="124" y="556">首次上线按 1 到 5 顺序阅读；日常使用可直接进入实例管理、技能管理或 Agent 备份与升级；异常排查进入 FAQ。</text>
+
+  <rect x="92" y="610" width="1094" height="32" rx="16" fill="#111827"/>
+  <text x="126" y="632" fill="#ffffff" class="small">文档设计原则：总览不承载长流程，每篇功能文档解决一类任务，FAQ 只承接症状排查。</text>
+</svg>

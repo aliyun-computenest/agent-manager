@@ -1,6 +1,10 @@
-# ADB Supabase 数据库故障切换操作指南（ROS 集群版）
+# 数据库备份恢复操作指南（ROS 集群版）
 
-> 场景：通过 ROS 部署的集群版 Agent Manager 正在使用的旧 ADB Supabase 实例故障或不可用，新 ADB Supabase 实例已经完成数据恢复。本文只说明如何把 Agent Manager 切到新库。
+完成 ADB Supabase 备份恢复、故障切换或迁移后，按本页把 ROS 集群版 Agent Manager 切到新的数据库实例。
+
+按本页修改 Agent Manager 侧连接，并验证登录和实例列表。ADB Supabase 的备份创建和数据恢复按数据库产品文档执行。
+
+![Supabase 控制台中的数据库备份入口](images/img_14.png)
 
 ## 1 前提
 
@@ -35,7 +39,9 @@ DATABASE_URL=postgresql://postgres:<密码>@<新实例内网数据库地址>:543
 
 ### 3.2 ROS 集群控制台方式
 
-平台资源所在 namespace 是计算巢参数 `PlatformNamespaceName`，默认是 `openclaw-platform`。Secret 和 ConfigMap 都在这个 namespace 下。
+平台资源所在 namespace 是计算巢参数 `PlatformNamespaceName`，默认是 `openclaw-platform`。
+
+Secret 和 ConfigMap 都在这个 namespace 下。
 
 1. 打开 ACK/ACS 控制台，进入 Manager 所在集群。
 2. 进入 `PlatformNamespaceName` 对应的 namespace。
