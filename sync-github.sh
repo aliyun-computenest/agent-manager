@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 #
-# sync-github.sh — 将本地分支以「单 commit、无历史」的方式同步到 GitHub 公开仓库，
+# sync-github.sh — 将本地分支以「无内网历史的公开快照」方式同步到 GitHub 公开仓库，
 # 并在推送前自动剔除不应公开的内网文件 / 密钥 / 内部设计文档。
 #
-# 与镜像完整历史不同，本脚本使用孤儿分支（orphan branch）产出一个全新的、
-# 不含任何父提交的干净快照。这样即使敏感文件曾出现在历史 commit 中，
-# 也不会被推送到公开仓库，从根本上切断历史泄露。
+# 首次同步使用孤儿分支产出不含内网历史的干净基线；后续同步基于 GitHub
+# 目标分支追加一个新的公开快照提交。这样既不会推送内网提交历史，也能保留
+# GitHub 公开仓库自身的版本演进记录。
 #
 # 工作原理：
-#   1. 基于当前（或指定）分支创建一个孤儿分支（无父提交）
-#   2. 在孤儿分支上删除 EXCLUDES 列表中的路径
+#   1. 基于 GitHub 目标分支创建临时分支；首次同步时创建孤儿分支
+#   2. 用当前（或指定）分支内容替换临时分支，并删除 EXCLUDES 列表中的路径
 #   3. 将剩余内容作为单个全新 commit 提交
-#   4. 将该孤儿分支 force push 到 GitHub 的目标分支
-#   5. 切回原分支并删除临时孤儿分支
+#   4. 将临时分支以 fast-forward 方式推送到 GitHub 目标分支
+#   5. 切回原分支并删除临时分支
 #
 # 本地分支与 GitLab origin 完全不受影响。
 #
 # 用法：
-#   ./sync-github.sh                  # 同步当前分支到 GitHub master（单 commit）
+#   ./sync-github.sh                  # 同步当前分支到 GitHub master（每次一个公开提交）
 #   ./sync-github.sh -b develop       # 同步本地 develop
 #   ./sync-github.sh -t main          # 推送到 GitHub 的 main 分支
 #   ./sync-github.sh -n               # dry-run，只打印将执行的动作，不实际推送
@@ -96,7 +96,7 @@ fi
 if [ -z "$SOURCE_BRANCH" ]; then
   SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 fi
-log "源分支：$SOURCE_BRANCH  ->  GitHub $GITHUB_REMOTE/${TARGET_BRANCH}（单 commit、无历史）"
+log "源分支：$SOURCE_BRANCH  ->  GitHub $GITHUB_REMOTE/${TARGET_BRANCH}（公开快照提交）"
 
 # 确保 GitHub 远程存在
 if ! git remote get-url "$GITHUB_REMOTE" >/dev/null 2>&1; then
@@ -119,9 +119,17 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# 1. 基于源分支内容创建孤儿分支（无父提交，从而无历史）
-git checkout --orphan "$TMP_BRANCH" "$SOURCE_BRANCH" >/dev/null
-log "已创建孤儿分支：${TMP_BRANCH}（无父提交）"
+# 1. 基于 GitHub 目标分支创建临时分支；目标分支不存在时创建孤儿分支
+if git ls-remote --exit-code --heads "$GITHUB_REMOTE" "$TARGET_BRANCH" >/dev/null 2>&1; then
+  git fetch --quiet "$GITHUB_REMOTE" "$TARGET_BRANCH:refs/remotes/$GITHUB_REMOTE/$TARGET_BRANCH"
+  git checkout -b "$TMP_BRANCH" "$GITHUB_REMOTE/$TARGET_BRANCH" >/dev/null
+  git rm -r --quiet .
+  git checkout "$SOURCE_BRANCH" -- .
+  log "已基于 $GITHUB_REMOTE/${TARGET_BRANCH} 创建临时分支：$TMP_BRANCH"
+else
+  git checkout --orphan "$TMP_BRANCH" "$SOURCE_BRANCH" >/dev/null
+  log "GitHub 目标分支不存在，已创建孤儿分支：${TMP_BRANCH}（无父提交）"
+fi
 
 # 2. 删除排除路径（从暂存区移除并删除工作区文件）
 for path in "${EXCLUDES[@]}"; do
@@ -137,9 +145,15 @@ for path in "${EXCLUDES[@]}"; do
   fi
 done
 
-# 3. 作为单个全新 commit 提交
-git commit -q -m "$COMMIT_MESSAGE"
-log "已生成单 commit 快照：$(git rev-parse --short HEAD)"
+# 3. 作为一个公开快照 commit 提交
+if git diff --cached --quiet; then
+  log "公开快照没有变化，无需生成提交"
+  SNAPSHOT_CHANGED="false"
+else
+  git commit -q -m "$COMMIT_MESSAGE"
+  SNAPSHOT_CHANGED="true"
+  log "已生成公开快照提交：$(git rev-parse --short HEAD)"
+fi
 
 # 推送前自检：确认敏感文件确实不在本次快照中
 log "推送前自检（确认敏感路径已剔除）："
@@ -156,13 +170,15 @@ if [ "$self_check_failed" = "true" ]; then
 fi
 log "  ✓ 所有排除路径均已不在快照中"
 
-# 4. force push 到 GitHub（孤儿分支覆盖目标分支，目标端也将只有这一个 commit）
-if [ "$DRY_RUN" = "true" ]; then
-  log "[dry-run] 将执行：git push $GITHUB_REMOTE $TMP_BRANCH:$TARGET_BRANCH --force"
+# 4. fast-forward 推送到 GitHub，保留公开仓库自身历史
+if [ "$SNAPSHOT_CHANGED" = "false" ]; then
+  log "GitHub 目标分支已是最新公开快照"
+elif [ "$DRY_RUN" = "true" ]; then
+  log "[dry-run] 将执行：git push $GITHUB_REMOTE $TMP_BRANCH:$TARGET_BRANCH"
   log "[dry-run] 本次快照包含 $(git ls-files | wc -l | tr -d ' ') 个文件"
 else
   log "推送到 GitHub..."
-  git push "$GITHUB_REMOTE" "$TMP_BRANCH:$TARGET_BRANCH" --force
+  git push "$GITHUB_REMOTE" "$TMP_BRANCH:$TARGET_BRANCH"
   log "推送完成"
 fi
 
