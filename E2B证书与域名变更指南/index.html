@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>E2B 证书与域名变更 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#e2b">E2B 证书与域名变更指南</a></li>
+              
+                  <li><a href="#e2b_1">第一部分：E2B 实例侧 — 域名 / 证书变更</a></li>
+                  
+                      <li class="li-h3"><a href="#_1">前置信息</a></li>
+                  
+                      <li class="li-h3"><a href="#1-tls">步骤 1：更新 TLS 证书</a></li>
+                  
+                      <li class="li-h3"><a href="#2-sandbox-manager">步骤 2：更新 sandbox-manager 域名配置</a></li>
+                  
+                      <li class="li-h3"><a href="#3-privatezone-dns">步骤 3：更新 PrivateZone DNS 解析</a></li>
+                  
+                      <li class="li-h3"><a href="#4-e2b">步骤 4：验证 E2B 侧</a></li>
+                  
+                      <li class="li-h3"><a href="#e2b_2">E2B 侧操作速查表</a></li>
+                  
+              
+                  <li><a href="#agent-manager">第二部分：Agent Manager 侧 — 同步配置</a></li>
+                  
+                      <li class="li-h3"><a href="#1-e2b-ca-cert-secretca">1. e2b-ca-cert Secret（CA 证书）</a></li>
+                  
+                      <li class="li-h3"><a href="#2-agent-manager-config-configmape2b_domain">2. agent-manager-config ConfigMap（E2B_DOMAIN）</a></li>
+                  
+                      <li class="li-h3"><a href="#3-agent-manager-secret-secrete2b_api_key">3. agent-manager-secret Secret（E2B_API_KEY）</a></li>
+                  
+                      <li class="li-h3"><a href="#4-pod">4. 重启 Pod（最后一步）</a></li>
+                  
+                      <li class="li-h3"><a href="#platform">Platform 侧速查表</a></li>
+                  
+              
+                  <li><a href="#_2">常见问题</a></li>
+                  
+                      <li class="li-h3"><a href="#q-ingress-mismatch-host">Q: Ingress 报 mismatch host</a></li>
+                  
+                      <li class="li-h3"><a href="#q-sandbox-manager">Q: sandbox-manager 完全收不到请求</a></li>
+                  
+                      <li class="li-h3"><a href="#q-examplecom">Q: 通配符证书 *.example.com 能匹配哪些域名</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="e2b">E2B 证书与域名变更指南<a class="headerlink" href="#e2b" title="Permanent link">&para;</a></h1>
+<h2 id="e2b_1">第一部分：E2B 实例侧 — 域名 / 证书变更<a class="headerlink" href="#e2b_1" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>适用场景：仅修改域名、仅修改证书、或域名 + 证书同时变更。
+⚠️ 操作顺序很重要：<strong>先更新证书 → 再改域名配置</strong>，顺序反了会导致 Ingress 报 <code>mismatch host</code>。</p>
+</blockquote>
+<h3 id="_1">前置信息<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>新域名</td>
+<td><code>&lt;NEW_DOMAIN&gt;</code>（例如 <code>sandbox.example.com</code>）</td>
+</tr>
+<tr>
+<td>新证书文件</td>
+<td><code>fullchain.pem</code>、<code>privkey.pem</code>（证书 SAN 需覆盖 <code>*.&lt;NEW_DOMAIN&gt;</code> 和 <code>&lt;NEW_DOMAIN&gt;</code>）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="1-tls">步骤 1：更新 TLS 证书<a class="headerlink" href="#1-tls" title="Permanent link">&para;</a></h3>
+<p>将新域名对应的证书更新到 K8s Secret。</p>
+<p><strong>方式一：ACK 控制台</strong></p>
+<ol>
+<li>打开 <a href="https://cs.console.aliyun.com/">ACK 控制台</a>，进入对应集群</li>
+<li>左侧菜单 <strong>配置管理 → 保密字典</strong></li>
+<li>命名空间选择 <code>sandbox-system</code>，找到 <code>sandbox-manager-tls</code></li>
+<li>点击 <strong>编辑</strong>，更新 <code>tls.crt</code>（证书内容，base64 编码）和 <code>tls.key</code>（私钥内容，base64 编码）</li>
+<li>保存</li>
+</ol>
+<p><strong>方式二：kubectl 命令</strong></p>
+<pre><code class="language-bash">kubectl create secret tls sandbox-manager-tls \
+  --cert=fullchain.pem \
+  --key=privkey.pem \
+  -n sandbox-system \
+  --dry-run=client -o yaml | kubectl apply -f -
+</code></pre>
+<p><strong>验证</strong>：</p>
+<pre><code class="language-bash">kubectl get secret sandbox-manager-tls -n sandbox-system \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -noout -subject -ext subjectAltName -dates
+</code></pre>
+<p>确认输出的 SAN 包含新域名。</p>
+<blockquote>
+<p>如果只改证书不改域名（例如证书续期），做完这一步即可，后面的步骤跳过，直接进入第二部分。</p>
+</blockquote>
+<hr />
+<h3 id="2-sandbox-manager">步骤 2：更新 sandbox-manager 域名配置<a class="headerlink" href="#2-sandbox-manager" title="Permanent link">&para;</a></h3>
+<p>在 ACK 控制台操作：</p>
+<ol>
+<li>进入 <strong>集群详情 → 运维管理 → 组件管理</strong></li>
+<li>找到 <strong>ack-sandbox-manager</strong> → 点击 <strong>修改配置</strong></li>
+<li>将 <code>domain</code> 字段改为新域名</li>
+<li>保存</li>
+</ol>
+<blockquote>
+<p>保存后 Helm 会自动重新渲染 Ingress 资源，host 和 TLS hosts 会自动更新为新域名，无需手动 patch Ingress。</p>
+</blockquote>
+<p>验证：</p>
+<pre><code class="language-bash"># 确认 Ingress host 已更新
+kubectl get ingress sandbox-manager -n sandbox-system \
+  -o jsonpath='{.spec.rules[*].host}' &amp;&amp; echo
+
+# 确认 TLS hosts 已更新
+kubectl get ingress sandbox-manager -n sandbox-system \
+  -o jsonpath='{.spec.tls[0].hosts}' &amp;&amp; echo
+</code></pre>
+<blockquote>
+<p>如果只改域名不改证书，仍需先执行步骤 1 更新证书（新域名必须有匹配的证书）。</p>
+</blockquote>
+<hr />
+<h3 id="3-privatezone-dns">步骤 3：更新 PrivateZone DNS 解析<a class="headerlink" href="#3-privatezone-dns" title="Permanent link">&para;</a></h3>
+<p>在阿里云 <a href="https://dns.console.aliyun.com/#/dns/setting/zones">PrivateZone 控制台</a> 操作：</p>
+<p><strong>3.1</strong> 获取 ALB DNS Name：</p>
+<pre><code class="language-bash">kubectl get ingress sandbox-manager -n sandbox-system \
+  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' &amp;&amp; echo
+</code></pre>
+<p><strong>3.2</strong> 创建新 Zone 并配置解析：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>添加 Zone</td>
+<td>Zone 名称填 <code>&lt;NEW_DOMAIN&gt;</code></td>
+</tr>
+<tr>
+<td>绑定 VPC</td>
+<td>选择集群所在的 VPC</td>
+</tr>
+<tr>
+<td>添加解析记录</td>
+<td>记录类型 <code>CNAME</code>，主机记录 <code>*</code>，记录值填上面获取的 ALB DNS Name</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3.3</strong> 验证（在 VPC 内机器上执行）：</p>
+<pre><code class="language-bash">nslookup api.&lt;NEW_DOMAIN&gt;
+</code></pre>
+<p><strong>3.4</strong> ⚠️ <strong>删除旧域名的 PrivateZone 解析</strong></p>
+<blockquote>
+<p><strong>必须操作，不是可选</strong>。如果旧域名的 PrivateZone 和 CNAME 记录不删除，同一个 ALB 上会同时存在新旧两个域名的解析，导致 ALB Ingress Controller 尝试匹配两套域名的证书，触发 <code>mismatch host</code> 错误。</p>
+</blockquote>
+<ol>
+<li>进入 PrivateZone 控制台，找到旧域名的 Zone</li>
+<li>先删除 Zone 下的所有解析记录（CNAME <code>*</code> 记录）</li>
+<li>解绑 VPC</li>
+<li>删除旧域名的 Zone</li>
+</ol>
+<hr />
+<h3 id="4-e2b">步骤 4：验证 E2B 侧<a class="headerlink" href="#4-e2b" title="Permanent link">&para;</a></h3>
+<p><strong>方式一：ACK 控制台</strong></p>
+<ol>
+<li>进入集群 → 左侧 <strong>工作负载 → 无状态</strong>，命名空间选 <code>sandbox-system</code></li>
+<li>找到 <code>sandbox-manager</code>，点击进入查看 Pod 状态是否 Running</li>
+<li>点击 Pod 名称 → <strong>日志</strong> 标签页，查看是否有异常</li>
+<li>左侧 <strong>网络 → 路由</strong>，命名空间选 <code>sandbox-system</code>，确认 Ingress <code>sandbox-manager</code> 的 host 已更新为新域名</li>
+</ol>
+<p><strong>方式二：kubectl 命令</strong></p>
+<pre><code class="language-bash"># HTTPS 连通性
+curl -v https://api.&lt;NEW_DOMAIN&gt;/health
+
+# sandbox-manager 日志中是否有请求记录
+kubectl logs deployment/sandbox-manager -n sandbox-system \
+  -c controller --tail=20
+
+# Ingress 事件是否有异常
+kubectl get events -n sandbox-system --sort-by='.lastTimestamp' | tail -10
+</code></pre>
+<hr />
+<h3 id="e2b_2">E2B 侧操作速查表<a class="headerlink" href="#e2b_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>变更场景</th>
+<th>需要操作的步骤</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>仅续期证书</strong>（域名不变）</td>
+<td>步骤 1</td>
+</tr>
+<tr>
+<td><strong>仅改域名</strong></td>
+<td>步骤 1 + 2 + 3</td>
+</tr>
+<tr>
+<td><strong>域名 + 证书都变</strong></td>
+<td>步骤 1 + 2 + 3</td>
+</tr>
+<tr>
+<td>ALB 配置</td>
+<td>无需修改</td>
+</tr>
+<tr>
+<td>Ingress 规则</td>
+<td>无需手动修改（步骤 2 自动更新）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="agent-manager">第二部分：Agent Manager 侧 — 同步配置<a class="headerlink" href="#agent-manager" title="Permanent link">&para;</a></h2>
+<p>当 E2B 实例更新了证书/域名后，Agent Manager 侧需要同步以下配置，确保平台能正常连接 E2B API。</p>
+<h3 id="1-e2b-ca-cert-secretca">1. e2b-ca-cert Secret（CA 证书）<a class="headerlink" href="#1-e2b-ca-cert-secretca" title="Permanent link">&para;</a></h3>
+<p>从 <code>sandbox-system</code> 复制最新证书到 <code>agent-manager</code>。</p>
+<p><strong>方式一：ACK 控制台</strong></p>
+<ol>
+<li>进入集群 → <strong>配置管理 → 保密字典</strong></li>
+<li>命名空间选 <code>sandbox-system</code>，找到 <code>sandbox-manager-tls</code>，点击进入查看详情</li>
+<li>复制 <code>tls.crt</code> 字段的 base64 值</li>
+<li>切换命名空间到 <code>agent-manager</code>，找到 <code>e2b-ca-cert</code></li>
+<li>点击 <strong>编辑</strong>，将 <code>ca-fullchain.pem</code> 字段的值替换为刚才复制的 <code>tls.crt</code> 值</li>
+<li>保存</li>
+</ol>
+<p><strong>方式二：kubectl 命令</strong></p>
+<pre><code class="language-bash">CERT=$(kubectl -n sandbox-system get secret sandbox-manager-tls -o jsonpath='{.data.tls\.crt}')
+kubectl -n agent-manager patch secret e2b-ca-cert \
+  -p &quot;{\&quot;data\&quot;:{\&quot;ca-fullchain.pem\&quot;:\&quot;$CERT\&quot;}}&quot;
+</code></pre>
+<p><strong>作用</strong>：Platform Pod 通过 <code>NODE_EXTRA_CA_CERTS</code> 加载此证书，用于 TLS 验证 E2B API 请求。</p>
+<hr />
+<h3 id="2-agent-manager-config-configmape2b_domain">2. agent-manager-config ConfigMap（E2B_DOMAIN）<a class="headerlink" href="#2-agent-manager-config-configmape2b_domain" title="Permanent link">&para;</a></h3>
+<p>确认 <code>E2B_DOMAIN</code> 是否变化，如果变了需要更新。</p>
+<p><strong>方式一：ACK 控制台</strong></p>
+<ol>
+<li>进入集群 → <strong>配置管理 → 配置项</strong></li>
+<li>命名空间选 <code>agent-manager</code>，找到 <code>agent-manager-config</code></li>
+<li>点击 <strong>编辑</strong>，找到 <code>E2B_DOMAIN</code> 字段</li>
+<li>将值修改为新的 E2B 域名</li>
+<li>保存</li>
+</ol>
+<p><strong>方式二：kubectl 命令</strong></p>
+<pre><code class="language-bash"># 查看当前域名
+kubectl -n agent-manager get configmap agent-manager-config \
+  -o jsonpath='{.data.E2B_DOMAIN}'
+
+# 如果域名变了，更新 ConfigMap
+kubectl -n agent-manager patch configmap agent-manager-config \
+  -p '{&quot;data&quot;:{&quot;E2B_DOMAIN&quot;:&quot;&lt;新的E2B域名&gt;&quot;}}'
+</code></pre>
+<p><strong>作用</strong>：E2B SDK 用这个域名连接 sandbox-manager API。</p>
+<hr />
+<h3 id="3-agent-manager-secret-secrete2b_api_key">3. agent-manager-secret Secret（E2B_API_KEY）<a class="headerlink" href="#3-agent-manager-secret-secrete2b_api_key" title="Permanent link">&para;</a></h3>
+<p>如果 E2B 更新后 API Key 也变了，需要同步更新。</p>
+<p><strong>方式一：ACK 控制台</strong></p>
+<ol>
+<li>进入集群 → <strong>配置管理 → 保密字典</strong></li>
+<li>命名空间选 <code>agent-manager</code>，找到 <code>agent-manager-secret</code></li>
+<li>点击 <strong>编辑</strong>，找到 <code>E2B_API_KEY</code> 字段</li>
+<li>将值修改为新的 API Key（控制台会自动处理 base64 编码）</li>
+<li>保存</li>
+</ol>
+<p><strong>方式二：kubectl 命令</strong></p>
+<pre><code class="language-bash">NEW_KEY_B64=$(echo -n &quot;&lt;新的E2B_API_KEY&gt;&quot; | base64)
+kubectl -n agent-manager patch secret agent-manager-secret \
+  -p &quot;{\&quot;data\&quot;:{\&quot;E2B_API_KEY\&quot;:\&quot;$NEW_KEY_B64\&quot;}}&quot;
+</code></pre>
+<p><strong>作用</strong>：Platform 调用 E2B API 的认证凭证。</p>
+<hr />
+<h3 id="4-pod">4. 重启 Pod（最后一步）<a class="headerlink" href="#4-pod" title="Permanent link">&para;</a></h3>
+<p><strong>方式一：ACK 控制台</strong></p>
+<ol>
+<li>进入集群 → <strong>工作负载 → 无状态</strong></li>
+<li>命名空间选 <code>agent-manager</code>，找到 <code>agent-manager</code></li>
+<li>点击右侧 <strong>更多 → 重新部署</strong></li>
+</ol>
+<p><strong>方式二：kubectl 命令</strong></p>
+<pre><code class="language-bash">kubectl -n agent-manager delete pod -l app=agent-manager
+</code></pre>
+<p><strong>作用</strong>：Pod 重启后会加载新的证书文件 + 读取新的环境变量。</p>
+<hr />
+<h3 id="platform">Platform 侧速查表<a class="headerlink" href="#platform" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>K8s 资源</th>
+<th>命名空间</th>
+<th>何时需要改</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA 证书</td>
+<td>Secret <code>e2b-ca-cert</code></td>
+<td><code>agent-manager</code></td>
+<td>E2B 重新签发了 TLS 证书</td>
+</tr>
+<tr>
+<td>E2B 域名</td>
+<td>ConfigMap <code>agent-manager-config</code> → <code>E2B_DOMAIN</code></td>
+<td><code>agent-manager</code></td>
+<td>E2B 的 ALB/域名地址变了</td>
+</tr>
+<tr>
+<td>API Key</td>
+<td>Secret <code>agent-manager-secret</code> → <code>E2B_API_KEY</code></td>
+<td><code>agent-manager</code></td>
+<td>E2B 重新生成了 API Key</td>
+</tr>
+<tr>
+<td>重启 Pod</td>
+<td>Deployment <code>agent-manager</code></td>
+<td><code>agent-manager</code></td>
+<td>以上任一项变更后必须执行</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_2">常见问题<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="q-ingress-mismatch-host">Q: Ingress 报 <code>mismatch host</code><a class="headerlink" href="#q-ingress-mismatch-host" title="Permanent link">&para;</a></h3>
+<p><strong>原因</strong>：证书的域名和 Ingress host 不匹配。</p>
+<p>排查：</p>
+<pre><code class="language-bash"># 对比 Ingress host 和证书域名
+echo &quot;=== Ingress TLS hosts ===&quot;
+kubectl get ingress sandbox-manager -n sandbox-system \
+  -o jsonpath='{.spec.tls[0].hosts}' &amp;&amp; echo
+
+echo &quot;=== 证书域名 ===&quot;
+kubectl get secret sandbox-manager-tls -n sandbox-system \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -noout -ext subjectAltName
+</code></pre>
+<p>常见场景：</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>修复</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingress 是新域名，证书是旧域名</td>
+<td>先改了 Addon 域名再换证书，顺序反了</td>
+<td>重新执行步骤 1 更新证书</td>
+</tr>
+<tr>
+<td>同一个 ALB 上挂了多个 Ingress</td>
+<td>旧域名的 Ingress 没有清理</td>
+<td>删除旧 Ingress</td>
+</tr>
+</tbody>
+</table>
+<p>检查是否有多余的 Ingress：</p>
+<pre><code class="language-bash">kubectl get ingress --all-namespaces -o wide | grep alb
+</code></pre>
+<h3 id="q-sandbox-manager">Q: sandbox-manager 完全收不到请求<a class="headerlink" href="#q-sandbox-manager" title="Permanent link">&para;</a></h3>
+<p>依次检查：</p>
+<ol>
+<li><strong>DNS 是否解析到 ALB</strong> → <code>nslookup api.&lt;NEW_DOMAIN&gt;</code></li>
+<li><strong>Ingress host 是否已更新</strong> → <code>kubectl get ingress sandbox-manager -n sandbox-system -o jsonpath='{.spec.rules[*].host}'</code></li>
+<li><strong>证书是否匹配</strong> → 见上方 mismatch 排查</li>
+</ol>
+<h3 id="q-examplecom">Q: 通配符证书 <code>*.example.com</code> 能匹配哪些域名<a class="headerlink" href="#q-examplecom" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✅ <code>api.example.com</code>、<code>ws.example.com</code>（一级子域名）</li>
+<li>❌ <code>api.sandbox.example.com</code>（两级子域名，<code>*</code> 只匹配一级）</li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.718000+00:00
+  -->
+</body>
+</html>

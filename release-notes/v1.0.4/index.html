@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>v1.0.4 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../../search/main.js"></script>
+  
+
+  
+
+  <script src="../../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#v104">v1.0.4</a></li>
+              
+                  <li><a href="#_1">新增功能</a></li>
+                  
+                      <li class="li-h3"><a href="#agent">Agent 实例分组共享</a></li>
+                  
+                      <li class="li-h3"><a href="#_2">终端登录体验升级</a></li>
+                  
+                      <li class="li-h3"><a href="#_3">批量上传文件</a></li>
+                  
+                      <li class="li-h3"><a href="#_4">单点登录安全配置</a></li>
+                  
+                      <li class="li-h3"><a href="#oauth">飞书与钉钉 OAuth 登录</a></li>
+                  
+                      <li class="li-h3"><a href="#agent_1">Agent 自定义变量</a></li>
+                  
+              
+                  <li><a href="#_5">升级步骤</a></li>
+                  
+              
+                  <li><a href="#_6">注意事项</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="v104">v1.0.4<a class="headerlink" href="#v104" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>发布日期</strong>：2026-06-12</li>
+<li><strong>镜像</strong>：<code>compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agent-manager:202606121545</code></li>
+</ul>
+<h2 id="_1">新增功能<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h3 id="agent">Agent 实例分组共享<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>新增 <strong>分组（Group）</strong> 概念，支持多个用户共享同一批 Agent 实例。平台管理员可创建分组并将用户加入分组，分组内成员共享访问 Agent 实例，便于团队协作。</li>
+<li><strong>分组成员角色</strong>：分组成员只保留 <code>admin</code> 和 <code>member</code> 两种角色。分组 <code>admin</code> 可管理成员，<code>member</code> 可使用分组共享的 Agent 实例；平台管理员可管理所有分组。</li>
+<li><strong>分组级配额管理</strong>：支持为分组配置独立的实例数量上限和模型网关配额，分组共享实例的配额从分组主体扣减，不占用创建者个人配额。</li>
+<li><strong>分组管理操作</strong>：平台管理员可在管理后台创建、编辑、删除分组并配置配额；平台管理员和分组 <code>admin</code> 可添加/移除成员、调整成员角色、查看分组详情和共享实例列表。</li>
+<li><strong>共享实例创建</strong>：用户在创建实例时可选择「私有」或自己已加入的某个分组。分组内成员均可查看、启动、停止、编辑实例配置；删除分组实例需要分组 <code>admin</code> 或平台管理员权限。</li>
+</ul>
+<h3 id="_2">终端登录体验升级<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>实例详情支持通过新页面打开运行中的 Agent 或终端，减少内嵌页面刷新、遮挡对操作的影响。</li>
+<li>用户可在独立页面中完成终端登录和日常操作。</li>
+</ul>
+<h3 id="_3">批量上传文件<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>支持在实例访问或终端页面一次选择多个文件上传。</li>
+<li>适用于批量上传资料、脚本、配置文件等运行所需资源。</li>
+</ul>
+<h3 id="_4">单点登录安全配置<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>单点登录管理界面支持一键关闭用户自动注册。</li>
+<li>管理员关闭后，OAuth / SAML SSO 首次登录不会自动创建新用户；只有已创建或已批量导入的用户可以登录。</li>
+<li>适合企业生产环境先完成用户名单导入，再关闭自助注册。</li>
+<li>关闭自动注册会同步 Supabase Auth 的禁止注册开关，避免未预创建用户通过第三方登录自助加入。</li>
+<li>对于管理员已创建或批量导入的 OAuth / SAML 用户，平台会按第三方登录返回的真实邮箱匹配已有用户；匹配不到或无权限时，登录页会显示无权限提示。</li>
+</ul>
+<h3 id="oauth">飞书与钉钉 OAuth 登录<a class="headerlink" href="#oauth" title="Permanent link">&para;</a></h3>
+<ul>
+<li>用户登录页新增飞书、钉钉 OAuth 登录入口。管理员在 Supabase Auth 中启用对应 provider 后，登录页会自动显示对应按钮。</li>
+<li>飞书登录支持读取企业邮箱；当飞书返回 <code>enterprise_email</code> 时，平台优先使用企业邮箱作为用户资料邮箱。</li>
+<li>钉钉登录支持 <code>Contact.User.Read</code> 授权范围，用于获取当前登录用户的通讯录个人信息。</li>
+<li>飞书、钉钉扫码授权失败或二维码过期时，页面会停止无效轮询并提示用户重新发起授权。</li>
+</ul>
+<h3 id="agent_1">Agent 自定义变量<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>管理员可在 Agent 配置中定义创建实例时需要填写的自定义变量，例如项目 Token、Webhook 地址、外部服务 API Key 或系统提示词。</li>
+<li>自定义变量支持 <code>text</code>、<code>password</code>、<code>textarea</code> 三种类型，可配置显示名称、是否必填和输入框提示。</li>
+<li>用户创建实例时，系统会根据所选 Agent 配置动态展示自定义变量表单；提交后变量值可通过 <code>${VAR_NAME}</code> 占位符写入配置模板、启动命令、修改模型脚本和修改渠道脚本。</li>
+<li><code>password</code> 类型变量会加密存储，不会以明文保存到数据库；启动命令和修改脚本执行时通过环境变量注入，避免多行内容或特殊字符破坏脚本。</li>
+</ul>
+<h2 id="_5">升级步骤<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>请参考 <a href="../#升级计算巢服务实例">升级计算巢服务实例</a>：在<strong>计算巢控制台</strong>对服务实例执行<strong>升级</strong>操作即可，数据库迁移会随升级流程自动完成。</p>
+<p>升级前请先手动备份当前 Supabase 数据库；如果本次升级会更换已有 Supabase 连接参数，也请先确认 Supabase URL、Service Role Key 和 Database URL 来自同一个 Supabase 实例。具体步骤见 <a href="../../%E6%9B%B4%E6%8D%A2Supabase%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97/">数据库备份恢复操作指南</a>。</p>
+<h2 id="_6">注意事项<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>分组共享相关</strong>：实例创建后<strong>不支持变更所属分组</strong>（私有 ↔ 共享、跨分组迁移均不支持），如需调整请删除后重新创建。删除分组前需先删除分组下所有共享实例并移除 active 成员。</li>
+<li>仅平台管理员可创建分组和调整分组配额；平台管理员和分组 <code>admin</code> 可添加、移除成员并调整成员角色。</li>
+<li>建议管理员在关闭自动注册前，确认用户管理中已创建或批量导入需要登录的用户。</li>
+<li>使用飞书 OAuth 前，请在飞书开放平台为应用开通 <code>contact:user.base:readonly</code>、<code>contact:user.email:readonly</code>、<code>contact:user.employee:readonly</code> 和 <code>directory:employee.base.enterprise_email:read</code> 权限，并确认员工已配置企业邮箱。</li>
+<li>使用钉钉 OAuth 前，请在钉钉开放平台为应用开通 <code>Contact.User.Read</code> 权限。</li>
+<li>飞书、钉钉、阿里云等 OAuth provider 的回调地址均填写 Supabase Auth callback URL：<code>https://&lt;Supabase URL&gt;/auth/v1/callback</code>。</li>
+<li>批量上传文件前，请确认目标实例处于运行中；大文件上传耗时取决于网络和实例环境。</li>
+<li>OpenClaw 新建环境会使用新的升级备份/恢复默认命令；已有环境不会通过版本迁移自动改写升级命令，如需启用请由管理员手动更新。</li>
+<li>自定义变量仅在创建实例时填写，创建后暂不支持在实例详情页修改；如需更换自定义变量值，请重新创建实例或由管理员按业务流程处理。</li>
+<li>更换已有 Supabase 连接参数前，请先完成手动数据库备份，并确认前端访问 URL、服务端内部 URL、Service Role Key 和 Database URL 属于同一套 Supabase。</li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.759398+00:00
+  -->
+</body>
+</html>

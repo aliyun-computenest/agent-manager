@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>Agent 备份 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#agent">Agent 备份</a></li>
+              
+                  <li><a href="#_1">选择备份方式</a></li>
+                  
+              
+                  <li><a href="#_2">只做备份：保留一个实例的恢复点</a></li>
+                  
+              
+                  <li><a href="#_3">从备份创建新实例</a></li>
+                  
+              
+                  <li><a href="#_4">创建全部或部分实例的备份任务</a></li>
+                  
+              
+                  <li><a href="#_5">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="agent">Agent 备份<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h1>
+<p>本页介绍如何为 Agent 实例保留可恢复的备份点，以及如何从备份点创建新实例。备份只保存实例数据，不会修改实例的模型、镜像或运行配置，也不会启动沙箱升级。</p>
+<h2 id="_1">选择备份方式<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>入口</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>保留某个实例的可恢复时间点</td>
+<td>实例详情 -&gt; 备份与恢复</td>
+<td>生成当前实例的备份点。</td>
+</tr>
+<tr>
+<td>从备份点创建一份新实例</td>
+<td>实例详情 -&gt; 备份与恢复</td>
+<td>创建新实例和新 Sandbox，原实例不变。</td>
+</tr>
+<tr>
+<td>给多个实例创建立即或周期备份</td>
+<td>管理后台 -&gt; 实例备份</td>
+<td>按全部实例或指定实例执行，并设置保留数量。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">只做备份：保留一个实例的恢复点<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>实例必须已经创建并关联可用 Sandbox。备份过程中会短暂占用实例；实例正在备份或恢复时，新的备份请求会被拒绝。</p>
+<p><img alt="实例详情中的备份与恢复" src="../images/preprod-instance-backup.png" /></p>
+<ol>
+<li>打开实例列表，进入目标实例详情。</li>
+<li>在“备份与恢复”区域单击“发起备份”。</li>
+<li>在确认页面单击“确认发起”。</li>
+<li>返回实例详情，展开“可用备份点”查看备份时间和状态。</li>
+</ol>
+<p>备份点只属于当前实例。备份执行完成后，您可以基于该时间点创建新实例。</p>
+<h2 id="_3">从备份创建新实例<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>从备份创建会保留原实例，并使用新的 Sandbox 恢复备份数据。新实例创建完成后，请先验证工作台和配置，再决定是否删除原实例。</p>
+<ol>
+<li>打开源实例详情，展开“可用备份点”。</li>
+<li>在目标备份点单击“从备份创建”。</li>
+<li>填写新实例名称，单击“创建新实例”。</li>
+<li>进入新实例详情，等待 Sandbox Ready、配置写入和访问检查完成。</li>
+<li>进入 Agent 工作台，确认 Agent 状态、模型调用和需要保留的数据正常。</li>
+</ol>
+<p>新实例归属源实例的所有者。恢复失败时，查看新实例详情中的错误信息；源实例和备份点不会被覆盖。</p>
+<h2 id="_4">创建全部或部分实例的备份任务<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>管理员可以一次备份全部运行中实例，也可以按 Agent 类型、分组和实例名称选择部分实例。</p>
+<p><img alt="创建备份执行" src="../images/preprod-backup-create.png" /></p>
+<ol>
+<li>打开管理后台，进入“实例备份”。</li>
+<li>单击“创建备份执行”。</li>
+<li>选择实例范围：全部实例，或指定实例。</li>
+<li>选择“立即执行”或“周期性重复执行”。</li>
+<li>设置每个实例最多保留的备份点数量。</li>
+<li>选择周期执行时，填写 Cron 表达式并确认页面显示的下次执行时间。</li>
+<li>单击创建，返回“实例备份”查看执行状态。</li>
+</ol>
+<p>备份执行状态包括“运行中”“成功”“异常”“部分失败”和“已取消”。打开执行详情可以查看实例范围、最近一次结果、下次执行时间和失败信息。取消周期任务只会停止后续执行，已经生成的备份点不会删除。</p>
+<h2 id="_5">相关文档<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.716826+00:00
+  -->
+</body>
+</html>

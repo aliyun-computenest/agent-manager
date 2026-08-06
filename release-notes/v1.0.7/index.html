@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>v1.0.7 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../../search/main.js"></script>
+  
+
+  
+
+  <script src="../../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#v107">v1.0.7</a></li>
+              
+                  <li><a href="#_1">新增功能</a></li>
+                  
+                      <li class="li-h3"><a href="#agent">原生 Agent 工作台</a></li>
+                  
+              
+                  <li><a href="#_2">问题修复</a></li>
+                  
+              
+                  <li><a href="#_3">升级步骤</a></li>
+                  
+              
+                  <li><a href="#_4">注意事项</a></li>
+                  
+              
+                  <li><a href="#_5">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="v107">v1.0.7<a class="headerlink" href="#v107" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>预计发布日期</strong>：2026-08-06</li>
+</ul>
+<h2 id="_1">新增功能<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h3 id="agent">原生 Agent 工作台<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>OpenClaw、Hermes 和 QwenPaw 支持从实例详情页直接进入各自的原生界面。</li>
+<li>Agent Manager 统一校验登录状态和实例权限，并在服务端代理 Agent 的页面、API 和 WebSocket 请求。</li>
+<li>浏览器无需解析或直连 E2B Sandbox 私网域名，也不再经过旧版 Nginx Agent 访问网关。</li>
+<li>支持在不同标签页同时打开多个 Agent 工作台，各标签页保持独立实例上下文。</li>
+</ul>
+<h2 id="_2">问题修复<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>修复飞书扫码自动配置在用户尚未完成授权时中断的问题。系统现在会正确处理 <code>authorization_pending</code> 和 <code>slow_down</code> 响应，并继续等待用户完成授权。</li>
+</ul>
+<h2 id="_3">升级步骤<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>请参考<a href="../#升级计算巢服务实例">升级计算巢服务实例</a>，在阿里云计算巢控制台对服务实例执行升级。本版本不包含数据库结构变更。</p>
+<h2 id="_4">注意事项<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li>新部署不再创建旧版 OpenResty/Nginx Agent 访问网关和对应 SLB。</li>
+<li>从旧版本升级时，ROS 模板不会主动删除已有的 Kubernetes 网关 Deployment、Service 和 Secret。确认“进入工作台”可用后，可手动清理这些遗留资源。</li>
+<li>升级后，用户统一从实例详情页的“进入工作台”访问 Agent，不再使用旧版网关访问链接。</li>
+</ul>
+<h2 id="_5">相关文档<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">发布记录</a></li>
+<li><a href="../../%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/">用户指南</a></li>
+<li><a href="../../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../../%E6%9C%8D%E5%8A%A1%E5%AE%9E%E4%BE%8B%E9%83%A8%E7%BD%B2%E4%B8%8E%E8%AE%A1%E8%B4%B9/">服务实例部署与计费</a></li>
+<li><a href="../../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/#agent-工作台打不开怎么办">常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.763025+00:00
+  -->
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>OpenClaw Agent 和 Hermes Agent 版本升级指南 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../../search/main.js"></script>
+  
+
+  
+
+  <script src="../../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#openclaw-agent-hermes-agent">OpenClaw Agent 和 Hermes Agent 版本升级指南</a></li>
+              
+                  <li><a href="#_1">背景</a></li>
+                  
+              
+                  <li><a href="#_2">变更内容概览</a></li>
+                  
+              
+                  <li><a href="#_3">操作方式说明</a></li>
+                  
+              
+                  <li><a href="#_4">操作步骤</a></li>
+                  
+                      <li class="li-h3"><a href="#1-hermes">步骤 1：新增 Hermes 飞书渠道模板</a></li>
+                  
+                      <li class="li-h3"><a href="#2-hermes-startup_command">步骤 2：更新 Hermes startup_command</a></li>
+                  
+                      <li class="li-h3"><a href="#3-hermes-modify_channel_command">步骤 3：更新 Hermes modify_channel_command</a></li>
+                  
+                      <li class="li-h3"><a href="#4-openclaw">步骤 4（可选）：更新 OpenClaw 钉钉渠道模板</a></li>
+                  
+                      <li class="li-h3"><a href="#5-openclaw-config_template">步骤 5（可选）：更新 OpenClaw config_template</a></li>
+                  
+              
+                  <li><a href="#_5">注意事项</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="openclaw-agent-hermes-agent">OpenClaw Agent 和 Hermes Agent 版本升级指南<a class="headerlink" href="#openclaw-agent-hermes-agent" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>适用场景：从 v1.0.2 升级到 v1.0.3 的<strong>已有环境</strong>。新安装环境无需执行，<code>init_database.sql</code> 已包含全部配置。</p>
+</blockquote>
+<h2 id="_1">背景<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>v1.0.3 为 OpenClaw Agent 和 Hermes Agent 类型更新了镜像版本， 由于版本兼容问题，需要修改Agent的一些配置，并且为Hermes Agent添加了飞书渠道。由于以下 SQL 变更可能覆盖用户对Agent 配置的自定义修改，因此不通过自动迁移执行，改为手动操作。</p>
+<h2 id="_2">变更内容概览<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>变更项</th>
+<th>说明</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hermes Agent 新增飞书渠道模板</td>
+<td><code>channel_templates</code> 表插入 Hermes 的 feishu 记录</td>
+<td>增加飞书渠道需要</td>
+</tr>
+<tr>
+<td>Hermes Agent更新 startup_command</td>
+<td><code>.env</code> 中新增飞书相关环境变量</td>
+<td>增加飞书渠道需要</td>
+</tr>
+<tr>
+<td>Hermes Agent更新 modify_channel_command</td>
+<td>改用 <code>run-cmd.sh modify-channel</code> 统一处理渠道凭证</td>
+<td>增加飞书渠道需要</td>
+</tr>
+<tr>
+<td>OpenClaw Agent 钉钉模板更新</td>
+<td>移除已废弃的 <code>gatewayPassword</code> / <code>gatewayToken</code> 字段</td>
+<td>兼容Openclaw 新版本</td>
+</tr>
+<tr>
+<td>OpenClaw Agent config_template 增强</td>
+<td>添加 <code>gateway.http</code> 和 <code>plugins.entries</code> 配置</td>
+<td>兼容Openclaw 新版本</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">操作方式说明<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>以下每个步骤均提供<strong>两种等效方式</strong>，任选其一即可：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>说明</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>方式 A：平台界面手动修改</strong></td>
+<td>通过 Agent Manager 管理平台 UI 直接编辑对应配置</td>
+<td>熟悉平台操作、变更量较少时推荐</td>
+</tr>
+<tr>
+<td><strong>方式 B：直接执行 SQL</strong></td>
+<td>在 Supabase SQL Editor 或 <code>psql</code> 中执行下方 SQL 语句</td>
+<td>批量操作、脚本化部署时推荐</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>注意</strong>：两种方式效果完全一致，请勿重复执行。</p>
+</blockquote>
+<h2 id="_4">操作步骤<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h3 id="1-hermes">步骤 1：新增 Hermes 飞书渠道模板<a class="headerlink" href="#1-hermes" title="Permanent link">&para;</a></h3>
+<h4 id="a">方式 A：平台界面修改<a class="headerlink" href="#a" title="Permanent link">&para;</a></h4>
+<p>在 Agent Manager 平台进入 <strong>Agent 类型管理 → Hermes → 渠道模板</strong> 页面，新增一条飞书渠道模板，配置字段参考下方 SQL 中的 <code>config_fields</code> 内容。</p>
+<h4 id="b-sql">方式 B：执行 SQL<a class="headerlink" href="#b-sql" title="Permanent link">&para;</a></h4>
+<pre><code class="language-sql">-- 为 Hermes 类型新增飞书渠道模板
+INSERT INTO channel_templates (channel_type, name, description, config_fields, config_file, config_template, is_enabled, agent_type_id) VALUES
+  ('feishu', '飞书 (Feishu)', '飞书开放平台应用配置',
+    '[{&quot;name&quot;: &quot;clientId&quot;, &quot;type&quot;: &quot;text&quot;, &quot;label&quot;: &quot;App ID&quot;, &quot;required&quot;: true, &quot;placeholder&quot;: &quot;cli_xxxxxxxxxxxxxxxx&quot;}, {&quot;name&quot;: &quot;clientSecret&quot;, &quot;type&quot;: &quot;password&quot;, &quot;label&quot;: &quot;App Secret&quot;, &quot;required&quot;: true, &quot;placeholder&quot;: &quot;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;}]',
+    NULL,
+    '{&quot;_format&quot;: &quot;yaml&quot;, &quot;_content&quot;: &quot;&quot;}'::jsonb,
+    true, (SELECT id FROM agent_types WHERE code = 'hermes'))
+ON CONFLICT (channel_type, agent_type_id) DO UPDATE SET
+    config_template = EXCLUDED.config_template,
+    config_fields = EXCLUDED.config_fields;
+</code></pre>
+<h3 id="2-hermes-startup_command">步骤 2：更新 Hermes startup_command<a class="headerlink" href="#2-hermes-startup_command" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>注意</strong>：此操作会覆盖 <code>agent_types</code> 表中 Hermes 的 <code>startup_command</code> 字段。如果您已手动修改过此字段，请先备份当前值，再根据下方模板合并您的自定义内容。</p>
+</blockquote>
+<h4 id="a_1">方式 A：平台界面修改<a class="headerlink" href="#a_1" title="Permanent link">&para;</a></h4>
+<p>在 Agent Manager 平台进入 <strong>Agent 类型管理 → Hermes → 基础配置</strong>，编辑 <code>startup_command</code> 字段，在 <code>.env</code> 写入部分新增飞书相关环境变量（参考下方 SQL 中的完整内容）。</p>
+<h4 id="b-sql_1">方式 B：执行 SQL<a class="headerlink" href="#b-sql_1" title="Permanent link">&para;</a></h4>
+<pre><code class="language-sql">-- 查看当前值（可选，用于备份）
+SELECT startup_command FROM agent_types WHERE code = 'hermes';
+
+-- 更新 startup_command，增加飞书环境变量
+UPDATE agent_types
+SET startup_command = '#!/bin/bash
+
+cat &gt; /opt/data/.env &lt;&lt; ''EOF''
+DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+DINGTALK_CLIENT_ID=${CHANNEL_CLIENT_ID}
+DINGTALK_CLIENT_SECRET=${CHANNEL_CLIENT_SECRET}
+GATEWAY_ALLOW_ALL_USERS=true
+FEISHU_CONNECTION_MODE=websocket
+FEISHU_APP_ID=${CHANNEL_CLIENT_ID}
+FEISHU_APP_SECRET=${CHANNEL_CLIENT_SECRET}
+FEISHU_DOMAIN=feishu
+EOF
+
+# 重启hermes
+supervisorctl restart hermes'
+WHERE code = 'hermes';
+</code></pre>
+<p><strong>新增的环境变量说明</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>变量名</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FEISHU_CONNECTION_MODE</code></td>
+<td><code>websocket</code></td>
+<td>飞书连接模式（固定值）</td>
+</tr>
+<tr>
+<td><code>FEISHU_APP_ID</code></td>
+<td><code>${CHANNEL_CLIENT_ID}</code></td>
+<td>飞书应用 App ID，来自平台占位符</td>
+</tr>
+<tr>
+<td><code>FEISHU_APP_SECRET</code></td>
+<td><code>${CHANNEL_CLIENT_SECRET}</code></td>
+<td>飞书应用 App Secret，来自平台占位符</td>
+</tr>
+<tr>
+<td><code>FEISHU_DOMAIN</code></td>
+<td><code>feishu</code></td>
+<td>飞书域名标识（固定值）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-hermes-modify_channel_command">步骤 3：更新 Hermes modify_channel_command<a class="headerlink" href="#3-hermes-modify_channel_command" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>注意</strong>：同样可能覆盖自定义修改，请先备份。</p>
+</blockquote>
+<h4 id="a_2">方式 A：平台界面修改<a class="headerlink" href="#a_2" title="Permanent link">&para;</a></h4>
+<p>在 Agent Manager 平台进入 <strong>Agent 类型管理 → Hermes → 基础配置</strong>，编辑 <code>modify_channel_command</code> 字段，改为通过 <code>run-cmd.sh modify-channel</code> 统一处理渠道凭证（参考下方 SQL 中的完整内容）。</p>
+<h4 id="b-sql_2">方式 B：执行 SQL<a class="headerlink" href="#b-sql_2" title="Permanent link">&para;</a></h4>
+<pre><code class="language-sql">-- 查看当前值（可选，用于备份）
+SELECT modify_channel_command FROM agent_types WHERE code = 'hermes';
+
+-- 更新为通过 run-cmd.sh 统一处理渠道凭证
+UPDATE agent_types
+SET modify_channel_command = 'bash /usr/local/bin/run-cmd.sh modify-channel &quot;${CHANNEL_TYPE}&quot; &quot;${CHANNEL_CLIENT_ID}&quot; &quot;${CHANNEL_CLIENT_SECRET}&quot;
+supervisorctl restart hermes'
+WHERE code = 'hermes';
+</code></pre>
+<h3 id="4-openclaw">步骤 4（可选）：更新 OpenClaw 钉钉渠道模板<a class="headerlink" href="#4-openclaw" title="Permanent link">&para;</a></h3>
+<p>如果同时升级 OpenClaw 到 v5.18+，需要移除已废弃的 <code>gatewayPassword</code> / <code>gatewayToken</code> 字段。</p>
+<h4 id="a_3">方式 A：平台界面修改<a class="headerlink" href="#a_3" title="Permanent link">&para;</a></h4>
+<p>在 Agent Manager 平台进入 <strong>Agent 类型管理 → OpenClaw → 渠道模板 → 钉钉</strong>，编辑 <code>config_template</code>，移除 <code>gatewayPassword</code> 和 <code>gatewayToken</code> 字段（参考下方 SQL 中的目标值）。</p>
+<h4 id="b-sql_3">方式 B：执行 SQL<a class="headerlink" href="#b-sql_3" title="Permanent link">&para;</a></h4>
+<pre><code class="language-sql">-- 移除 gatewayPassword / gatewayToken
+UPDATE channel_templates
+SET
+  config_template = '{&quot;dingtalk-connector&quot;: {&quot;ackText&quot;: &quot;任务已接收&quot;, &quot;enabled&quot;: true, &quot;clientId&quot;: &quot;${CHANNEL_CLIENT_ID}&quot;, &quot;clientSecret&quot;: &quot;${CHANNEL_CLIENT_SECRET}&quot;, &quot;groupSessionScope&quot;: &quot;group&quot;, &quot;separateSessionByConversation&quot;: true, &quot;sharedMemoryAcrossConversations&quot;: false}}'::jsonb
+WHERE channel_type = 'dingtalk'
+  AND agent_type_id = (SELECT id FROM agent_types WHERE code = 'openclaw');
+</code></pre>
+<h3 id="5-openclaw-config_template">步骤 5（可选）：更新 OpenClaw config_template<a class="headerlink" href="#5-openclaw-config_template" title="Permanent link">&para;</a></h3>
+<p>如果需要启用 HTTP 端点和插件体系。</p>
+<h4 id="a_4">方式 A：平台界面修改<a class="headerlink" href="#a_4" title="Permanent link">&para;</a></h4>
+<p>在 Agent Manager 平台进入 <strong>Agent 类型管理 → OpenClaw → 基础配置</strong>，编辑 <code>config_template</code>，添加 <code>gateway.http</code> 和 <code>plugins.entries</code> 配置（参考下方 SQL 中的目标值）。</p>
+<h4 id="b-sql_4">方式 B：执行 SQL<a class="headerlink" href="#b-sql_4" title="Permanent link">&para;</a></h4>
+<pre><code class="language-sql">-- 添加 gateway.http 和 plugins.entries
+UPDATE agent_types
+SET config_template = jsonb_set(
+  jsonb_set(
+    config_template,
+    '{gateway,http}',
+    '{&quot;endpoints&quot;: {&quot;chatCompletions&quot;: {&quot;enabled&quot;: true}}}'::jsonb
+  ),
+  '{plugins}',
+  '{&quot;entries&quot;: {&quot;openclaw-lark&quot;: {&quot;enabled&quot;: true}, &quot;dingtalk-connector&quot;: {&quot;enabled&quot;: true}, &quot;wecom-openclaw-plugin&quot;: {&quot;enabled&quot;: true}, &quot;openclaw-qqbot&quot;: {&quot;enabled&quot;: true}}}'::jsonb
+)
+WHERE code = 'openclaw';
+</code></pre>
+<h2 id="_5">注意事项<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li>两种操作方式（平台界面 / SQL）效果等价，选择其一执行即可，请勿重复操作。</li>
+<li>Hermes 容器镜像需升级到包含飞书 SDK 预装的版本（<code>nousresearch/hermes-agent:v0.14.0</code> + 预装 <code>lark-oapi</code>、<code>dingtalk-stream</code> 等依赖），否则飞书渠道无法连接，如果您的环境中 <code>run-cmd.sh</code> 尚未包含飞书支持，需同步更新 Hermes 容器镜像。</li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.756683+00:00
+  -->
+</body>
+</html>

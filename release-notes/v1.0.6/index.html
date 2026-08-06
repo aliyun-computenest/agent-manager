@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>v1.0.6 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../../search/main.js"></script>
+  
+
+  
+
+  <script src="../../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#v106">v1.0.6</a></li>
+              
+                  <li><a href="#_1">新增功能</a></li>
+                  
+                      <li class="li-h3"><a href="#ai-apm">AI 应用可观测性（APM）</a></li>
+                  
+                      <li class="li-h3"><a href="#_2">应用监控诊断</a></li>
+                  
+              
+                  <li><a href="#_3">升级步骤</a></li>
+                  
+              
+                  <li><a href="#_4">注意事项</a></li>
+                  
+              
+                  <li><a href="#_5">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="v106">v1.0.6<a class="headerlink" href="#v106" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>发布日期</strong>：2026-07-17</li>
+</ul>
+<h2 id="_1">新增功能<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h3 id="ai-apm">AI 应用可观测性（APM）<a class="headerlink" href="#ai-apm" title="Permanent link">&para;</a></h3>
+<ul>
+<li>新增 AI 应用监控能力，支持 OpenClaw、Hermes 和 QwenPaw 接入阿里云 ARMS APM。</li>
+<li>Agent 实例创建完成后，发起一次对话即可开始上报监控数据，无需手动安装探针。</li>
+<li>管理员可以在 <code>运行监控 -&gt; 应用监控</code> 中查看实例的调用链路、对话分析、Token 消耗和模型调用耗时等指标。</li>
+<li>Agent 类型配置页新增采集开关，管理员可以一键开启或关闭监控采集，切换后无需重建实例即可生效。</li>
+<li>服务首次部署时会自动从 CMS API 获取 ARMS 接入参数并写入配置，管理员无需手动填写。</li>
+</ul>
+<h3 id="_2">应用监控诊断<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>应用监控页面新增实例级状态诊断，自动检查参数配置、采集开关、探针安装和实体注册状态。</li>
+<li>采集关闭时，页面会显示原因和处理提示，并支持跳转到 Agent 类型配置页开启采集。</li>
+</ul>
+<h2 id="_3">升级步骤<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>请参考<a href="../#升级计算巢服务实例">升级计算巢服务实例</a>，在阿里云计算巢控制台对服务实例执行升级。数据库迁移会随升级流程自动完成。</p>
+<h2 id="_4">注意事项<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>确认 xtrace 写入通道</strong>：升级后，请在阿里云云监控 2.0 控制台确认对应工作空间的 trace 写入通道已开启，否则监控数据无法上报。</li>
+<li><strong>老实例接入监控</strong>：已运行的老实例需要通过 <code>实例升级</code> 更新镜像后才能接入应用监控；新建实例无需额外安装探针。</li>
+<li><strong>开启采集开关</strong>：升级后，内置 Agent 类型的采集开关默认为关闭。管理员需要手动开启，后续新建实例才会上报监控数据。</li>
+<li><strong>QwenPaw 限制</strong>：QwenPaw 链路追踪中的输入/输出内容依赖 LoongSuite 插件版本。当前 0.7.0 版本存在 ContextVar 兼容性问题，相关展示需等待 LoongSuite 后续修复。</li>
+</ul>
+<h2 id="_5">相关文档<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">发布记录</a></li>
+<li><a href="../../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/#查看应用监控">创建和管理 Agent 实例</a></li>
+<li><a href="../../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/#应用监控没有数据怎么办">常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.761989+00:00
+  -->
+</body>
+</html>

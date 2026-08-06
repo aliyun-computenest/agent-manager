@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>创建和管理 Agent 实例 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#agent">创建和管理 Agent 实例</a></li>
+              
+                  <li><a href="#_1">实例列表</a></li>
+                  
+              
+                  <li><a href="#_2">查看管理员仪表盘</a></li>
+                  
+              
+                  <li><a href="#_3">查看实例详情</a></li>
+                  
+              
+                  <li><a href="#_4">查看应用监控</a></li>
+                  
+              
+                  <li><a href="#agent_1">创建 Agent 实例</a></li>
+                  
+              
+                  <li><a href="#_5">填写渠道配置</a></li>
+                  
+              
+                  <li><a href="#agent_2">进入 Agent 工作台</a></li>
+                  
+              
+                  <li><a href="#_6">使用终端</a></li>
+                  
+              
+                  <li><a href="#_7">上传文件</a></li>
+                  
+              
+                  <li><a href="#_8">修改实例模型</a></li>
+                  
+              
+                  <li><a href="#_9">修改实例渠道</a></li>
+                  
+              
+                  <li><a href="#_10">停止实例</a></li>
+                  
+              
+                  <li><a href="#_11">重启实例</a></li>
+                  
+              
+                  <li><a href="#_12">删除实例</a></li>
+                  
+              
+                  <li><a href="#token">用户侧 Token 用量</a></li>
+                  
+              
+                  <li><a href="#_13">备份</a></li>
+                  
+              
+                  <li><a href="#_14">升级</a></li>
+                  
+              
+                  <li><a href="#_15">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="agent">创建和管理 Agent 实例<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h1>
+<p>本页面向平台管理员，介绍如何查看和管理 Agent 实例，以及如何确认用户侧实例是否正常运行。普通用户创建和使用自己的 Agent，请阅读<a href="../%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/">用户指南</a>。</p>
+<h2 id="_1">实例列表<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>登录用户中心后，打开 <code>实例列表</code> 页面查看您创建的 Agent 实例。</p>
+<p><img alt="实例列表" src="../images/preprod-admin-instances.png" /></p>
+<p>列表支持：</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>搜索</td>
+<td>按实例名称搜索。</td>
+</tr>
+<tr>
+<td>创建</td>
+<td>单击创建实例进入创建页。</td>
+</tr>
+<tr>
+<td>分页</td>
+<td>每页展示固定数量实例，可翻页查看。</td>
+</tr>
+<tr>
+<td>操作</td>
+<td>查看详情、启动、停止、删除。</td>
+</tr>
+</tbody>
+</table>
+<p>管理员还可以在管理后台查看全部用户的实例，并按用户过滤。</p>
+<h2 id="_2">查看管理员仪表盘<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>管理员登录后可以在仪表盘查看用户数、实例数、可用模型和近期实例。启用 AI 网关和日志服务后，页面还会展示请求数、Token 用量和用户消耗排行，并提供跳转 AI 网关控制台的入口。</p>
+<p><img alt="管理员仪表盘" src="../images/img_7.png" /></p>
+<p>管理员在实例列表中还可以按用户筛选实例、查看实例详情，以及在已配置集群访问权限时跳转到容器服务控制台查看 Pod。</p>
+<h2 id="_3">查看实例详情<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>打开实例列表中的目标实例，可以查看实例 ID、Sandbox ID、E2B Host、运行状态、镜像和 Sandbox 模板，并通过“进入工作台”打开 Agent 原生界面。</p>
+<p><img alt="实例详情" src="../images/preprod-instance-detail.png" /></p>
+<h2 id="_4">查看应用监控<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>管理员可以在管理后台查看运行中实例的应用监控，用于确认 Agent 应用是否已接入可观测能力。</p>
+<p><img alt="应用监控" src="../images/preprod-app-monitor.png" /></p>
+<ol>
+<li>打开管理后台，进入 <code>运行监控 -&gt; 应用监控</code>。</li>
+<li>在左侧选择状态为“运行中”的实例。</li>
+<li>等待监控面板加载；首次启用监控时，先在 Agent 应用中发起一次对话。</li>
+<li>如需单独打开监控页面，单击“新窗口打开”。</li>
+</ol>
+<p>如果页面提示选择实例，先选择运行中的实例。如果提示监控资源未就绪，等待资源创建完成后刷新。仍然没有数据时，检查 Agent 类型是否启用了应用监控，并确认模型提供商满足对应的监控要求。</p>
+<h2 id="agent_1">创建 Agent 实例<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h2>
+<p>管理员可以从管理后台为自己或指定用户创建实例。用户侧创建流程和可见范围不同，请勿将本页的管理后台入口发给普通用户。</p>
+<ol>
+<li>打开用户中心。</li>
+<li>进入 <code>实例列表</code>。</li>
+<li>单击创建实例。</li>
+<li>选择 Agent 配置，例如 OpenClaw、Hermes 或 QwenPaw。</li>
+<li>填写实例名称。</li>
+<li>选择已启用的 AI 模型。</li>
+<li>按需选择消息渠道。</li>
+<li>如果页面显示自定义变量，按字段说明填写变量值。</li>
+<li>单击创建实例。</li>
+</ol>
+<p>创建后，等待实例状态变为运行中。运行中表示沙箱环境、Agent 配置和 Agent 服务已经准备好，可以进入工作台。</p>
+<h2 id="_5">填写渠道配置<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>如果创建实例时选择了消息渠道，页面会展开渠道配置区域。</p>
+<p>常见字段包括：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client ID</td>
+<td>对应 IM 平台应用的客户端 ID。</td>
+</tr>
+<tr>
+<td>Client Secret</td>
+<td>对应 IM 平台应用的密钥。</td>
+</tr>
+<tr>
+<td>Webhook 或 Token</td>
+<td>由具体 Agent 类型和渠道模板决定。</td>
+</tr>
+</tbody>
+</table>
+<p>请从对应开放平台获取这些值，例如飞书开放平台、钉钉开放平台、企业微信管理后台或 QQ 开放平台。</p>
+<h2 id="agent_2">进入 Agent 工作台<a class="headerlink" href="#agent_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开实例详情页。</li>
+<li>确认实例状态为运行中。</li>
+<li>在基本信息区域单击“进入工作台”。</li>
+<li>在新页面使用 Agent 原生界面。</li>
+</ol>
+<p>工作台通过 Agent Manager 校验当前登录态和实例归属，再由 Manager 服务端访问 E2B Sandbox。</p>
+<h2 id="_6">使用终端<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>如果当前 Agent 类型支持终端登录，实例详情页会提供终端入口。</p>
+<ol>
+<li>打开实例详情页。</li>
+<li>单击“打开终端”。</li>
+<li>等待终端连接完成。</li>
+<li>在终端中执行您的任务。</li>
+</ol>
+<p>终端无法连接时，先确认实例仍处于运行中，并查看 <a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">常见问题与排障</a> 中的工作台访问和实例创建失败章节。</p>
+<h2 id="_7">上传文件<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>支持文件上传的 Agent 原生界面可一次选择多个文件。</p>
+<ol>
+<li>进入 Agent 工作台。</li>
+<li>单击上传文件。</li>
+<li>选择一个或多个文件，或将文件拖拽到上传区域。</li>
+<li>等待页面提示上传完成。</li>
+<li>再继续执行 Agent 任务。</li>
+</ol>
+<p>上传大文件或大量文件时，耗时受网络和实例环境影响。请等待页面确认上传完成后再关闭页面。</p>
+<h2 id="_8">修改实例模型<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开实例详情页。</li>
+<li>在模型配置区域选择新的 AI 模型。</li>
+<li>确认页面出现已修改提示。</li>
+<li>单击保存配置。</li>
+</ol>
+<p>保存后，实例会按 Agent 类型的配置规则更新配置。部分 Agent 需要重启进程后新模型才生效，具体行为由 Agent 类型配置决定。</p>
+<h2 id="_9">修改实例渠道<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开实例详情页。</li>
+<li>在渠道配置区域选择渠道类型。</li>
+<li>填写渠道所需字段。</li>
+<li>只修改非密钥字段时，保留 Client Secret 为空。</li>
+<li>单击保存配置。</li>
+</ol>
+<p>Client Secret 输入框通常支持“留空则保持不变”。只有需要更换密钥时才填写新值。</p>
+<h2 id="_10">停止实例<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>暂时不使用 Agent 时，停止实例以释放运行资源。</p>
+<ol>
+<li>打开实例列表。</li>
+<li>找到目标实例。</li>
+<li>单击停止。</li>
+<li>等待状态从停止中变为已停止。</li>
+</ol>
+<p>停止后，实例配置和已保留的数据不会被删除。</p>
+<h2 id="_11">重启实例<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开实例列表。</li>
+<li>找到状态为已停止的实例。</li>
+<li>单击启动。</li>
+<li>等待状态从启动中变为运行中。</li>
+</ol>
+<p>如果管理员修改了 SandboxSet，已运行实例通常需要停止再启动，才能应用新的沙箱配置。</p>
+<h2 id="_12">删除实例<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>删除实例会移除实例记录并终止关联沙箱。删除前确认不再需要该实例中的数据。</p>
+<ol>
+<li>打开实例列表。</li>
+<li>找到目标实例。</li>
+<li>单击删除。</li>
+<li>在确认弹窗中确认删除。</li>
+</ol>
+<p>删除操作不可恢复。</p>
+<h2 id="token">用户侧 Token 用量<a class="headerlink" href="#token" title="Permanent link">&para;</a></h2>
+<p>如果管理员启用了 AI 网关和 Token 统计，用户实例列表顶部会显示 Token 用量概览，包括实例数量、今日 Token 用量和近 30 天 Token 用量。</p>
+<p>进度条会根据使用率展示不同状态。达到限额后，用户的模型调用可能被限制。</p>
+<h2 id="_13">备份<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<p>要保留实例数据或从备份创建新实例，请阅读 <a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a>。</p>
+<h2 id="_14">升级<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>要在更换镜像、启动命令或运行参数后迁移正在运行的 Sandbox，请阅读 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a>。</p>
+<h2 id="_15">相关文档<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E4%B8%8E%E5%88%86%E7%BB%84%E7%AE%A1%E7%90%86/">用户、登录和分组管理</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a></li>
+<li><a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a></li>
+<li><a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AE%E7%BD%91%E5%85%B3/">配置网关</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">Agent Manager 常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.722373+00:00
+  -->
+</body>
+</html>

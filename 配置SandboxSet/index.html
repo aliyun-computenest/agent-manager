@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>配置 SandboxSet - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#sandboxset">配置沙箱（SandboxSet）</a></li>
+              
+                  <li><a href="#sandboxset_1">SandboxSet</a></li>
+                  
+              
+                  <li><a href="#sandboxset_2">查看 SandboxSet</a></li>
+                  
+              
+                  <li><a href="#sandboxset_3">新建 SandboxSet</a></li>
+                  
+              
+                  <li><a href="#sandboxset_4">修改 SandboxSet</a></li>
+                  
+              
+                  <li><a href="#_1">沙箱镜像规范</a></li>
+                  
+              
+                  <li><a href="#_2">备份恢复能力要求</a></li>
+                  
+              
+                  <li><a href="#namespace">在自定义 namespace 部署沙箱</a></li>
+                  
+              
+                  <li><a href="#globaltrafficpolicy">GlobalTrafficPolicy 网络策略</a></li>
+                  
+              
+                  <li><a href="#_3">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="sandboxset">配置沙箱（SandboxSet）<a class="headerlink" href="#sandboxset" title="Permanent link">&para;</a></h1>
+<p>在 <code>沙箱配置</code> 中管理 Agent 实例的运行环境，包括 SandboxSet、沙箱镜像、资源规格、命名空间和网络策略。SandboxSet 是创建 Agent 实例时使用的沙箱模板。</p>
+<p><img alt="沙箱配置" src="../images/preprod-sandboxsets.png" /></p>
+<h2 id="sandboxset_1">SandboxSet<a class="headerlink" href="#sandboxset_1" title="Permanent link">&para;</a></h2>
+<p>每个 SandboxSet 对应一类沙箱模板，决定实例使用的镜像、资源规格、副本数、端口、挂载卷和其他运行参数。</p>
+<p>通过计算巢部署的新环境会为内置 Agent 类型创建对应 SandboxSet，例如 <code>agent-manager-openclaw</code> 和 <code>agent-manager-hermes</code>。</p>
+<p>不同版本可能包含更多内置模板，以管理后台实际展示为准。</p>
+<h2 id="sandboxset_2">查看 SandboxSet<a class="headerlink" href="#sandboxset_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>登录管理后台。</li>
+<li>打开 <code>沙箱配置</code>。</li>
+<li>查看当前集群中的 SandboxSet 列表。</li>
+<li>单击查看进入详情页。</li>
+</ol>
+<p>列表展示名称、命名空间、副本数、状态和操作入口。详情页提供 YAML 编辑器，用于查看和修改 SandboxSet 资源。</p>
+<p><img alt="SandboxSet 配置列表" src="../images/img_12.png" /></p>
+<h2 id="sandboxset_3">新建 SandboxSet<a class="headerlink" href="#sandboxset_3" title="Permanent link">&para;</a></h2>
+<p>新增自定义 Agent 类型前，先准备对应 SandboxSet。</p>
+<ol>
+<li>打开 <code>沙箱配置</code>。</li>
+<li>单击新建沙箱配置。</li>
+<li>填写名称，例如 <code>agent-manager-&lt;code&gt;</code>。</li>
+<li>粘贴 SandboxSet YAML。</li>
+<li>保存。</li>
+<li>在 Agent 类型中关联该 SandboxSet。</li>
+</ol>
+<p>保存后，先创建测试 Agent 类型和测试实例，确认沙箱能正常启动、写入配置、访问模型网关和进入 Agent 工作台。</p>
+<h2 id="sandboxset_4">修改 SandboxSet<a class="headerlink" href="#sandboxset_4" title="Permanent link">&para;</a></h2>
+<p>修改 SandboxSet 后，新建或重建的沙箱会使用新配置。已运行实例通常不会自动应用新配置。</p>
+<ol>
+<li>打开 SandboxSet 详情页。</li>
+<li>在 YAML 编辑器中修改镜像、资源、环境变量或挂载配置。</li>
+<li>保存配置。</li>
+<li>停止并重新启动相关实例，或通过 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a> 发起沙箱升级。</li>
+<li>创建或打开测试实例验证。</li>
+</ol>
+<p>修改环境变量、镜像或挂载后，同步检查对应 Agent 类型的配置模板、启动命令和备份恢复命令。</p>
+<h2 id="_1">沙箱镜像规范<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>自定义沙箱镜像需要满足以下要求：</p>
+<table>
+<thead>
+<tr>
+<th>要求</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基于可维护的 Agent 运行时镜像</td>
+<td>避免从极简镜像开始构建。</td>
+</tr>
+<tr>
+<td>内置进程管理</td>
+<td>使用 supervisor、脚本或等效方式保证 Agent 进程可启动和重启。</td>
+</tr>
+<tr>
+<td>提供健康检查端口</td>
+<td>便于 SandboxSet 和平台判断实例状态。</td>
+</tr>
+<tr>
+<td>固定配置文件路径</td>
+<td>与 Agent 类型中的配置写入路径一致。</td>
+</tr>
+<tr>
+<td>使用明确的运行用户</td>
+<td>与 Agent 类型中的沙箱用户一致。</td>
+</tr>
+<tr>
+<td>不在镜像中写死密钥</td>
+<td>密钥通过模板变量写入。</td>
+</tr>
+</tbody>
+</table>
+<p>修改镜像后，先用测试 Agent 类型和测试实例验证，再开放给用户。</p>
+<h2 id="_2">备份恢复能力要求<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>如果要对已运行 Agent 实例执行备份或升级，SandboxSet 必须支持 <code>/backup</code> 挂载；要执行沙箱升级，还需要配置升级生命周期命令。</p>
+<p>确认以下条件：</p>
+<ul>
+<li>SandboxSet 中存在 <code>agent-runtime</code> runtime。</li>
+<li>SandboxSet 中存在 <code>csi</code> runtime。</li>
+<li>新建实例时已写入备份挂载信息。</li>
+<li>Agent 类型已配置升级前备份命令和升级后恢复命令。</li>
+</ul>
+<p>旧实例如果创建时没有备份挂载信息，后续修复 SandboxSet 也不会自动补齐。重建实例，或由管理员手动补齐挂载能力后再升级。</p>
+<h2 id="namespace">在自定义 namespace 部署沙箱<a class="headerlink" href="#namespace" title="Permanent link">&para;</a></h2>
+<p>把沙箱部署到非默认 namespace 前，确认 Agent Manager 后端 ServiceAccount 对目标 namespace 有访问 SandboxSet 和 Pod 的权限。</p>
+<p>处理步骤：</p>
+<ol>
+<li>创建目标 namespace。</li>
+<li>在 SandboxSet YAML 中修改 <code>metadata.namespace</code>。</li>
+<li>替换安全组、交换机和镜像参数。</li>
+<li>提交 SandboxSet。</li>
+<li>在 Agent 类型中选择该 SandboxSet。</li>
+<li>创建测试实例验证。</li>
+</ol>
+<p>如果目标 namespace 没有对应 RBAC 权限，实例创建、沙箱列表和 Agent 备份升级都可能失败。</p>
+<h2 id="globaltrafficpolicy">GlobalTrafficPolicy 网络策略<a class="headerlink" href="#globaltrafficpolicy" title="Permanent link">&para;</a></h2>
+<p>集群启用 <code>GlobalTrafficPolicy</code> 时，资源会通过 <code>spec.selector.matchLabels</code> 选中 Pod 并应用网络隔离规则。确认 selector 能匹配 Agent Pod 的 label；新增 Agent 类型或修改 SandboxSet 标签后，需要重新检查。</p>
+<p>当新增工作负载或修改 SandboxSet label 后，需要检查：</p>
+<pre><code class="language-bash">kubectl edit globaltrafficpolicy openclaw-global-policy
+</code></pre>
+<p>如果策略 selector 未命中目标 Pod，网络隔离规则不会对新 Agent Pod 生效。</p>
+<p>例如，策略需要匹配 OpenClaw Pod 时：</p>
+<pre><code class="language-yaml">spec:
+  selector:
+    matchLabels:
+      app: agent-manager-openclaw
+</code></pre>
+<p>相同网络规则可以扩展现有策略的 selector；不同网络规则应新建独立的 <code>GlobalTrafficPolicy</code>。修改后验证 Agent Manager 和 Sandbox 之间的必要链路仍然可达。</p>
+<p>完整概念和配置方式请参考<a href="https://help.aliyun.com/zh/cs/user-guide/use-trafficpolicy-to-manage-agent-network-access-1">阿里云 TrafficPolicy 文档</a>。</p>
+<h2 id="_3">相关文档<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a></li>
+<li><a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">Agent Manager 常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.746385+00:00
+  -->
+</body>
+</html>

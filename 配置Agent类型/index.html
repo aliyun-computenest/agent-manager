@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>配置 Agent 类型 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#agent">配置 Agent 类型</a></li>
+              
+                  <li><a href="#agent_1">Agent 类型</a></li>
+                  
+              
+                  <li><a href="#agent_2">查看 Agent 配置</a></li>
+                  
+              
+                  <li><a href="#_1">配置模板</a></li>
+                  
+              
+                  <li><a href="#_2">配置写入路径和沙箱用户</a></li>
+                  
+              
+                  <li><a href="#_3">自定义变量</a></li>
+                  
+                      <li class="li-h3"><a href="#_4">字段说明</a></li>
+                  
+              
+                  <li><a href="#_5">渠道模板</a></li>
+                  
+              
+                  <li><a href="#_6">升级配置入口</a></li>
+                  
+              
+                  <li><a href="#agent_3">新增 Agent 类型</a></li>
+                  
+                      <li class="li-h3"><a href="#_7">从模板复制</a></li>
+                  
+                      <li class="li-h3"><a href="#_8">自定义创建</a></li>
+                  
+              
+                  <li><a href="#_9">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="agent">配置 Agent 类型<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h1>
+<p>在 <code>Agent 配置</code> 中维护用户可选择的 Agent 类型、配置模板、自定义变量、渠道模板和备份升级命令。</p>
+<p>SandboxSet 和沙箱镜像配置见 <a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a>。</p>
+<p><img alt="Agent 配置" src="../images/preprod-agent-config.png" /></p>
+<h2 id="agent_1">Agent 类型<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h2>
+<p>用户创建实例时会先选择 Agent 类型。Agent 类型决定实例使用哪个配置模板、写入哪个配置文件、关联哪个 SandboxSet、用哪个用户启动，以及如何修改模型和渠道。</p>
+<p>通过计算巢部署的新环境默认包含以下内置类型：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>代码</th>
+<th>配置格式</th>
+<th>关联 SandboxSet</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenClaw</td>
+<td><code>openclaw</code></td>
+<td>JSON</td>
+<td><code>agent-manager-openclaw</code></td>
+<td>基于 OpenClaw 框架的 AI Agent，内置多渠道集成能力。</td>
+</tr>
+<tr>
+<td>Hermes</td>
+<td><code>hermes</code></td>
+<td>YAML</td>
+<td><code>agent-manager-hermes</code></td>
+<td>Hermes Agent 运行环境。</td>
+</tr>
+</tbody>
+</table>
+<p>不同版本可能包含更多内置类型，例如 QwenPaw。请以管理后台实际展示为准。</p>
+<h2 id="agent_2">查看 Agent 配置<a class="headerlink" href="#agent_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>登录管理后台。</li>
+<li>打开 <code>Agent 配置</code>。</li>
+<li>在列表中选择目标 Agent 类型。</li>
+<li>查看基本配置、配置模板、渠道模板和命令脚本。</li>
+</ol>
+<p><img alt="Agent 配置详情" src="../images/img_11.png" /></p>
+<p>内置类型通常可直接用于创建实例。需要调整内置类型时，先复制一份用于测试。</p>
+<h2 id="_1">配置模板<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>配置模板用于生成每个实例的 Agent 配置文件。</p>
+<p>模板支持占位符。用户创建实例或管理员保存配置时，系统会把模型、渠道和自定义变量写入模板。</p>
+<p>常见占位符包括：</p>
+<table>
+<thead>
+<tr>
+<th>占位符</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>${DASHSCOPE_API_KEY}</code></td>
+<td>百炼 API Key。</td>
+</tr>
+<tr>
+<td><code>${AI_GATEWAY_DOMAIN}</code></td>
+<td>阿里云 AI 网关域名。</td>
+</tr>
+<tr>
+<td><code>${CONSUMER_API_KEY}</code></td>
+<td>AI 网关为用户分配的消费者 Key。</td>
+</tr>
+<tr>
+<td><code>${LITELLM_PROXY_URL}</code></td>
+<td>LiteLLM Proxy 地址。</td>
+</tr>
+<tr>
+<td><code>${LITELLM_API_KEY}</code></td>
+<td>LiteLLM 为用户分配的 Key。</td>
+</tr>
+<tr>
+<td><code>${CUSTOM_VAR}</code></td>
+<td>管理员定义的自定义变量。</td>
+</tr>
+</tbody>
+</table>
+<p>新增模型提供商时，<code>apiKeyPlaceholder</code> 和 <code>domainPlaceholder</code> 必须与模板和命令脚本中的占位符名称完全一致。名称不一致会导致模型调用失败。</p>
+<h2 id="_2">配置写入路径和沙箱用户<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>Agent 类型需要声明配置文件写入位置和沙箱用户。</p>
+<p>常见示例：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>配置写入路径</th>
+<th>沙箱用户</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenClaw</td>
+<td><code>/home/node/.openclaw/openclaw.json</code></td>
+<td><code>node</code></td>
+</tr>
+<tr>
+<td>Hermes</td>
+<td><code>/opt/data/config.yaml</code></td>
+<td>以实际镜像配置为准</td>
+</tr>
+</tbody>
+</table>
+<p>沙箱用户必须与 SandboxSet 镜像中的实际运行用户一致。用户不一致时，平台可能无法写入配置文件，实例会启动失败。</p>
+<h2 id="_3">自定义变量<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>自定义变量用于把每个实例不同的业务参数传入 Agent，例如项目 Token、Webhook 地址、外部服务 API Key 或系统提示词。</p>
+<p>在 Agent 配置的自定义变量区域定义字段。用户创建实例时，页面会按定义展示输入框。</p>
+<h3 id="_4">字段说明<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>变量名</td>
+<td>模板和命令脚本中引用的占位符名称。</td>
+</tr>
+<tr>
+<td>显示标签</td>
+<td>创建实例表单中展示给用户的字段名称。</td>
+</tr>
+<tr>
+<td>类型</td>
+<td>文本、密码或多行文本等。</td>
+</tr>
+<tr>
+<td>必填</td>
+<td>开启后，用户创建实例时必须填写。</td>
+</tr>
+<tr>
+<td>默认值</td>
+<td>可选，未填写时使用默认值。</td>
+</tr>
+<tr>
+<td>说明</td>
+<td>展示给用户的填写提示。</td>
+</tr>
+</tbody>
+</table>
+<p>自定义变量仅在创建实例时填写。创建后暂不支持用户在实例详情页直接修改。</p>
+<h2 id="_5">渠道模板<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>支持渠道的 Agent 类型维护渠道模板。渠道模板定义用户创建实例时需要填写的 IM 或会话接入参数，例如飞书、钉钉、企业微信、QQ 的应用 ID、密钥、Webhook 或 Token。</p>
+<p>配置渠道模板时确认：</p>
+<ul>
+<li>字段名和 Agent 配置模板中的占位符一致。</li>
+<li>密钥类字段使用密码类型，避免在页面和日志中明文展示。</li>
+<li>渠道模板只描述该 Agent 类型支持的渠道，不要把不同 Agent 类型的私有字段混用。</li>
+</ul>
+<p>用户创建实例并选择渠道后，页面会按渠道模板展示填写表单，并把填写结果写入实例配置。</p>
+<h2 id="_6">升级配置入口<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>Agent 类型详情页包含 <code>备份&amp;升级配置</code> 标签页，用于保存升级前备份命令、升级后恢复命令和命令超时时间。</p>
+<p>发起 Agent 升级时，平台会读取这些配置并应用到目标 Sandbox。</p>
+<p>这部分配置只定义“如何在升级过程中备份和恢复该 Agent 类型的数据”。实例备份操作见 <a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a>；实际选择 Sandbox、发起升级、查看历史和处理失败任务，见 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a>。</p>
+<h2 id="agent_3">新增 Agent 类型<a class="headerlink" href="#agent_3" title="Permanent link">&para;</a></h2>
+<p>新增 Agent 类型有两种方式：复制现有类型，或自定义创建。</p>
+<h3 id="_7">从模板复制<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<ol>
+<li>打开 <code>Agent 配置</code>。</li>
+<li>单击新增 Agent 类型。</li>
+<li>选择从模板复制。</li>
+<li>选择一个现有类型，例如 OpenClaw。</li>
+<li>修改名称、代码、模板、命令或渠道配置。</li>
+<li>保存。</li>
+</ol>
+<p>这种方式适用于基于内置类型做少量调整。</p>
+<h3 id="_8">自定义创建<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<ol>
+<li>准备 Agent 镜像。</li>
+<li>准备 SandboxSet YAML。</li>
+<li>在 <code>沙箱配置</code> 中创建 SandboxSet。</li>
+<li>在 <code>Agent 配置</code> 中创建 Agent 类型。</li>
+<li>关联对应 SandboxSet。</li>
+<li>填写配置写入路径、沙箱用户和启动命令。</li>
+<li>保存后创建测试实例验证。</li>
+</ol>
+<h2 id="_9">相关文档<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a></li>
+<li><a href="../%E6%8A%80%E8%83%BD%E7%AE%A1%E7%90%86/">技能管理</a></li>
+<li><a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a></li>
+<li><a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AE%E7%BD%91%E5%85%B3/">配置网关</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">Agent Manager 常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.744015+00:00
+  -->
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>v1.0.1 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../../search/main.js"></script>
+  
+
+  
+
+  <script src="../../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#v101">v1.0.1</a></li>
+              
+                  <li><a href="#_1">新增功能</a></li>
+                  
+                      <li class="li-h3"><a href="#openclaw-manager-agent">平台架构升级：从 OpenClaw Manager 到通用 Agent 管理平台</a></li>
+                  
+                      <li class="li-h3"><a href="#i18n">多语言国际化（i18n）</a></li>
+                  
+                      <li class="li-h3"><a href="#litellm">LiteLLM 网关支持</a></li>
+                  
+                      <li class="li-h3"><a href="#_2">邮箱认证与密码管理</a></li>
+                  
+                      <li class="li-h3"><a href="#_3">管理员侧能力增强</a></li>
+                  
+                      <li class="li-h3"><a href="#ros">ROS 升级触发数据库自动迁移</a></li>
+                  
+                      <li class="li-h3"><a href="#e2b">E2B 沙箱接入优化</a></li>
+                  
+                      <li class="li-h3"><a href="#_4">实例与运行时体验</a></li>
+                  
+                      <li class="li-h3"><a href="#_5">工程与文档</a></li>
+                  
+              
+                  <li><a href="#_6">升级步骤</a></li>
+                  
+              
+                  <li><a href="#_7">注意事项</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="v101">v1.0.1<a class="headerlink" href="#v101" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>发布日期</strong>：2025-04-27</li>
+</ul>
+<h2 id="_1">新增功能<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h3 id="openclaw-manager-agent">平台架构升级：从 OpenClaw Manager 到通用 Agent 管理平台<a class="headerlink" href="#openclaw-manager-agent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>平台从仅支持 OpenClaw 的管理工具升级为<strong>通用 Agent 管理平台</strong>，新增 Agent 类型（<code>agent_types</code>）与渠道模板按类型关联的配置体系，为后续接入 Hermes、QwenPaw 等多种 Agent 打下基础。</li>
+<li>新增 <strong>SandboxSet（沙箱集合）CRD 管理能力</strong>，提供可视化的 SandboxSet 创建、编辑、删除界面，并在管理员初始化时自动创建内置 SandboxSet。</li>
+<li>Hermes Agent 类型纳入平台管理，提供 Docker 配置与服务管理文件。</li>
+</ul>
+<h3 id="i18n">多语言国际化（i18n）<a class="headerlink" href="#i18n" title="Permanent link">&para;</a></h3>
+<ul>
+<li>全平台支持<strong>中英文双语切换</strong>，覆盖管理员控制台、用户控制台、登录注册、模型与渠道配置、SandboxSet/版本面板/Skills 引导等关键页面。</li>
+</ul>
+<h3 id="litellm">LiteLLM 网关支持<a class="headerlink" href="#litellm" title="Permanent link">&para;</a></h3>
+<ul>
+<li>模型渠道新增 <strong>LiteLLM 网关类型</strong>，支持与现有 OpenAI 兼容渠道并存。</li>
+<li>新增<strong>预算（Budget）配置</strong>：支持按用户/Token 设置额度上限，用户限额可同步到 LiteLLM 网关。</li>
+<li>模型与网关配置统一加密处理，配置字段拆分更清晰。</li>
+</ul>
+<h3 id="_2">邮箱认证与密码管理<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>新增<strong>邮箱注册 / 邮箱登录</strong>能力，并提供完整的<strong>密码重置流程</strong>。</li>
+<li>用户登录态优化，避免初始加载时重复拉取用户资料。</li>
+</ul>
+<h3 id="_3">管理员侧能力增强<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>管理员可以<strong>直接为用户创建实例</strong>，创建时若用户不存在会自动创建。</li>
+<li>实例操作记录审计、回滚机制完善。</li>
+</ul>
+<h3 id="ros">ROS 升级触发数据库自动迁移<a class="headerlink" href="#ros" title="Permanent link">&para;</a></h3>
+<ul>
+<li>引入 <strong>DbMigrateJob</strong> 机制：服务实例升级时由 ROS 自动执行 <code>migrations/versions/&lt;semver&gt;/*.sql</code> 增量迁移脚本，全程无需人工运维。</li>
+<li>内置基于 <code>schema_migrations</code> 表的幂等校验与 SHA256 内容校验，防止脚本被篡改导致的不一致。</li>
+<li>数据库初始化脚本支持复跑，升级场景可安全复用。</li>
+</ul>
+<h3 id="e2b">E2B 沙箱接入优化<a class="headerlink" href="#e2b" title="Permanent link">&para;</a></h3>
+<ul>
+<li>启用<strong>动态 DNS 解析 E2B 域名</strong>，自动判断走公网或私网，替代之前静态的 <code>E2B_IP</code> 配置。</li>
+<li>沙箱写入用户配置改为以 <code>node</code> 用户身份写入 <code>/home/node</code>，权限更安全。</li>
+<li>新增 E2B API 主机解析回退机制，提升不同网络环境下的可用性。</li>
+</ul>
+<h3 id="_4">实例与运行时体验<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>实例列表与详情<strong>展示真实 instance ID</strong>（而非 sandbox ID），便于用户对账与定位。</li>
+<li>新增<strong>「启动中」「停止中」状态</strong>展示，并补充实例恢复时的健康检查机制。</li>
+<li>Supabase 改为优先通过<strong>内网（VPC）私有连接</strong>访问，降低跨网延迟与安全风险。</li>
+</ul>
+<h3 id="_5">工程与文档<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>新增 ESLint 严格模式 + pre-commit 检查，并补充新人开发指南。</li>
+<li>新增项目文档索引页面，便于查阅平台文档。</li>
+</ul>
+<h2 id="_6">升级步骤<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>请参考 <a href="../#升级计算巢服务实例">升级计算巢服务实例</a>：在<strong>计算巢控制台</strong>对服务实例执行<strong>升级</strong>操作即可，数据库迁移会随升级流程自动完成。</p>
+<h2 id="_7">注意事项<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<ul>
+<li>本版本会执行数据库结构变更（OpenClaw 相关表迁移到通用 Agent 表结构，如 <code>openclaw_instances → agent_instances</code>），升级过程由 ROS DbMigrateJob 自动完成，请确保升级过程不要中断 ROS 资源栈。</li>
+<li>若此前自定义过 <code>.env</code> 中的 LiteLLM、邮箱服务相关变量，请参考最新的 <code>.env.example</code> 进行补全。</li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.752705+00:00
+  -->
+</body>
+</html>

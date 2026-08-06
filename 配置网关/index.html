@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>配置网关 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#_1">配置网关</a></li>
+              
+                  <li><a href="#_2">模型配置</a></li>
+                  
+              
+                  <li><a href="#_3">提供商分类</a></li>
+                  
+              
+                  <li><a href="#api">配置阿里云百炼标准 API</a></li>
+                  
+              
+                  <li><a href="#ai">配置阿里云 AI 网关</a></li>
+                  
+                      <li class="li-h3"><a href="#_4">部署时自动创建</a></li>
+                  
+                      <li class="li-h3"><a href="#_5">部署后手动配置</a></li>
+                  
+                      <li class="li-h3"><a href="#ai-api">在阿里云 AI 网关控制台创建 API</a></li>
+                  
+              
+                  <li><a href="#litellm">配置 LiteLLM</a></li>
+                  
+              
+                  <li><a href="#_6">新增模型提供商</a></li>
+                  
+              
+                  <li><a href="#_7">添加模型</a></li>
+                  
+              
+                  <li><a href="#_8">编辑或删除模型</a></li>
+                  
+              
+                  <li><a href="#token">Token 统计</a></li>
+                  
+              
+                  <li><a href="#_9">全局限流</a></li>
+                  
+              
+                  <li><a href="#_10">个人限流</a></li>
+                  
+              
+                  <li><a href="#_11">分组限流</a></li>
+                  
+              
+                  <li><a href="#ai_1">AI 网关启用后的效果</a></li>
+                  
+              
+                  <li><a href="#_12">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="_1">配置网关<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>本页介绍模型配置和网关接入。先在 <code>模型配置</code> 中添加模型提供商和模型条目；需要统一审计、统计和限流时，再配置阿里云 AI 网关或 LiteLLM。</p>
+<p><img alt="模型配置" src="../images/preprod-model-config.png" /></p>
+<h2 id="_2">模型配置<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>用户创建实例时只能选择已启用模型。您需要先在 <code>模型配置</code> 页面准备这些模型。</p>
+<p>模型由提供商和模型条目组成。提供商决定 API 地址、密钥占位符和调用方式；模型条目决定用户在创建实例时看到的模型名称和模型代码。</p>
+<h2 id="_3">提供商分类<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>常见提供商包括：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>阿里云百炼标准 API</td>
+<td>直接使用 DashScope OpenAI 兼容接口。</td>
+</tr>
+<tr>
+<td>阿里云 AI 网关</td>
+<td>通过网关统一代理模型调用，并为用户分配消费者凭证。</td>
+</tr>
+<tr>
+<td>LiteLLM</td>
+<td>通过 LiteLLM Proxy 统一接入多家模型。</td>
+</tr>
+<tr>
+<td>自定义 OpenAI 兼容服务</td>
+<td>接入其他兼容 OpenAI API 的模型服务。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="api">配置阿里云百炼标准 API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开管理后台。</li>
+<li>进入 <code>模型配置</code>。</li>
+<li>添加或编辑百炼提供商。</li>
+<li>在 API Key 中填写百炼 API Key。</li>
+<li>保存提供商。</li>
+<li>添加模型，填写模型名称和模型代码。</li>
+<li>确认模型状态为已启用。</li>
+</ol>
+<p>常见百炼 base URL：</p>
+<pre><code class="language-text">https://dashscope.aliyuncs.com/compatible-mode/v1
+</code></pre>
+<h2 id="ai">配置阿里云 AI 网关<a class="headerlink" href="#ai" title="Permanent link">&para;</a></h2>
+<p>按用户或分组统计 Token、设置预算或审计模型调用时，使用 AI 网关类提供商。</p>
+<p>用户创建 Agent 实例时，系统会为用户分配独立消费者和访问凭证。</p>
+<h3 id="_4">部署时自动创建<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>在计算巢部署时，将 <code>是否配置 AI 网关</code> 设为 <code>是</code>，填写 DashScope API Key、AI 网关规格和网络访问类型。部署完成后，平台启动时会自动获取网关信息并默认启用。</p>
+<h3 id="_5">部署后手动配置<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ol>
+<li>访问阿里云 AI 网关控制台。</li>
+<li>创建网关实例。</li>
+<li>创建 HTTP API。</li>
+<li>配置模型代理和百炼 API Key。</li>
+<li>在 Agent Manager 管理后台打开 <code>阿里云 AI 网关</code>。</li>
+<li>填写网关 ID、域名、环境 ID、Consumer 配置和必要 AccessKey。</li>
+<li>保存并启用。</li>
+</ol>
+<p>生产环境开启私网访问，让 Sandbox Pod 通过 VPC 内网访问网关。公网访问可用于调试或对外访问，但会产生公网流量费用。</p>
+<p><img alt="AI 网关配置" src="../images/img_5.png" /></p>
+<h3 id="ai-api">在阿里云 AI 网关控制台创建 API<a class="headerlink" href="#ai-api" title="Permanent link">&para;</a></h3>
+<p>如果选择部署后手动配置 AI 网关，按以下顺序在阿里云控制台完成 API、域名和消费者认证配置：</p>
+<ol>
+<li>打开 AI 网关实例，进入 <code>API</code>，单击创建 Model API。</li>
+</ol>
+<p><img alt="创建 Model API" src="../images/img.png" /></p>
+<ol>
+<li>选择百炼文本生成模型代理等场景模板。</li>
+</ol>
+<p><img alt="选择 AI 网关场景模板" src="../images/img_1.png" /></p>
+<ol>
+<li>填写 API 名称和 API Key。</li>
+</ol>
+<p><img alt="填写 API 名称和 API Key" src="../images/img_2.png" /></p>
+<ol>
+<li>在消费者认证中开启认证，并选择 API Key 等认证方式。</li>
+</ol>
+<p><img alt="开启消费者认证" src="../images/img_3.png" /></p>
+<ol>
+<li>创建网关域名，并将域名、Gateway ID、HTTP API ID 和环境 ID 填入 Agent Manager 的 AI 网关配置。</li>
+</ol>
+<p><img alt="创建 AI 网关域名" src="../images/img_9.png" /></p>
+<ol>
+<li>在 Model API 中选择已创建的域名，确认 API 通过目标域名访问。</li>
+</ol>
+<p><img alt="配置 Model API 域名" src="../images/img_10.png" /></p>
+<h2 id="litellm">配置 LiteLLM<a class="headerlink" href="#litellm" title="Permanent link">&para;</a></h2>
+<p>LiteLLM Proxy 支持将多家模型以统一的 OpenAI 兼容接口输出。平台调用 LiteLLM 管理接口，为用户自动创建用户和 Key。</p>
+<ol>
+<li>部署或准备 LiteLLM Proxy。</li>
+<li>获取 Proxy URL。</li>
+<li>获取 Master Key。</li>
+<li>在 Agent Manager 中新增 LiteLLM 提供商。</li>
+<li>填写 Proxy URL 和 Master Key。</li>
+<li>保存提供商。</li>
+<li>添加模型并启用。</li>
+</ol>
+<p>用户创建实例时，系统会把 <code>${LITELLM_API_KEY}</code> 和 <code>${LITELLM_PROXY_URL}</code> 写入 Agent 配置模板。</p>
+<h2 id="_6">新增模型提供商<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开 <code>模型配置</code>。</li>
+<li>单击新增提供商。</li>
+<li>填写提供商名称、类型、Base URL、API Key 或管理密钥。</li>
+<li>填写占位符名称。</li>
+<li>保存。</li>
+</ol>
+<p>占位符名称必须与 Agent 配置模板和启动命令中的变量名完全一致。比如模板中使用 <code>${DASHSCOPE_API_KEY}</code>，提供商就必须使用同名占位符。</p>
+<p><img alt="模型提供商配置" src="../images/img_4.png" /></p>
+<h2 id="_7">添加模型<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开目标提供商。</li>
+<li>单击添加模型。</li>
+<li>填写模型名称。</li>
+<li>填写模型代码，例如 <code>qwen-plus</code>。</li>
+<li>保存。</li>
+<li>确认模型已启用。</li>
+</ol>
+<p>用户创建实例时只能选择已启用模型。</p>
+<h2 id="_8">编辑或删除模型<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>编辑模型会影响后续选择该模型的新实例。已经运行的实例不会自动切换模型，用户需要在实例详情页手动修改并保存。</p>
+<p>删除模型前，确认没有业务仍依赖该模型。更稳妥的做法是先禁用模型，观察一段时间后再删除。</p>
+<h2 id="token">Token 统计<a class="headerlink" href="#token" title="Permanent link">&para;</a></h2>
+<p>Token 统计依赖 AI 网关和日志服务。启用后，管理员仪表盘和用户页面会展示 Token 使用情况。</p>
+<p>常见指标包括：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>今日 Token 用量</td>
+<td>当天累计消耗。</td>
+</tr>
+<tr>
+<td>近 30 天 Token 用量</td>
+<td>近 30 天累计消耗。</td>
+</tr>
+<tr>
+<td>用户 Token 排行</td>
+<td>管理员查看高消耗用户。</td>
+</tr>
+<tr>
+<td>个人用量概览</td>
+<td>用户查看自己的用量和限额。</td>
+</tr>
+</tbody>
+</table>
+<p>如果未启用 AI 网关，Token 统计相关指标不会显示。</p>
+<p><img alt="Token 统计" src="../images/img_7.png" /></p>
+<h2 id="_9">全局限流<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>全局限流用于设置所有用户默认 Token 上限。</p>
+<ol>
+<li>打开管理后台。</li>
+<li>进入 Token 统计与限流。</li>
+<li>设置每日 Token 上限。</li>
+<li>设置近 30 天 Token 上限。</li>
+<li>保存配置。</li>
+</ol>
+<p>未设置个人限额的用户会继承全局限流策略。</p>
+<p><img alt="全局限流配置" src="../images/img_6.png" /></p>
+<h2 id="_10">个人限流<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>个人限流用于覆盖某个用户的全局限额。</p>
+<ol>
+<li>打开用户管理。</li>
+<li>找到目标用户。</li>
+<li>打开限流配置。</li>
+<li>设置每日或近 30 天个人 Token 上限。</li>
+<li>保存。</li>
+</ol>
+<p>设置个人限额后，该用户以个人限额为准。未设置的维度继续继承全局限额。</p>
+<p><img alt="个人限流配置" src="../images/img_8.png" /></p>
+<h2 id="_11">分组限流<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>分组限流用于给团队、项目或业务线设置独立的 Token 或预算上限。分组限流依赖已启用的 AI 网关或 LiteLLM，并要求分组已经具备可用的消费者凭证。</p>
+<ol>
+<li>打开管理后台。</li>
+<li>进入 <code>分组管理</code>。</li>
+<li>找到目标分组。</li>
+<li>打开限流配置。</li>
+<li>设置每日或近 30 天限额。</li>
+<li>保存配置。</li>
+</ol>
+<p>设置分组限额后，以该分组创建的实例会按分组消费者统计用量。未设置分组限额的维度继续继承全局策略。</p>
+<h2 id="ai_1">AI 网关启用后的效果<a class="headerlink" href="#ai_1" title="Permanent link">&para;</a></h2>
+<p>启用 AI 网关后：</p>
+<ul>
+<li>用户创建 Agent 实例时，系统自动创建对应消费者和凭证。</li>
+<li>Agent 配置模板会写入消费者 API Key 和网关域名。</li>
+<li>管理员查看用户和分组 Token 用量排行。</li>
+<li>管理员设置全局、个人和分组 Token 限额。</li>
+</ul>
+<h2 id="_12">相关文档<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E4%B8%8E%E5%88%86%E7%BB%84%E7%AE%A1%E7%90%86/">用户、登录和分组管理</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">Agent Manager 常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.748209+00:00
+  -->
+</body>
+</html>

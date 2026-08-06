@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>技能管理 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#_1">技能管理</a></li>
+              
+                  <li><a href="#skillhub">SkillHub 配置</a></li>
+                  
+              
+                  <li><a href="#skill">查看官方 Skill</a></li>
+                  
+              
+                  <li><a href="#skill_1">管理自定义 Skill 空间</a></li>
+                  
+              
+                  <li><a href="#skill_2">创建或上传自定义 Skill</a></li>
+                  
+              
+                  <li><a href="#skill_3">克隆官方 Skill</a></li>
+                  
+              
+                  <li><a href="#skill_4">查看和维护 Skill 文件</a></li>
+                  
+              
+                  <li><a href="#skill_5">配置 Skill 沙箱挂载</a></li>
+                  
+              
+                  <li><a href="#skill_6">排查 Skill 不可用</a></li>
+                  
+              
+                  <li><a href="#_2">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="_1">技能管理<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>在 <code>Skill 市场</code> 中管理 SkillHub、官方 Skill、企业自定义 Skill 空间和 Skill 沙箱挂载，让 Agent 使用工具或企业内部能力。</p>
+<p><img alt="Skill 市场" src="../images/preprod-skills.png" /></p>
+<h2 id="skillhub">SkillHub 配置<a class="headerlink" href="#skillhub" title="Permanent link">&para;</a></h2>
+<p>Agent 通过 SkillHub 查找和调用技能。进入 <code>Skill 市场</code> 后，先确认 SkillHub 已初始化，再查看官方 Skill、自定义 Skill 空间和配置状态。</p>
+<p>首次使用前，确认：</p>
+<ul>
+<li>计算巢部署参数中已自动加载 SkillHub OSS。该 OSS 用于存储用户 Skill，并与备份 OSS 分开使用。</li>
+<li>管理后台 <code>Skill 市场 -&gt; 设置</code> 中显示 SkillHub 已初始化。</li>
+<li>SandboxSet 中已注入 Agent 运行时需要的 SkillHub 地址或环境变量。</li>
+</ul>
+<p>如果 SkillHub 未初始化，自定义 Skill 空间可能无法创建或浏览。</p>
+<h2 id="skill">查看官方 Skill<a class="headerlink" href="#skill" title="Permanent link">&para;</a></h2>
+<p>如果只是验证 Agent 能否调用工具，先从官方 Skill 开始。</p>
+<ol>
+<li>登录管理后台。</li>
+<li>打开 <code>Skill 市场</code>。</li>
+<li>进入官方 Skill 标签页。</li>
+<li>通过关键字或标签筛选 Skill。</li>
+<li>打开 Skill 详情查看说明、参数和使用范围。</li>
+</ol>
+<p>需要做企业内部调整时，先把官方 Skill 克隆到自定义 Skill 空间，再维护企业版本。</p>
+<h2 id="skill_1">管理自定义 Skill 空间<a class="headerlink" href="#skill_1" title="Permanent link">&para;</a></h2>
+<p>自定义 Skill 空间用于管理企业内部 Skill。</p>
+<ol>
+<li>打开 <code>Skill 市场</code>。</li>
+<li>进入自定义 Skill 空间标签页。</li>
+<li>单击创建 Skill 空间。</li>
+<li>填写名称和说明。</li>
+<li>保存后进入空间详情。</li>
+</ol>
+<p>创建后，在空间中维护企业内部 Skill。不同 Skill 空间可按团队、业务线或环境区分。</p>
+<h2 id="skill_2">创建或上传自定义 Skill<a class="headerlink" href="#skill_2" title="Permanent link">&para;</a></h2>
+<p>在自定义 Skill 空间中，创建企业内部 Skill 或上传 Skill ZIP 包。</p>
+<ol>
+<li>打开 <code>Skill 市场</code>。</li>
+<li>进入目标自定义 Skill 空间。</li>
+<li>单击创建 Skill。</li>
+<li>选择创建方式。</li>
+<li>填写 Skill 名称、说明和标签。</li>
+<li>如果选择上传文件，上传符合规范的 ZIP 包。</li>
+<li>等待安全检测完成。</li>
+<li>检测通过后保存 Skill。</li>
+</ol>
+<p>上传包中应包含 <code>SKILL.md</code>，依赖文件放在清晰的子目录中。安全检测不通过时，根据页面提示移除高风险文件、异常脚本或不符合规范的内容后重新上传。</p>
+<h2 id="skill_3">克隆官方 Skill<a class="headerlink" href="#skill_3" title="Permanent link">&para;</a></h2>
+<p>基于官方 Skill 扩展企业版本时，把官方 Skill 克隆到自定义空间。</p>
+<ol>
+<li>在官方 Skill 列表中找到目标 Skill。</li>
+<li>单击克隆。</li>
+<li>选择目标自定义 Skill 空间。</li>
+<li>确认克隆。</li>
+<li>进入自定义空间查看克隆结果。</li>
+</ol>
+<p>克隆后请检查 Skill 依赖、参数和权限要求，再让 Agent 类型或实例使用。</p>
+<h2 id="skill_4">查看和维护 Skill 文件<a class="headerlink" href="#skill_4" title="Permanent link">&para;</a></h2>
+<p>Skill 详情页展示 Skill 基本信息和文件列表。管理员按企业变更流程更新 Skill 描述、标签和文件内容。</p>
+<p>维护时注意：</p>
+<ul>
+<li>修改 Skill 后，已运行实例不一定自动加载最新文件。</li>
+<li>如果 Skill 通过 SandboxSet 挂载到沙箱，需要重建或升级实例后才能稳定生效。</li>
+<li>删除 Skill 前，确认没有 Agent 类型或实例仍依赖该 Skill 空间。</li>
+</ul>
+<h2 id="skill_5">配置 Skill 沙箱挂载<a class="headerlink" href="#skill_5" title="Permanent link">&para;</a></h2>
+<p>Agent 运行时需要在沙箱内读取 Skill 文件时，请在 SandboxSet 中配置 Skill 挂载。管理后台的 Skill 配置会生成挂载配置预览，实际生效依赖 SandboxSet。</p>
+<p>配置时确认：</p>
+<ul>
+<li>挂载路径使用绝对路径。</li>
+<li>不要把 Skill 挂载到 Agent 工作目录或运行时状态目录。</li>
+<li>OSS 子路径和 Skill 空间目录一致。</li>
+<li>修改 SandboxSet 后，新建或重建实例才能自动获得新挂载。</li>
+</ul>
+<p>如果已有实例需要使用新的 Skill 挂载，请停止并重新启动实例，或通过 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a> 将实例迁移到新的 SandboxSet 模板。</p>
+<h2 id="skill_6">排查 Skill 不可用<a class="headerlink" href="#skill_6" title="Permanent link">&para;</a></h2>
+<p>如果 Agent 无法找到或调用 Skill，请按以下顺序检查：</p>
+<ol>
+<li>SkillHub 配置是否已初始化。</li>
+<li>Skill 是否存在于官方 Skill 或自定义 Skill 空间中。</li>
+<li>SandboxSet 环境变量是否包含正确的 SkillHub 地址。</li>
+<li>Skill 挂载路径是否存在，且 Agent 运行用户有读取权限。</li>
+<li>已运行实例是否需要重启或升级后才能应用新的 SandboxSet。</li>
+</ol>
+<h2 id="_2">相关文档<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a></li>
+<li><a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">Agent Manager 常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.729533+00:00
+  -->
+</body>
+</html>

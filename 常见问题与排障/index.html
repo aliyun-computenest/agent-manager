@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>常见问题与排障 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#agent-manager">Agent Manager 常见问题与排障</a></li>
+              
+                  <li><a href="#_1">问题索引</a></li>
+                  
+              
+                  <li><a href="#_2">服务实例部署失败怎么办</a></li>
+                  
+              
+                  <li><a href="#_3">服务实例长时间部署中怎么办</a></li>
+                  
+              
+                  <li><a href="#_4">部署成功后平台无法访问怎么办</a></li>
+                  
+              
+                  <li><a href="#_5">用户登录页没有登录方式怎么办</a></li>
+                  
+              
+                  <li><a href="#_6">忘记管理员密码怎么办</a></li>
+                  
+              
+                  <li><a href="#agent">创建 Agent 实例失败怎么办</a></li>
+                  
+              
+                  <li><a href="#_7">如何访问运行中的实例</a></li>
+                  
+              
+                  <li><a href="#_8">应用监控没有数据怎么办</a></li>
+                  
+              
+                  <li><a href="#_9">如何发起实例备份</a></li>
+                  
+              
+                  <li><a href="#_10">从备份创建新实例失败怎么办</a></li>
+                  
+              
+                  <li><a href="#agent_1">Agent 工作台打不开怎么办</a></li>
+                  
+              
+                  <li><a href="#token">Token 用量不显示怎么办</a></li>
+                  
+              
+                  <li><a href="#oauth">OAuth 登录按钮没有出现怎么办</a></li>
+                  
+              
+                  <li><a href="#oauth_1">OAuth 回调地址怎么填</a></li>
+                  
+              
+                  <li><a href="#saml-sso-supabase">SAML SSO 登录后跳到了 Supabase 页面怎么办</a></li>
+                  
+              
+                  <li><a href="#oauth-saml-sso">可以同时配置 OAuth 和 SAML SSO 吗</a></li>
+                  
+              
+                  <li><a href="#_11">新增模型提供商后模型调用失败怎么办</a></li>
+                  
+              
+                  <li><a href="#sandboxset">修改 SandboxSet 后新配置没生效怎么办</a></li>
+                  
+              
+                  <li><a href="#agent_2">Agent 实例显示不可安全升级怎么办</a></li>
+                  
+              
+                  <li><a href="#agent_3">Agent 升级失败怎么办</a></li>
+                  
+              
+                  <li><a href="#_12">周期备份执行失败怎么办</a></li>
+                  
+              
+                  <li><a href="#default-namespace">想把沙箱部署到非 default namespace 怎么办</a></li>
+                  
+              
+                  <li><a href="#e2b">E2B 域名或证书变更后平台不可用怎么办</a></li>
+                  
+              
+                  <li><a href="#agent-manager_1">数据库恢复后如何切换 Agent Manager</a></li>
+                  
+              
+                  <li><a href="#_13">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="agent-manager">Agent Manager 常见问题与排障<a class="headerlink" href="#agent-manager" title="Permanent link">&para;</a></h1>
+<p>遇到 Agent Manager 部署、登录、实例、工作台、Token 统计、Agent 备份升级、OAuth/SAML 或 Supabase 问题时，先按症状找到对应小节，再按处理步骤排查。</p>
+<h2 id="_1">问题索引<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>问题类型</th>
+<th>先看这些问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>部署和访问</td>
+<td><a href="#服务实例部署失败怎么办">服务实例部署失败怎么办</a>、<a href="#服务实例长时间部署中怎么办">服务实例长时间部署中怎么办</a>、<a href="#部署成功后平台无法访问怎么办">部署成功后平台无法访问怎么办</a></td>
+</tr>
+<tr>
+<td>登录和身份认证</td>
+<td><a href="#用户登录页没有登录方式怎么办">用户登录页没有登录方式怎么办</a>、<a href="#忘记管理员密码怎么办">忘记管理员密码怎么办</a>、<a href="#oauth-登录按钮没有出现怎么办">OAuth 登录按钮没有出现怎么办</a>、<a href="#oauth-回调地址怎么填">OAuth 回调地址怎么填</a>、<a href="#saml-sso-登录后跳到了-supabase-页面怎么办">SAML SSO 登录后跳到了 Supabase 页面怎么办</a>、<a href="#可以同时配置-oauth-和-saml-sso-吗">可以同时配置 OAuth 和 SAML SSO 吗</a></td>
+</tr>
+<tr>
+<td>实例和工作台</td>
+<td><a href="#创建-agent-实例失败怎么办">创建 Agent 实例失败怎么办</a>、<a href="#如何访问运行中的实例">如何访问运行中的实例</a>、<a href="#agent-工作台打不开怎么办">Agent 工作台打不开怎么办</a></td>
+</tr>
+<tr>
+<td>应用监控</td>
+<td><a href="#应用监控没有数据怎么办">应用监控没有数据怎么办</a></td>
+</tr>
+<tr>
+<td>模型和 Token</td>
+<td><a href="#token-用量不显示怎么办">Token 用量不显示怎么办</a>、<a href="#新增模型提供商后模型调用失败怎么办">新增模型提供商后模型调用失败怎么办</a></td>
+</tr>
+<tr>
+<td>实例备份</td>
+<td><a href="#如何发起实例备份">如何发起实例备份</a>、<a href="#从备份创建新实例失败怎么办">从备份创建新实例失败怎么办</a>、<a href="#周期备份执行失败怎么办">周期备份执行失败怎么办</a></td>
+</tr>
+<tr>
+<td>沙箱升级</td>
+<td><a href="#修改-sandboxset-后新配置没生效怎么办">修改 SandboxSet 后新配置没生效怎么办</a>、<a href="#agent-实例显示不可安全升级怎么办">Agent 实例显示不可安全升级怎么办</a>、<a href="#agent-升级失败怎么办">Agent 升级失败怎么办</a></td>
+</tr>
+<tr>
+<td>E2B 和数据库</td>
+<td><a href="#e2b-域名或证书变更后平台不可用怎么办">E2B 域名或证书变更后平台不可用怎么办</a>、<a href="#数据库恢复后如何切换-agent-manager">数据库恢复后如何切换 Agent Manager</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">服务实例部署失败怎么办<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>先打开计算巢服务实例详情页，在基本信息区域查看状态描述。</p>
+<p>按状态描述匹配以下原因：</p>
+<table>
+<thead>
+<tr>
+<th>原因</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RAM 子账号权限不足</td>
+<td>到 RAM 控制台补齐权限后，回到服务实例继续部署。</td>
+</tr>
+<tr>
+<td>云产品配额不足</td>
+<td>到配额中心申请提升配额，或降低规格后继续部署。</td>
+</tr>
+<tr>
+<td>云资源无库存</td>
+<td>更换可用区或资源规格。</td>
+</tr>
+<tr>
+<td>余额不足或账号欠费</td>
+<td>到费用与成本控制台充值或处理欠费。</td>
+</tr>
+<tr>
+<td>云产品服务未开通</td>
+<td>到对应云产品控制台开通服务。</td>
+</tr>
+<tr>
+<td>VPC 或交换机选择错误</td>
+<td>选择与 Sandbox 集群匹配的 VPC 和普通交换机，不要选择 OpenClaw 专属交换机。</td>
+</tr>
+</tbody>
+</table>
+<p>如果状态描述显示错误码，请进入阿里云错误中心查看含义。进一步排查时，打开部署日志，找到失败资源和请求 ID。</p>
+<h2 id="_3">服务实例长时间部署中怎么办<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ol>
+<li>先确认该服务实例的预计部署时间。</li>
+<li>如果当前耗时仍在合理范围内，请继续等待。</li>
+<li>如果明显超时，打开服务实例部署日志。</li>
+<li>查看是否卡在 Supabase、SLB、K8s Job 或 AI 网关资源。</li>
+<li>根据日志中的错误码、请求 ID 和资源名称继续排查。</li>
+</ol>
+<p>如果部署日志没有明确错误，请提交工单或联系计算巢技术支持。</p>
+<h2 id="_4">部署成功后平台无法访问怎么办<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ol>
+<li>在服务实例输出中复制 <code>API 健康检查</code> 地址。</li>
+<li>打开健康检查地址。</li>
+<li>如果健康检查失败，检查平台 Deployment、Pod 日志和 Supabase 连接。</li>
+<li>如果健康检查成功但页面打不开，检查平台公网 SLB、浏览器网络和安全组。</li>
+<li>等待 1 到 2 分钟后重试，部分 SLB 或路由可能需要短暂就绪时间。</li>
+</ol>
+<p>登录页能打开但登录失败时，继续查看登录相关问题。</p>
+<h2 id="_5">用户登录页没有登录方式怎么办<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>用户登录页始终支持邮箱密码登录。管理员需要先在用户管理中创建用户，用户才能用邮箱和密码登录。</p>
+<p>如果需要 OAuth 或 SAML SSO：</p>
+<ol>
+<li>确认 Supabase Auth 中已启用对应 Provider。</li>
+<li>确认 Agent Manager <code>用户管理 -&gt; 单点登录</code> 页面已刷新状态。</li>
+<li>确认 OAuth 和 SAML SSO 没有同时启用。</li>
+<li>重新打开平台登录页。</li>
+</ol>
+<h2 id="_6">忘记管理员密码怎么办<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>无法通过管理员页面登录时，使用 Supabase <code>service_role key</code> 调用 Auth Admin API 修改管理员密码。</p>
+<ol>
+<li>获取 Supabase URL 和 <code>service_role key</code>。</li>
+<li>调用 <code>/auth/v1/admin/users</code> 找到管理员用户 ID。</li>
+<li>调用 <code>/auth/v1/admin/users/&lt;USER_ID&gt;</code> 更新 <code>password</code> 字段。</li>
+<li>使用新密码登录。</li>
+</ol>
+<p><code>service_role key</code> 权限很高，请只在可信终端使用。</p>
+<h2 id="agent">创建 Agent 实例失败怎么办<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h2>
+<p>按以下顺序检查：</p>
+<ol>
+<li>当前用户是否达到实例数量上限。</li>
+<li>是否至少启用了一个 Agent 类型。</li>
+<li>是否至少启用了一个模型。</li>
+<li>Agent 类型关联的 SandboxSet 是否存在。</li>
+<li>配置写入路径和沙箱用户是否匹配镜像。</li>
+<li>模型提供商占位符是否与 Agent 配置模板一致。</li>
+<li>E2B Sandbox 服务是否可用。</li>
+<li>后端 API 日志是否有具体错误。</li>
+</ol>
+<p>如果错误发生在创建沙箱阶段，优先检查 SandboxSet、E2B API Key、E2B 域名和集群资源。</p>
+<h2 id="_7">如何访问运行中的实例<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>实例启动后，在实例详情页单击“进入工作台”，打开 Agent 原生界面。</p>
+<p>当前 Agent 支持终端时，实例详情页会显示“打开终端”。支持文件上传的 Agent 可在原生界面中上传文件。</p>
+<p>管理员可以在详情页查看 E2B Host；浏览器无需解析或直连该地址。</p>
+<h2 id="_8">应用监控没有数据怎么办<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>按以下顺序检查：</p>
+<ol>
+<li>打开管理后台，进入 <code>运行监控 -&gt; 应用监控</code>，并在左侧选择状态为“运行中”的实例。</li>
+<li>如果页面提示监控资源未就绪，等待资源创建完成后刷新页面。</li>
+<li>如果提示插件已安装但没有数据，打开实例应用并发起一次对话，等待监控数据产生。</li>
+<li>在 <code>Agent 配置</code> 中确认目标 Agent 类型已配置应用监控参数；未配置时，新实例不会启用应用监控。</li>
+<li>如果只有网关监控没有数据，确认当前实例使用的模型提供商满足阿里云 AI 网关监控要求。</li>
+<li>仍然没有数据时，单击“新窗口打开”重新加载监控页面，并查看页面提示的资源状态。</li>
+</ol>
+<p>应用监控只展示已选实例的应用可观测信息，不会替代实例列表中的运行状态、实例升级或实例备份操作。</p>
+<h2 id="_9">如何发起实例备份<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>单个实例备份从实例详情页发起。实例必须已经创建并关联可用 Sandbox，备份过程中不能同时发起其他备份或恢复。</p>
+<ol>
+<li>打开实例详情页。</li>
+<li>在“备份与恢复”区域单击“发起备份”。</li>
+<li>在确认页面单击“确认发起”。</li>
+<li>展开“可用备份点”查看结果。</li>
+</ol>
+<p>管理员还可以在“实例备份”中创建全部实例或指定实例的立即备份、周期备份。详细操作见 <a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a>。</p>
+<h2 id="_10">从备份创建新实例失败怎么办<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>从备份创建会保留源实例，并创建一个新实例和新的 Sandbox。源实例没有被覆盖时，先检查以下项目：</p>
+<ol>
+<li>目标 Agent 类型关联的 SandboxSet 仍然存在。</li>
+<li>SandboxSet 同时包含 <code>agent-runtime</code> 和 <code>csi</code> runtime。</li>
+<li><code>/backup</code> 挂载可用，备份点状态为成功。</li>
+<li>集群资源、E2B 服务和镜像仓库可用。</li>
+<li>查看新实例详情中的恢复错误和后端日志。</li>
+</ol>
+<p>恢复失败时不要删除源实例。修复 SandboxSet 或集群资源后，使用同一备份点重新创建实例。</p>
+<h2 id="agent_1">Agent 工作台打不开怎么办<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h2>
+<p>按以下顺序检查：</p>
+<ol>
+<li>确认实例状态为“运行中”。</li>
+<li>刷新实例详情页后重新单击“进入工作台”。</li>
+<li>确认 <code>NATIVE_AGENT_UI_ENABLED=true</code>。</li>
+<li>检查 Agent Manager Pod 到实例 E2B Host 的 DNS 和网络是否可达。</li>
+<li>检查 Agent Web 端口是否与 Agent 类型配置一致。</li>
+<li>查看 Agent Manager 后端日志中的 <code>native-agent-ui</code> 错误。</li>
+</ol>
+<p>如果返回 <code>401</code> 或 <code>403</code>，重新登录并确认当前用户仍有实例访问权限。如果返回 <code>502</code>，优先检查 Sandbox、E2B 域名解析和 Agent Web 进程。</p>
+<h2 id="token">Token 用量不显示怎么办<a class="headerlink" href="#token" title="Permanent link">&para;</a></h2>
+<p>Token 用量统计依赖 AI 网关和日志服务。</p>
+<p>请检查：</p>
+<ol>
+<li>是否启用了 AI 网关。</li>
+<li>用户创建实例时是否使用 AI 网关类模型提供商。</li>
+<li>阿里云 AccessKey 是否有 SLS 读取权限。</li>
+<li>日志服务是否正常写入。</li>
+<li>管理后台是否开启 Token 统计与限流。</li>
+</ol>
+<p>未启用 AI 网关时，仪表盘和用户管理中不会显示 Token 指标。</p>
+<h2 id="oauth">OAuth 登录按钮没有出现怎么办<a class="headerlink" href="#oauth" title="Permanent link">&para;</a></h2>
+<ol>
+<li>登录 Supabase 控制台。</li>
+<li>打开 <code>Authentication -&gt; Providers</code>。</li>
+<li>确认目标 Provider 已启用。</li>
+<li>确认 Client ID 和 Client Secret 正确。</li>
+<li>回到 Agent Manager <code>单点登录 -&gt; OAuth</code> 标签页。</li>
+<li>单击刷新。</li>
+<li>重新打开用户登录页。</li>
+</ol>
+<p>如果仍然不显示，确认 OAuth 和 SAML SSO 没有同时启用。</p>
+<h2 id="oauth_1">OAuth 回调地址怎么填<a class="headerlink" href="#oauth_1" title="Permanent link">&para;</a></h2>
+<p>所有 OAuth Provider 统一使用 Supabase Auth callback URL：</p>
+<pre><code class="language-text">https://&lt;Supabase URL&gt;/auth/v1/callback
+</code></pre>
+<p>如果服务实例输出中包含 <code>OAuth App 回调地址</code>，请优先使用该输出值。</p>
+<h2 id="saml-sso-supabase">SAML SSO 登录后跳到了 Supabase 页面怎么办<a class="headerlink" href="#saml-sso-supabase" title="Permanent link">&para;</a></h2>
+<p>这通常是 Site URL 配置错误。</p>
+<ol>
+<li>打开管理后台。</li>
+<li>进入 <code>用户管理 -&gt; 单点登录 -&gt; SAML</code>。</li>
+<li>在回调地址配置中把 Site URL 设置为 Agent Manager 平台公网访问地址。</li>
+<li>保存后重新登录。</li>
+</ol>
+<p>示例：</p>
+<pre><code class="language-text">http://&lt;PlatformSlb IP&gt;:8080
+</code></pre>
+<h2 id="oauth-saml-sso">可以同时配置 OAuth 和 SAML SSO 吗<a class="headerlink" href="#oauth-saml-sso" title="Permanent link">&para;</a></h2>
+<p>不要同时启用。平台按 OAuth 和 SAML SSO 互斥配置处理。邮箱密码登录始终可用，可与 OAuth 或 SAML SSO 并存。</p>
+<p>可同时启用多个 OAuth Provider。OAuth 模式和 SAML SSO 模式只能选择一种。</p>
+<h2 id="_11">新增模型提供商后模型调用失败怎么办<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>大概率是占位符不匹配。</p>
+<p>检查：</p>
+<ol>
+<li>提供商的 <code>apiKeyPlaceholder</code> 是否与模板中的占位符完全一致。</li>
+<li>提供商的 <code>domainPlaceholder</code> 是否与模板中的占位符完全一致。</li>
+<li>Agent 配置模板是否切换到对应提供商的配置段。</li>
+<li>实例是否保存配置或重启。</li>
+<li>API Key 是否可用。</li>
+</ol>
+<p>例如启用阿里云 AI 网关类模型时，模板需要使用 <code>${AI_GATEWAY_DOMAIN}</code> 和 <code>${CONSUMER_API_KEY}</code>。</p>
+<h2 id="sandboxset">修改 SandboxSet 后新配置没生效怎么办<a class="headerlink" href="#sandboxset" title="Permanent link">&para;</a></h2>
+<p>已运行实例使用的是修改前的沙箱环境。保存 SandboxSet YAML 后，需要停止并重新启动相关实例，或通过 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a> 迁移到新的 SandboxSet 模板。</p>
+<p>处理步骤：</p>
+<ol>
+<li>打开实例列表。</li>
+<li>停止目标实例。</li>
+<li>等待状态变为已停止。</li>
+<li>再启动实例。</li>
+<li>打开实例详情页验证。</li>
+</ol>
+<p>修改镜像、挂载或运行时配置时，先阅读 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a>，用少量测试 Sandbox 验证升级流程。</p>
+<h2 id="agent_2">Agent 实例显示不可安全升级怎么办<a class="headerlink" href="#agent_2" title="Permanent link">&para;</a></h2>
+<p>不可安全升级通常表示该实例不具备备份恢复能力。</p>
+<p>常见原因包括 SandboxSet 缺少 <code>agent-runtime</code> 或 <code>csi</code> runtime、实例创建时没有写入备份挂载信息，或 Agent 类型没有配置升级前命令和升级后恢复命令。</p>
+<p>处理步骤：</p>
+<ol>
+<li>打开 <code>沙箱配置</code>，确认关联 SandboxSet 具备备份挂载能力。</li>
+<li>打开 <code>Agent 配置</code>，在目标 Agent 类型的 <code>备份&amp;升级配置</code> 中填写升级前命令和升级后恢复命令。</li>
+<li>确认待升级实例是修复后新建或已手动补齐备份挂载能力的实例。</li>
+<li>回到 <code>实例升级</code> 页面刷新 Sandbox 列表。</li>
+</ol>
+<p>旧实例如果创建时没有备份挂载信息，后续只修改 SandboxSet 不会自动补齐。重建实例，或由管理员手动补齐挂载能力后再升级。</p>
+<h2 id="agent_3">Agent 升级失败怎么办<a class="headerlink" href="#agent_3" title="Permanent link">&para;</a></h2>
+<p>先在 <code>实例升级</code> 页查看失败任务的 Reason 和 Message，判断失败发生在哪个阶段。</p>
+<table>
+<thead>
+<tr>
+<th>失败阶段</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>升级前命令失败</td>
+<td>检查待备份目录是否存在、<code>/backup</code> 是否可写、备份命令是否退出非 0。修复后重新发起完整升级。</td>
+</tr>
+<tr>
+<td>镜像或 Pod 启动失败</td>
+<td>检查目标镜像是否可拉取、SandboxSet 启动命令和探针是否正确。修复后删除失败任务并重试。</td>
+</tr>
+<tr>
+<td>升级后恢复命令失败</td>
+<td>检查备份包路径、恢复目录和校验文件。修复恢复命令后，可选择只执行恢复命令的升级。</td>
+</tr>
+<tr>
+<td>namespace 已有未完成任务</td>
+<td>等待任务完成，或删除、修复 Failed 任务后再发起新升级。</td>
+</tr>
+</tbody>
+</table>
+<p>详细步骤见 <a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a>。</p>
+<h2 id="_12">周期备份执行失败怎么办<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>先打开管理后台的“实例备份”，进入对应执行详情，确认失败实例、最近一次结果和错误信息。</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>没有可选实例</td>
+<td>只展示运行中的实例。先启动目标实例，再创建备份执行。</td>
+</tr>
+<tr>
+<td>指定实例备份失败</td>
+<td>检查实例状态、SandboxSet 的备份挂载、OSS 权限和集群资源。</td>
+</tr>
+<tr>
+<td>周期任务没有再次执行</td>
+<td>检查任务状态和 Cron 表达式，确认任务没有被取消。</td>
+</tr>
+<tr>
+<td>备份执行数量过多</td>
+<td>调低保留数量，或取消不再需要的周期任务。取消任务不会删除已经生成的备份点。</td>
+</tr>
+</tbody>
+</table>
+<p>必要时打开执行详情中的阿里云运维编排服务（OOS）记录，查看具体失败步骤。</p>
+<h2 id="default-namespace">想把沙箱部署到非 default namespace 怎么办<a class="headerlink" href="#default-namespace" title="Permanent link">&para;</a></h2>
+<ol>
+<li>创建目标 namespace。</li>
+<li>修改 SandboxSet YAML 中的 <code>metadata.namespace</code>。</li>
+<li>替换安全组、交换机和镜像参数。</li>
+<li>确认 Agent Manager 后端 ServiceAccount 有目标 namespace 的 RBAC 权限。</li>
+<li>创建或更新 SandboxSet。</li>
+<li>在 Agent 配置中关联该 SandboxSet。</li>
+<li>创建测试实例验证。</li>
+</ol>
+<h2 id="e2b">E2B 域名或证书变更后平台不可用怎么办<a class="headerlink" href="#e2b" title="Permanent link">&para;</a></h2>
+<p>E2B 侧更新域名或证书后，Agent Manager 侧也要同步配置。</p>
+<p>通常需要更新：</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>K8s 资源</th>
+<th>何时更新</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA 证书</td>
+<td>Secret <code>e2b-ca-cert</code></td>
+<td>E2B 重新签发 TLS 证书。</td>
+</tr>
+<tr>
+<td>E2B 域名</td>
+<td>ConfigMap 中的 <code>E2B_DOMAIN</code></td>
+<td>E2B 域名变更。</td>
+</tr>
+<tr>
+<td>API Key</td>
+<td>Secret 中的 <code>E2B_API_KEY</code></td>
+<td>E2B API Key 变更。</td>
+</tr>
+<tr>
+<td>Pod</td>
+<td>Agent Manager Deployment</td>
+<td>任一配置变更后重启。</td>
+</tr>
+</tbody>
+</table>
+<p>操作步骤见 <a href="../E2B%E8%AF%81%E4%B9%A6%E4%B8%8E%E5%9F%9F%E5%90%8D%E5%8F%98%E6%9B%B4%E6%8C%87%E5%8D%97/">E2B 证书与域名变更指南</a>。</p>
+<h2 id="agent-manager_1">数据库恢复后如何切换 Agent Manager<a class="headerlink" href="#agent-manager_1" title="Permanent link">&para;</a></h2>
+<p>如果旧 ADB Supabase 实例故障，新实例已恢复数据，需要把 Agent Manager 的 Supabase 环境变量切到新实例。</p>
+<p>切换前确认：</p>
+<ul>
+<li>新实例状态为运行中。</li>
+<li>新实例已完成数据恢复。</li>
+<li>Manager 到新实例网络互通。</li>
+<li>已拿到新实例 API URL、Anon Key、Service Role Key 和 Database URL。</li>
+</ul>
+<p>切换步骤见 <a href="../%E6%9B%B4%E6%8D%A2Supabase%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97/">数据库备份恢复操作指南</a>。</p>
+<h2 id="_13">相关文档<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E6%9C%8D%E5%8A%A1%E5%AE%9E%E4%BE%8B%E9%83%A8%E7%BD%B2%E4%B8%8E%E8%AE%A1%E8%B4%B9/">Agent Manager 服务实例部署与计费</a></li>
+<li><a href="../%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E4%B8%8E%E5%88%86%E7%BB%84%E7%AE%A1%E7%90%86/">用户、登录和分组管理</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a></li>
+<li><a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a></li>
+<li><a href="../Agent%E5%8D%87%E7%BA%A7/">Agent 升级</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AE%E7%BD%91%E5%85%B3/">配置网关</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.724802+00:00
+  -->
+</body>
+</html>

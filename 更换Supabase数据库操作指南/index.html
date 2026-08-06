@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>数据库备份恢复 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#ros">数据库备份恢复操作指南（ROS 集群版）</a></li>
+              
+                  <li><a href="#1">1 前提</a></li>
+                  
+              
+                  <li><a href="#2">2 切换步骤</a></li>
+                  
+              
+                  <li><a href="#3">3 配置示例</a></li>
+                  
+                      <li class="li-h3"><a href="#31">3.1 环境变量</a></li>
+                  
+                      <li class="li-h3"><a href="#32-ros">3.2 ROS 集群控制台方式</a></li>
+                  
+                      <li class="li-h3"><a href="#33-ros-kubectl">3.3 ROS 集群 kubectl 方式</a></li>
+                  
+              
+                  <li><a href="#4">4 网络示例</a></li>
+                  
+              
+                  <li><a href="#5-auth">5 Auth 回调示例</a></li>
+                  
+              
+                  <li><a href="#6">6 回滚</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="ros">数据库备份恢复操作指南（ROS 集群版）<a class="headerlink" href="#ros" title="Permanent link">&para;</a></h1>
+<p>完成 ADB Supabase 备份恢复、故障切换或迁移后，按本页把 ROS 集群版 Agent Manager 切到新的数据库实例。</p>
+<p>按本页修改 Agent Manager 侧连接，并验证登录和实例列表。ADB Supabase 的备份创建和数据恢复按数据库产品文档执行。</p>
+<p><img alt="Supabase 控制台中的数据库备份入口" src="../images/img_14.png" /></p>
+<h2 id="1">1 前提<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>新 ADB Supabase 实例状态为运行中。</li>
+<li>新实例最好与旧实例在同一地域、同一 VPC、同一 VSwitch；如果 VSwitch 不同，先确认 Manager 到新实例网络互通。</li>
+<li>已拿到新实例的 API URL、Anon Key、Service Role Key、Database URL。</li>
+<li>数据库已经恢复完成，切换 Manager 配置时不再单独执行迁移。</li>
+</ul>
+<h2 id="2">2 切换步骤<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>确认新实例网络。</li>
+<li>在新实例白名单中放通 Manager 所在 VPC 网段。</li>
+<li>如果需要绑定 EIP，再处理外网地址、NAT 或网卡 EIP；数据库白名单仍先只放 VPC 网段。</li>
+<li>把 Manager 的 Supabase 环境变量改成新实例值。</li>
+<li>如果要同步升级 Manager 版本，直接替换 Deployment 镜像。</li>
+<li>重启 Manager。</li>
+<li>确认 Manager 能启动、登录，实例列表正常。</li>
+</ol>
+<h2 id="3">3 配置示例<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1 环境变量<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">VITE_SUPABASE_URL=https://&lt;新实例公网 ADB Supabase URL&gt;
+SUPABASE_INTERNAL_URL=https://&lt;新实例内网 ADB Supabase URL&gt;
+VITE_SUPABASE_ANON_KEY=&lt;新实例 Anon Key&gt;
+SERVICE_ROLE_KEY=&lt;新实例 Service Role Key&gt;
+DATABASE_URL=postgresql://postgres:&lt;密码&gt;@&lt;新实例内网数据库地址&gt;:5432/postgres
+</code></pre>
+<p><code>VITE_SUPABASE_URL</code> 给浏览器使用，通常填公网地址。<code>SUPABASE_INTERNAL_URL</code> 和 <code>DATABASE_URL</code> 给 Manager 后端使用，优先填同 VPC 内网地址。</p>
+<h3 id="32-ros">3.2 ROS 集群控制台方式<a class="headerlink" href="#32-ros" title="Permanent link">&para;</a></h3>
+<p>平台资源所在 namespace 是计算巢参数 <code>PlatformNamespaceName</code>，默认是 <code>openclaw-platform</code>。</p>
+<p>Secret 和 ConfigMap 都在这个 namespace 下。</p>
+<ol>
+<li>打开 ACK/ACS 控制台，进入 Manager 所在集群。</li>
+<li>进入 <code>PlatformNamespaceName</code> 对应的 namespace。</li>
+<li>更新 ConfigMap <code>openclaw-platform-config</code>：</li>
+<li><code>VITE_SUPABASE_URL</code></li>
+<li><code>SUPABASE_INTERNAL_URL</code></li>
+<li>更新 Secret <code>openclaw-platform-secret</code>：</li>
+<li><code>VITE_SUPABASE_ANON_KEY</code></li>
+<li><code>SERVICE_ROLE_KEY</code></li>
+<li><code>DATABASE_URL</code></li>
+<li>进入 Manager Deployment，按需替换镜像 tag。</li>
+<li>保存后触发滚动更新。</li>
+</ol>
+<h3 id="33-ros-kubectl">3.3 ROS 集群 kubectl 方式<a class="headerlink" href="#33-ros-kubectl" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash"># 改成计算巢参数 PlatformNamespaceName；默认 openclaw-platform。
+PLATFORM_NAMESPACE=openclaw-platform
+
+VITE_SUPABASE_URL='https://new-adb-supabase.example.com'
+SUPABASE_INTERNAL_URL='https://new-adb-supabase-internal.example.com'
+VITE_SUPABASE_ANON_KEY='new-anon-key'
+SERVICE_ROLE_KEY='new-service-role-key'
+DATABASE_URL='postgresql://postgres:password@new-db-internal.example.com:5432/postgres'
+
+kubectl -n &quot;$PLATFORM_NAMESPACE&quot; patch configmap openclaw-platform-config \
+  --type merge \
+  -p &quot;{\&quot;data\&quot;:{\&quot;VITE_SUPABASE_URL\&quot;:\&quot;$VITE_SUPABASE_URL\&quot;,\&quot;SUPABASE_INTERNAL_URL\&quot;:\&quot;$SUPABASE_INTERNAL_URL\&quot;}}&quot;
+
+VITE_SUPABASE_ANON_KEY_B64=&quot;$(printf '%s' &quot;$VITE_SUPABASE_ANON_KEY&quot; | base64 | tr -d '\n')&quot;
+SERVICE_ROLE_KEY_B64=&quot;$(printf '%s' &quot;$SERVICE_ROLE_KEY&quot; | base64 | tr -d '\n')&quot;
+DATABASE_URL_B64=&quot;$(printf '%s' &quot;$DATABASE_URL&quot; | base64 | tr -d '\n')&quot;
+
+kubectl -n &quot;$PLATFORM_NAMESPACE&quot; patch secret openclaw-platform-secret \
+  --type merge \
+  -p &quot;{\&quot;data\&quot;:{\&quot;VITE_SUPABASE_ANON_KEY\&quot;:\&quot;$VITE_SUPABASE_ANON_KEY_B64\&quot;,\&quot;SERVICE_ROLE_KEY\&quot;:\&quot;$SERVICE_ROLE_KEY_B64\&quot;,\&quot;DATABASE_URL\&quot;:\&quot;$DATABASE_URL_B64\&quot;}}&quot;
+
+# 如果要同时切到新版本镜像：
+MANAGER_IMAGE='registry.example.com/openclaw/openclaw-platform:tag'
+kubectl -n &quot;$PLATFORM_NAMESPACE&quot; set image deployment/openclaw-platform \
+  openclaw-platform=&quot;$MANAGER_IMAGE&quot;
+
+kubectl -n &quot;$PLATFORM_NAMESPACE&quot; rollout restart deployment/openclaw-platform
+kubectl -n &quot;$PLATFORM_NAMESPACE&quot; rollout status deployment/openclaw-platform --timeout=180s
+</code></pre>
+<h2 id="4">4 网络示例<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>优先走内网：</p>
+<pre><code class="language-text">Manager Pod/ECS -&gt; 同 VPC 内网 -&gt; 新 ADB Supabase
+</code></pre>
+<p>白名单先只放 VPC 网段，例如：</p>
+<pre><code class="language-text">10.0.0.0/16        # Manager 所在 VPC 或节点网段
+</code></pre>
+<p>不要先加入非 VPC 网段，也不要放开 <code>0.0.0.0/0</code>。</p>
+<h2 id="5-auth">5 Auth 回调示例<a class="headerlink" href="#5-auth" title="Permanent link">&para;</a></h2>
+<p>如果新 ADB Supabase URL 变了，同步更新 OAuth/SAML 回调。</p>
+<p>OAuth 回调：</p>
+<pre><code class="language-text">&lt;新 ADB Supabase URL&gt;/auth/v1/callback
+</code></pre>
+<p>SAML SP 信息：</p>
+<pre><code class="language-text">SP Metadata URL: &lt;新 ADB Supabase URL&gt;/auth/v1/sso/saml/metadata
+ACS URL: &lt;新 ADB Supabase URL&gt;/auth/v1/sso/saml/acs
+</code></pre>
+<p>如果 Manager 的公网地址也变了，同时更新 Supabase Auth 的 Site URL 和 Redirect URL。</p>
+<h2 id="6">6 回滚<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>如果切换失败：</p>
+<ol>
+<li>保留新实例，保存 Manager 和 ADB Supabase 错误日志。</li>
+<li>如果旧实例已经恢复可用，把 Manager 环境变量改回旧实例值。</li>
+<li>重启 Manager。</li>
+<li>重新确认登录和实例列表。</li>
+</ol>
+<p>如果旧实例不可用，不要反复覆盖新实例；先排查新实例网络、白名单、key、Auth 回调和 Manager 配置。</p>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.731249+00:00
+  -->
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>用户指南 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#_1">用户指南</a></li>
+              
+                  <li><a href="#_2">使用前确认</a></li>
+                  
+              
+                  <li><a href="#_3">登录与首次使用</a></li>
+                  
+              
+                  <li><a href="#agent">创建和使用 Agent</a></li>
+                  
+                      <li class="li-h3"><a href="#_4">创建实例</a></li>
+                  
+                      <li class="li-h3"><a href="#agent_1">进入 Agent 工作台</a></li>
+                  
+                      <li class="li-h3"><a href="#_5">上传文件</a></li>
+                  
+                      <li class="li-h3"><a href="#_6">使用终端</a></li>
+                  
+              
+                  <li><a href="#_7">管理我的实例</a></li>
+                  
+                      <li class="li-h3"><a href="#_8">查看和筛选实例</a></li>
+                  
+                      <li class="li-h3"><a href="#_9">启动、停止和删除</a></li>
+                  
+                      <li class="li-h3"><a href="#_10">修改实例配置</a></li>
+                  
+              
+                  <li><a href="#skill">使用 Skill 市场</a></li>
+                  
+              
+                  <li><a href="#_11">查看个人资料和用量</a></li>
+                  
+                      <li class="li-h3"><a href="#_12">查看账号和配额</a></li>
+                  
+                      <li class="li-h3"><a href="#token">查看 Token 用量</a></li>
+                  
+                      <li class="li-h3"><a href="#_13">使用分组实例</a></li>
+                  
+              
+                  <li><a href="#_14">用户侧常见问题</a></li>
+                  
+                      <li class="li-h3"><a href="#_15">登录后看不到实例列表怎么办</a></li>
+                  
+                      <li class="li-h3"><a href="#_16">创建实例按钮不可用怎么办</a></li>
+                  
+                      <li class="li-h3"><a href="#_17">实例长时间停留在创建中怎么办</a></li>
+                  
+                      <li class="li-h3"><a href="#agent_2">Agent 工作台打不开怎么办</a></li>
+                  
+                      <li class="li-h3"><a href="#_18">模型或渠道选项为空怎么办</a></li>
+                  
+                      <li class="li-h3"><a href="#_19">文件上传失败怎么办</a></li>
+                  
+                      <li class="li-h3"><a href="#skill_1">Skill 安装失败怎么办</a></li>
+                  
+              
+                  <li><a href="#_20">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="_1">用户指南<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>本指南面向管理员创建的普通用户，介绍如何登录用户工作台并使用 Agent。您不需要进入管理后台；如果页面没有显示某项配置或操作，说明该功能需要管理员先开放。</p>
+<h2 id="_2">使用前确认<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>开始前，请向管理员确认以下信息：</p>
+<ul>
+<li>平台访问地址和登录方式。</li>
+<li>已为您创建的账号，或允许使用的企业单点登录方式。</li>
+<li>可使用的 Agent 配置、模型和消息渠道。</li>
+<li>个人或分组的实例配额，以及是否有 Token 或预算限制。</li>
+</ul>
+<h2 id="_3">登录与首次使用<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开平台访问地址，进入用户登录页。</li>
+<li>使用管理员提供的邮箱密码、OAuth 或 SAML SSO 方式登录。</li>
+<li>登录成功后进入用户工作台的“实例列表”页面。</li>
+<li>如果管理员要求首次登录修改密码，先完成密码修改，再返回用户侧。</li>
+</ol>
+<p><img alt="用户登录页" src="../images/preprod-user-login.png" /></p>
+<p>用户侧左侧导航包含以下入口：</p>
+<table>
+<thead>
+<tr>
+<th>入口</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实例列表</td>
+<td>创建、访问和管理自己的 Agent 实例。</td>
+</tr>
+<tr>
+<td>Skill 市场</td>
+<td>浏览可用 Skill，并将 Skill 安装到已有实例。</td>
+</tr>
+<tr>
+<td>我的分组</td>
+<td>查看管理员分配给您的分组和分组实例。</td>
+</tr>
+<tr>
+<td>个人资料</td>
+<td>查看账号、实例配额和 Token 用量，修改密码。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="agent">创建和使用 Agent<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h2>
+<h3 id="_4">创建实例<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<ol>
+<li>打开左侧导航中的“实例列表”，单击“创建实例”。</li>
+<li>选择实例归属：选择“个人”表示只有自己可见；选择分组表示由分组成员共同使用。</li>
+<li>选择管理员已经配置好的 Agent 配置。</li>
+<li>在技能空间中选择需要的 Skill；标记为必装的 Skill 会自动加入实例。</li>
+<li>填写实例名称。</li>
+<li>选择可用的 AI 模型；如果管理员没有开放模型，联系管理员处理。</li>
+<li>按需选择消息渠道并填写渠道配置。</li>
+<li>单击“创建实例”，等待实例状态变为“运行中”。</li>
+</ol>
+<p><img alt="用户侧创建 Agent 实例" src="../images/preprod-user-create-instance.png" /></p>
+<p>创建实例页面展示的 Agent 配置、Skill、模型和渠道，均由管理员预先配置。用户只能从可用选项中选择，不能修改平台级配置。</p>
+<h3 id="agent_1">进入 Agent 工作台<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>返回“实例列表”，找到状态为“运行中”的实例。</li>
+<li>打开实例详情。</li>
+<li>在详情页单击“进入工作台”。</li>
+<li>在 Agent 原生界面中开始对话或执行任务。</li>
+</ol>
+<p>如果实例仍处于创建中，请等待状态更新后再进入工作台。工作台打不开时，先回到实例列表确认实例状态，再联系管理员排查 Agent Manager 到 Sandbox 的网络。</p>
+<h3 id="_5">上传文件<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>如果 Agent 应用提供文件上传入口：</p>
+<ol>
+<li>进入 Agent 工作台。</li>
+<li>单击上传文件，选择一个或多个文件，或将文件拖到上传区域。</li>
+<li>等待页面提示上传完成。</li>
+<li>再向 Agent 描述需要处理的文件和任务。</li>
+</ol>
+<p>上传大文件或多个文件时，请等上传完成后再关闭页面。文件无法上传时，先检查文件大小、网络连接和实例运行状态。</p>
+<h3 id="_6">使用终端<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>部分 Agent 配置会开放终端入口。在实例详情页单击“打开终端”，等待连接完成，再执行任务。终端是否可用由管理员在 Agent 配置中决定；未看到终端入口时无需重复刷新，请联系管理员确认。</p>
+<h2 id="_7">管理我的实例<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<h3 id="_8">查看和筛选实例<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p>在“实例列表”中：</p>
+<ul>
+<li>使用搜索框按实例名称查找。</li>
+<li>选择“个人”查看自己创建的实例。</li>
+<li>选择“分组”查看您有权限使用的分组实例。</li>
+<li>打开实例详情查看状态、访问链接、模型、渠道和运行配置。</li>
+</ul>
+<p><img alt="用户侧实例列表" src="../images/preprod-user-instances.png" /></p>
+<h3 id="_9">启动、停止和删除<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>您可以根据页面显示的权限执行以下操作：</p>
+<ol>
+<li>在实例列表中找到目标实例。</li>
+<li>选择“启动”或“停止”，等待状态变为“运行中”或“已停止”。</li>
+<li>确认不再需要实例及其中数据后，再选择“删除”。</li>
+</ol>
+<p>停止实例会暂停运行资源，通常不会删除实例配置；删除实例会终止关联沙箱并移除实例记录，删除前请确认数据已经备份。</p>
+<h3 id="_10">修改实例配置<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p>如果管理员在 Agent 类型中开放了修改能力，您可以在实例详情中：</p>
+<ul>
+<li>修改可用模型并保存配置。</li>
+<li>修改消息渠道和渠道参数并保存配置。</li>
+<li>按页面提示重启实例，使新配置生效。</li>
+</ul>
+<p>如果看不到模型或渠道配置，或者保存按钮不可用，说明当前 Agent 配置不允许用户修改，需要联系管理员。</p>
+<h2 id="skill">使用 Skill 市场<a class="headerlink" href="#skill" title="Permanent link">&para;</a></h2>
+<ol>
+<li>打开左侧“Skill 市场”。</li>
+<li>在“官方 Skills”或“Skills 空间”中搜索 Skill，也可以按分类筛选。</li>
+<li>确认 Skill 的用途和适用场景。</li>
+<li>单击“安装到实例”，选择目标实例并确认。</li>
+<li>返回实例应用，按 Skill 的说明使用对应能力。</li>
+</ol>
+<p><img alt="用户侧 Skill 市场" src="../images/preprod-user-skill-market.png" /></p>
+<p>Skill 是否能安装到某个实例取决于实例状态、Skill 要求和您的权限。安装失败时，先确认目标实例正在运行，再查看错误提示。</p>
+<h2 id="_11">查看个人资料和用量<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<h3 id="_12">查看账号和配额<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>打开“个人资料”，可以查看登录邮箱、账号角色和实例配额。需要修改密码时，从个人资料页进入修改密码流程。</p>
+<p><img alt="用户侧个人资料" src="../images/preprod-user-profile.png" /></p>
+<h3 id="token">查看 Token 用量<a class="headerlink" href="#token" title="Permanent link">&para;</a></h3>
+<p>实例列表或个人资料页可能展示今日和近 30 天 Token 用量。实际显示内容取决于管理员是否配置 AI 网关和用量统计。</p>
+<p>达到个人或分组限额后，模型调用可能被限制。此时请联系管理员确认限额和网关配置，不要重复创建实例。</p>
+<h3 id="_13">使用分组实例<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>打开“我的分组”查看管理员分配的分组、实例数量和用量信息。</p>
+<p><img alt="用户侧我的分组" src="../images/preprod-user-groups.png" /></p>
+<p>分组实例由分组成员共同使用。您能执行的操作由分组角色和实例权限决定；看不到目标分组或实例时，请联系分组管理员确认成员关系。</p>
+<h2 id="_14">用户侧常见问题<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<h3 id="_15">登录后看不到实例列表怎么办<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>退出当前账号后重新打开平台访问地址，使用普通用户账号登录。不要使用计算巢服务实例输出中的“管理员登录地址”。如果仍然无法进入，检查账号是否已由管理员创建、账号状态是否启用，以及登录方式是否正确。</p>
+<h3 id="_16">创建实例按钮不可用怎么办<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>通常是实例配额已用满，或者管理员还没有配置可用的 Agent 类型、模型或沙箱。记录页面提示后联系管理员处理。</p>
+<h3 id="_17">实例长时间停留在创建中怎么办<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>不要连续重复创建。返回实例列表记录实例名称和状态，等待一段时间；仍未变为“运行中”时，将实例 ID 和页面提示提供给管理员排查。</p>
+<h3 id="agent_2">Agent 工作台打不开怎么办<a class="headerlink" href="#agent_2" title="Permanent link">&para;</a></h3>
+<p>先确认实例状态为“运行中”，再刷新实例详情页并重新单击“进入工作台”。若返回 502、超时或提示无权限，请联系管理员检查 Sandbox、Agent Web 端口和 Manager 到 E2B Host 的网络。</p>
+<h3 id="_18">模型或渠道选项为空怎么办<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>这些选项由管理员配置并控制是否允许用户修改。请联系管理员确认模型提供商、AI 网关和渠道模板是否已启用。</p>
+<h3 id="_19">文件上传失败怎么办<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>检查文件大小、文件格式和网络连接；确认实例仍在运行，并等待页面提示上传完成。持续失败时，记录文件类型、大小和错误提示，交给管理员排查。</p>
+<h3 id="skill_1">Skill 安装失败怎么办<a class="headerlink" href="#skill_1" title="Permanent link">&para;</a></h3>
+<p>确认目标实例正在运行，且您有权限使用该 Skill。仍然失败时，记录 Skill 名称、目标实例和错误提示，联系管理员处理。</p>
+<h2 id="_20">相关文档<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E4%B8%8E%E5%88%86%E7%BB%84%E7%AE%A1%E7%90%86/">管理员指南：用户、登录和分组管理</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">管理员指南：创建和管理 Agent 实例</a></li>
+<li><a href="../%E6%8A%80%E8%83%BD%E7%AE%A1%E7%90%86/">管理员指南：技能管理</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.738284+00:00
+  -->
+</body>
+</html>

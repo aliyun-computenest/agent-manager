@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>v1.0.3 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../../search/main.js"></script>
+  
+
+  
+
+  <script src="../../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#v103">v1.0.3</a></li>
+              
+                  <li><a href="#_1">版本概述</a></li>
+                  
+              
+                  <li><a href="#_2">升级步骤</a></li>
+                  
+              
+                  <li><a href="#_3">注意事项</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="v103">v1.0.3<a class="headerlink" href="#v103" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>发布日期</strong>：2025-05-30</li>
+<li><strong>镜像</strong>：<code>compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agent-manager:20260529_release_final_1</code></li>
+</ul>
+<h2 id="_1">版本概述<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>v1.0.3 在 v1.0.2 基础上聚焦于<strong>可观测性、运维易用性、Agent 能力扩展与安全合规</strong>，主要带来以下能力提升：</p>
+<ul>
+<li><strong>可观测性自动集成</strong>：平台部署完成后自动接入 SLS 结构化日志收集，提供分级日志（业务、平台、运行时）的统一查询体验，无需用户手动配置 Logtail。</li>
+<li><strong>沙箱终端登录用户</strong>：用户在控制台进入沙箱终端时使用专属业务账号登录，权限隔离更清晰。</li>
+<li><strong>Hermes 飞书渠道支持</strong>：Hermes Agent 类型新增飞书（Feishu）渠道，可通过 App ID / App Secret 一键接入飞书机器人。</li>
+<li><strong>OpenClaw / Hermes Agent 镜像版本升级</strong>：随发布更新到最新稳定版镜像，修复多项已知问题并增强功能。</li>
+<li><strong>Agent 配置易用性提升</strong>：</li>
+<li>支持通过 <code>.env</code> 文件统一管理 Agent 环境变量；</li>
+<li>AI 网关支持自动配置，部署即开箱可用；</li>
+<li>复制创建 Agent 类型时自动补全所有配置项，配置模板格式切换体验优化；</li>
+<li>Skill 挂载文案与默认挂载路径优化。</li>
+<li><strong>安全合规加固</strong>：</li>
+<li>新增升级前置确认参数，避免误操作；</li>
+<li>通过 RLS 限制非管理员用户自我提权，强化数据库行级权限。</li>
+<li><strong>国际化与体验细节</strong>：沙箱升级界面国际化补全，请求 ID 在 API 日志中全链路传递，问题定位更高效。</li>
+</ul>
+<h2 id="_2">升级步骤<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>[必须]请参考 <a href="../#升级计算巢服务实例">升级计算巢服务实例</a>：在<strong>计算巢控制台</strong>对服务实例执行<strong>升级</strong>操作，数据库增量迁移会随升级流程自动完成。</li>
+<li>[可选]在Agent Manager 平台，<strong>沙箱配置</strong>中找到SandboxSet “agent-manager-openclaw” 和“agent-manager-hermes”，修改内容如下</li>
+<li>更新agent-manager-openclaw 和 agent-manager-hermes 中的镜像，分别为以下两个镜像</li>
+</ol>
+<p><code>compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/openclaw-manager-openclaw-test:2026.5.19</code></p>
+<p><code>compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/openclaw-manager-hermes-test:2026.5.16</code></p>
+<blockquote>
+<p><strong>重要</strong>：v1.0.2 升级到 v1.0.3 时，由于 OpenClaw / Hermes Agent 镜像版本变更涉及配置兼容性调整（包括 Hermes 飞书渠道模板、startup_command、OpenClaw 钉钉模板等），需要在计算巢升级完成后<strong>手动执行一次 Agent 配置更新</strong>，详见 <a href="../v1.0.3_Agent%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7%E6%8C%87%E5%8D%97/">Agent 版本升级指南</a>。新部署的环境无需执行该步骤，初始化脚本已包含全部配置。</p>
+</blockquote>
+<h2 id="_3">注意事项<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Hermes 飞书渠道依赖容器镜像预装的 <code>lark-oapi</code> 等 SDK，请确保使用本版本随附的 Hermes 镜像。</li>
+<li>SLS 日志收集功能默认启用，若已自建日志方案可在部署参数中关闭。</li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.755628+00:00
+  -->
+</body>
+</html>

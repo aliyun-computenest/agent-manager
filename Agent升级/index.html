@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>Agent 升级 - Agent Manager</title>
+
+  <link rel="shortcut icon" href="../img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="../search/main.js"></script>
+  
+
+  
+
+  <script src="../js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#agent">Agent 升级</a></li>
+              
+                  <li><a href="#_1">配置升级前后的备份和恢复命令</a></li>
+                  
+              
+                  <li><a href="#sandbox">确认 Sandbox 具备升级条件</a></li>
+                  
+              
+                  <li><a href="#sandbox_1">发起单个或批量 Sandbox 升级</a></li>
+                  
+              
+                  <li><a href="#_2">升级失败后重试</a></li>
+                  
+              
+                  <li><a href="#_3">相关文档</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="agent">Agent 升级<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h1>
+<p>本页介绍如何更换沙箱镜像、启动命令或运行参数，并把正在运行的 Agent Sandbox 迁移到新配置。升级会重建选中的 Sandbox，可能造成短暂中断；请先用测试实例验证。</p>
+<p>升级前需要准备可用的备份和恢复命令。备份点的创建和恢复操作见 <a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a>。</p>
+<p><img alt="实例升级功能页" src="../images/preprod-instance-upgrade.png" /></p>
+<h2 id="_1">配置升级前后的备份和恢复命令<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>在升级前，为对应 Agent 类型配置升级前备份命令和升级后恢复命令。升级时，平台会重建底层 Pod；只有写入 <code>/backup</code> 并成功恢复的数据才会保留。</p>
+<ol>
+<li>打开管理后台，进入“Agent 配置”。</li>
+<li>打开目标 Agent 类型详情，进入“备份&amp;升级配置”。</li>
+<li>确认关联 SandboxSet、命名空间、目标镜像和命令超时时间。</li>
+<li>填写“升级前命令”，把需要保留的数据写入 <code>/backup</code>。</li>
+<li>填写“升级后恢复命令”，从 <code>/backup</code> 恢复数据到新 Pod 的工作目录。</li>
+<li>保存配置。</li>
+<li>先在测试 Sandbox 上执行一次升级，确认数据和应用访问正常。</li>
+</ol>
+<p>命令必须覆盖 Agent 的实际数据目录。页面提供的示例只适用于对应 Agent 类型的默认目录；如果要恢复较早的备份文件，请把恢复命令改成指定文件名，不要依赖“最新文件”的自动选择。</p>
+<h2 id="sandbox">确认 Sandbox 具备升级条件<a class="headerlink" href="#sandbox" title="Permanent link">&para;</a></h2>
+<p>在“实例升级”页面看不到目标 Sandbox，或实例显示“不可安全升级”时，先检查以下条件：</p>
+<table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SandboxSet</td>
+<td>同时包含 <code>agent-runtime</code> 和 <code>csi</code> runtime，能够挂载 <code>/backup</code>。</td>
+</tr>
+<tr>
+<td>实例</td>
+<td>创建时已写入备份挂载信息。只修改 SandboxSet 不会自动修复已运行实例。</td>
+</tr>
+<tr>
+<td>Agent 类型</td>
+<td>已保存升级前命令和升级后恢复命令。</td>
+</tr>
+<tr>
+<td>备份目录</td>
+<td><code>/backup</code> 可写，备份命令能生成非空文件。</td>
+</tr>
+</tbody>
+</table>
+<p>新建实例会按修复后的 SandboxSet 生成备份挂载。旧实例如果缺少创建时的挂载信息，需要重建实例，或由管理员按集群运维流程补齐后再升级。</p>
+<h2 id="sandbox_1">发起单个或批量 Sandbox 升级<a class="headerlink" href="#sandbox_1" title="Permanent link">&para;</a></h2>
+<p>升级前先确认业务允许短暂中断，并确认同一命名空间没有正在处理的升级任务。</p>
+<ol>
+<li>打开管理后台，进入“实例升级”。</li>
+<li>选择 Agent 类型，等待可升级 Sandbox 列表加载。</li>
+<li>选择少量 Sandbox 做试升级，或切换到“按标签选择”配置批量范围。</li>
+<li>设置最大不可用数和命令超时时间。</li>
+<li>单击“发起完整升级”。</li>
+<li>在“历史升级详情”中查看进度和失败对象。</li>
+</ol>
+<p>平台会根据最新 SandboxSet 自动生成升级所需的镜像、命令、环境变量和挂载变更。您不需要手动填写底层升级资源。</p>
+<p>同一命名空间同时只能有一个未完成的升级任务。已有“等待中”“升级中”或“失败”任务时，请先等待、删除或修复该任务。</p>
+<h2 id="_2">升级失败后重试<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>先打开“历史升级详情”，查看失败阶段、Reason 和 Message，再按下表处理：</p>
+<table>
+<thead>
+<tr>
+<th>失败阶段</th>
+<th>处理方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>升级前命令失败</td>
+<td>检查待备份目录、<code>/backup</code> 挂载和命令退出码。修复后重新发起完整升级。</td>
+</tr>
+<tr>
+<td>镜像或 Pod 启动失败</td>
+<td>检查目标镜像、启动命令和探针。删除失败任务后重新发起升级。</td>
+</tr>
+<tr>
+<td>升级后恢复命令失败</td>
+<td>检查备份文件路径、恢复目录和校验文件。删除失败任务后选择“只执行恢复命令”。</td>
+</tr>
+<tr>
+<td>命名空间已有未完成任务</td>
+<td>等待任务完成，或在历史详情中删除、修复失败任务。</td>
+</tr>
+</tbody>
+</table>
+<p>只有在升级前备份命令已经成功时，才使用“只执行恢复命令”。否则必须重新执行完整升级，先生成新的备份再替换 Sandbox。</p>
+<h2 id="_3">相关文档<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">返回文档首页</a></li>
+<li><a href="../Agent%E5%A4%87%E4%BB%BD/">Agent 备份</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AEAgent%E7%B1%BB%E5%9E%8B/">配置 Agent 类型</a></li>
+<li><a href="../%E9%85%8D%E7%BD%AESandboxSet/">配置沙箱（SandboxSet）</a></li>
+<li><a href="../%E5%88%9B%E5%BB%BA%E5%92%8C%E7%AE%A1%E7%90%86Agent%E5%AE%9E%E4%BE%8B/">创建和管理 Agent 实例</a></li>
+<li><a href="../release-notes/">发布记录</a></li>
+<li><a href="../%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%8E%92%E9%9A%9C/">常见问题与排障</a></li>
+</ul>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.6.1
+  Docs Build Date UTC : 2026-08-06 06:39:45.715310+00:00
+  -->
+</body>
+</html>
