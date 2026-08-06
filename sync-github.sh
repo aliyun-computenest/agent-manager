@@ -21,6 +21,7 @@
 #   ./sync-github.sh -b develop       # 同步本地 develop
 #   ./sync-github.sh -t main          # 推送到 GitHub 的 main 分支
 #   ./sync-github.sh -n               # dry-run，只打印将执行的动作，不实际推送
+#   ./sync-github.sh -D               # 明确允许更新 GitHub 文档发布配置和入口页
 
 set -euo pipefail
 
@@ -37,12 +38,21 @@ EXCLUDES=(
   "docs/observability-auto-integration-design.md"
 )
 
+# 默认保护 GitHub 文档发布链路，避免日常代码同步静默覆盖或删除。
+PROTECTED_PUBLIC_PATHS=(
+  ".github/workflows/docs.yml"
+  "mkdocs.yml"
+  "docs/user-docs/index.md"
+  "docs/user-docs/index-en.md"
+)
+
 # ---- 默认参数 ----
 GITHUB_REMOTE="github"
 GITHUB_REMOTE_URL="https://github.com/aliyun-computenest/agent-manager.git"
 SOURCE_BRANCH=""
 TARGET_BRANCH="master"
 DRY_RUN="false"
+ALLOW_PUBLIC_DOCS_CHANGE="false"
 TMP_BRANCH="tmp-github-sync-$$"
 COMMIT_MESSAGE="chore: public release snapshot"
 
@@ -59,13 +69,14 @@ usage() {
   exit 0
 }
 
-while getopts "b:t:r:m:nh" opt; do
+while getopts "b:t:r:m:nDh" opt; do
   case "$opt" in
     b) SOURCE_BRANCH="$OPTARG" ;;
     t) TARGET_BRANCH="$OPTARG" ;;
     r) GITHUB_REMOTE="$OPTARG" ;;
     m) COMMIT_MESSAGE="$OPTARG" ;;
     n) DRY_RUN="true" ;;
+    D) ALLOW_PUBLIC_DOCS_CHANGE="true" ;;
     h) usage ;;
     *) usage ;;
   esac
@@ -120,7 +131,9 @@ cleanup() {
 trap cleanup EXIT
 
 # 1. 基于 GitHub 目标分支创建临时分支；目标分支不存在时创建孤儿分支
+TARGET_EXISTS="false"
 if git ls-remote --exit-code --heads "$GITHUB_REMOTE" "$TARGET_BRANCH" >/dev/null 2>&1; then
+  TARGET_EXISTS="true"
   git fetch --quiet "$GITHUB_REMOTE" "$TARGET_BRANCH:refs/remotes/$GITHUB_REMOTE/$TARGET_BRANCH"
   git checkout -b "$TMP_BRANCH" "$GITHUB_REMOTE/$TARGET_BRANCH" >/dev/null
   git rm -r --quiet .
@@ -129,6 +142,24 @@ if git ls-remote --exit-code --heads "$GITHUB_REMOTE" "$TARGET_BRANCH" >/dev/nul
 else
   git checkout --orphan "$TMP_BRANCH" "$SOURCE_BRANCH" >/dev/null
   log "GitHub 目标分支不存在，已创建孤儿分支：${TMP_BRANCH}（无父提交）"
+fi
+
+# 默认禁止覆盖 GitHub 文档发布配置和入口页；确需更新时必须显式传入 -D。
+if [ "$TARGET_EXISTS" = "true" ] && [ "$ALLOW_PUBLIC_DOCS_CHANGE" = "false" ]; then
+  protected_changed="false"
+  for protected_path in "${PROTECTED_PUBLIC_PATHS[@]}"; do
+    if ! git diff --quiet "$GITHUB_REMOTE/$TARGET_BRANCH" -- "$protected_path"; then
+      err "受保护的 GitHub 文档文件将发生变化：$protected_path"
+      protected_changed="true"
+    fi
+  done
+  if [ "$protected_changed" = "true" ]; then
+    err "已中止同步。确认需要更新这些文件后，请增加 -D 参数重新执行。"
+    exit 1
+  fi
+  log "GitHub 文档发布配置和入口页未变化"
+elif [ "$ALLOW_PUBLIC_DOCS_CHANGE" = "true" ]; then
+  log "已通过 -D 明确允许更新 GitHub 文档发布配置和入口页"
 fi
 
 # 2. 删除排除路径（从暂存区移除并删除工作区文件）
