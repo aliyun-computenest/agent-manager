@@ -1,0 +1,117 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@openclaw.com",
+      "role": "admin",
+      "status": "active",
+      "maxInstances": 10,
+      "dailyTokenLimit": 100000,
+      "usedTokens": 25000,
+      "createdAt": "2024-01-15T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "username": "user1",
+      "email": "user1@example.com",
+      "role": "user",
+      "status": "active",
+      "maxInstances": 3,
+      "dailyTokenLimit": 10000,
+      "usedTokens": 3500,
+      "createdAt": "2024-02-20T10:30:00Z"
+    },
+    {
+      "id": "3",
+      "username": "user2",
+      "email": "user2@example.com",
+      "role": "user",
+      "status": "inactive",
+      "maxInstances": 2,
+      "dailyTokenLimit": 5000,
+      "usedTokens": 0,
+      "createdAt": "2024-03-10T14:15:00Z"
+    }
+  ],
+  "models": [
+    {
+      "id": "1",
+      "name": "Qwen3-Max",
+      "provider": "Alibaba",
+      "status": "active"
+    }
+  ],
+  "channels": [
+    {
+      "id": "1",
+      "name": "微信",
+      "type": "wechat",
+      "status": "active",
+      "icon": "wechat"
+    },
+    {
+      "id": "2",
+      "name": "企业微信",
+      "type": "wecom",
+      "status": "active",
+      "icon": "wecom"
+    },
+    {
+      "id": "3",
+      "name": "QQ",
+      "type": "qq",
+      "status": "active",
+      "icon": "qq"
+    },
+    {
+      "id": "4",
+      "name": "飞书",
+      "type": "feishu",
+      "status": "active",
+      "icon": "feishu"
+    },
+    {
+      "id": "5",
+      "name": "钉钉",
+      "type": "dingtalk",
+      "status": "active",
+      "icon": "dingtalk"
+    }
+  ],
+  "openClaws": [
+    {
+      "id": "1",
+      "name": "客服助手",
+      "userId": "2",
+      "status": "running",
+      "model": "Qwen3-Max",
+      "channels": ["wechat", "wecom"],
+      "createdAt": "2024-03-01T09:00:00Z",
+      "lastActiveAt": "2024-03-20T16:30:00Z",
+      "tokenUsage": 15000
+    },
+    {
+      "id": "2",
+      "name": "销售机器人",
+      "userId": "2",
+      "status": "stopped",
+      "model": "Qwen3-Max",
+      "channels": ["qq"],
+      "createdAt": "2024-03-05T11:20:00Z",
+      "lastActiveAt": "2024-03-18T10:00:00Z",
+      "tokenUsage": 8000
+    },
+    {
+      "id": "3",
+      "name": "技术支持",
+      "userId": "3",
+      "status": "running",
+      "model": "Qwen3-Max",
+      "channels": ["feishu", "dingtalk"],
+      "createdAt": "2024-03-10T15:45:00Z",
+      "lastActiveAt": "2024-03-20T17:00:00Z",
+      "tokenUsage": 22000
+    }
+  ]
+}

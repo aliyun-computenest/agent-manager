@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 隔离环境部署"
+  short_description: "构建当前分支并部署到保留的独立验证环境"
+  default_prompt: "Use $agent-manager-harness-ephemeral-deploy to deploy and read back the isolated build."

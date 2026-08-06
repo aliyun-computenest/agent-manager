@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0",
+  "name": "agent-manager-harness-autodev-guard",
+  "description": "Strict AutoDev gates before Harness tasks are marked complete.",
+  "gates": [
+    {
+      "id": "env_prepare",
+      "stage": "env_prepare",
+      "passCriteria": [
+        "dedicated namespace and service name are recorded",
+        "baseUrl is known before API or browser tests",
+        "secret refs are recorded by reference only",
+        "missing kubeconfig, registry, database, or E2B inputs trigger harness ask"
+      ],
+      "onFail": "Keep task in_progress, write awaiting_human output, and use harness ask for the missing environment inputs."
+    },
+    {
+      "id": "scope",
+      "stage": "develop",
+      "passCriteria": [
+        "allowlist is present before coding",
+        "changed files are inside writeScope",
+        "unrelated dirty files are ignored or blocked, never reverted"
+      ],
+      "onFail": "harness milestone blocker <task_id> \"Scope guard failed: unrelated or out-of-scope diff exists.\" --require-ack"
+    },
+    {
+      "id": "unit",
+      "stage": "test_unit",
+      "passCriteria": [
+        "exitCode is 0",
+        "testsPassed equals totalTests",
+        "no failed tests are hidden by wrapper commands"
+      ],
+      "onFail": "Keep task in_progress and report testsPassed, totalTests, and failing command."
+    },
+    {
+      "id": "deploy_ephemeral",
+      "stage": "deploy_ephemeral",
+      "passCriteria": [
+        "current branch/build artifact is deployed",
+        "namespace, service, image tag, rollout status, and /api/health readback are present",
+        "local dev server is not used as a substitute for the isolated service"
+      ],
+      "onFail": "Keep task in_progress and ask for the missing build/push/deploy input or fix the rollout failure."
+    },
+    {
+      "id": "api",
+      "stage": "test_api",
+      "passCriteria": [
+        "tests target the isolated environment baseUrl",
+        "request/response or machine-readable test report is attached",
+        "exitCode is 0 and testsPassed equals totalTests"
+      ],
+      "onFail": "Do not mark API tests complete until the isolated-environment API evidence exists."
+    },
+    {
+      "id": "e2e",
+      "stage": "test_e2e",
+      "passCriteria": [
+        "tests target the isolated environment baseUrl",
+        "evidence is new",
+        "evidence directly covers the requested feature",
+        "screenshot, video, trace, or log path is included in task output"
+      ],
+      "onFail": "Use harness ask or blocker; do not mark generic UI screenshots as done."
+    },
+    {
+      "id": "code_review",
+      "stage": "code_review",
+      "passCriteria": [
+        "git status is reviewed",
+        "diff is limited to intended files",
+        "review findings are resolved or explicitly accepted by human acknowledgement"
+      ],
+      "onFail": "Do not create or update MR until the guard passes."
+    },
+    {
+      "id": "platform_acceptance",
+      "stage": "deploy",
+      "passCriteria": [
+        "work item and milestone are present",
+        "platform acceptance command is known",
+        "required evidence is uploaded or linked"
+      ],
+      "onFail": "Stop at evidence boundary; never claim platform completion from local tests alone."
+    }
+  ],
+  "forbiddenClaims": [
+    "platform accepted without work item evidence",
+    "live OOS/K8s verified without readback evidence",
+    "isolated environment complete without namespace/service/baseUrl",
+    "API tests complete while targeting only mocks or localhost",
+    "E2E complete with unrelated screenshots",
+    "unit complete when testsPassed is less than totalTests",
+    "question asked while continuing blocked downstream work"
+  ]
+}

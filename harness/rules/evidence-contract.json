@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "name": "agent-manager-harness-evidence-contract",
+  "description": "Machine-checkable evidence requirements for Agent Manager Harness delivery.",
+  "unit": {
+    "requires": [
+      "command",
+      "exitCode",
+      "testsPassed",
+      "totalTests"
+    ],
+    "pass": "exitCode=0 and testsPassed=totalTests and totalTests>0"
+  },
+  "deployEphemeral": {
+    "requires": [
+      "aoneCiRunId",
+      "pipelinePath",
+      "command",
+      "exitCode",
+      "namespace",
+      "serviceName",
+      "baseUrl",
+      "imageTag",
+      "rolloutStatus",
+      "healthReadback"
+    ],
+    "pass": "exitCode=0, rollout succeeds, and /api/health returns success from the isolated service"
+  },
+  "api": {
+    "requires": [
+      "command",
+      "exitCode",
+      "baseUrl",
+      "requestResponseEvidence",
+      "testsPassed",
+      "totalTests"
+    ],
+    "pass": "exitCode=0, baseUrl is the isolated environment URL, and testsPassed=totalTests"
+  },
+  "e2e": {
+    "requires": [
+      "command",
+      "exitCode",
+      "baseUrl",
+      "experienceUrl",
+      "featureAssertions",
+      "featureSpecificArtifact",
+      "targetPathOrUrl",
+      "consoleErrors",
+      "failedNetwork",
+      "layoutOverflow"
+    ],
+    "pass": "exitCode=0, baseUrl is the isolated environment URL, experienceUrl is usable, featureAssertions are present, screenshots/traces/log targets mention the requested feature or are explicitly marked featureSpecific=true, no console/network failures, desktop/mobile overflow <= 2"
+  },
+  "integrationLive": {
+    "requires": [
+      "command",
+      "exitCode",
+      "isolatedEnvironment",
+      "liveReadbackEvidence",
+      "failureClassification"
+    ],
+    "pass": "exitCode=0 and live evidence is read back from the target system; if exitCode!=0 then classify failures before any downstream stage: external prerequisite patterns are identified before feature-token matching, related failures loop to develop, external-only failures may auto-continue only when relatedFailures=0 and unrelatedFailures=0, mixed unrelated failures await human"
+  },
+  "review": {
+    "requires": [
+      "scopeGuard",
+      "testEvidence",
+      "automatedReview",
+      "blockingFindings"
+    ],
+    "pass": "blockingFindings=0 unless acceptedByHuman=true"
+  },
+  "output": {
+    "maxInlineBytes": 6000,
+    "largePayloadKeys": [
+      "rawLog",
+      "stdout",
+      "stderr",
+      "trace",
+      "video",
+      "screenshotBase64"
+    ],
+    "rule": "Large payloads must be referenced as artifacts, not embedded in task output."
+  }
+}

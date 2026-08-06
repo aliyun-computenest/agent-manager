@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "trialId": "parallel-flow-lock-conflict",
+  "featureId": "harness-parallel-flow",
+  "title": "Harness parallel flow lock conflict trial",
+  "tasks": [
+    {
+      "id": "edit-api-route",
+      "stage": "develop",
+      "dependsOn": [],
+      "resources": [
+        "file:backend"
+      ],
+      "writeScope": [
+        "agent-manager/server/routes/parallel-flow.js"
+      ],
+      "command": "node -e \"setTimeout(() => { console.log('api route done') }, 80)\"",
+      "durationMs": 40
+    },
+    {
+      "id": "edit-api-route-tests",
+      "stage": "develop",
+      "dependsOn": [],
+      "resources": [
+        "file:backend"
+      ],
+      "writeScope": [
+        "agent-manager/server/routes/parallel-flow.js"
+      ],
+      "command": "node -e \"setTimeout(() => { console.log('api route tests done') }, 80)\"",
+      "durationMs": 40
+    },
+    {
+      "id": "verify-parallel-flow",
+      "stage": "test_unit",
+      "dependsOn": [
+        "edit-api-route",
+        "edit-api-route-tests"
+      ],
+      "resources": [
+        "file:tests"
+      ],
+      "writeScope": [
+        "harness/tests/rules-tools.test.mjs"
+      ],
+      "command": "node -e \"setTimeout(() => { console.log('parallel flow verified') }, 10)\"",
+      "durationMs": 20
+    }
+  ],
+  "waveOverrides": [
+    {
+      "index": 0,
+      "tasks": [
+        "edit-api-route",
+        "edit-api-route-tests"
+      ]
+    },
+    {
+      "index": 1,
+      "tasks": [
+        "verify-parallel-flow"
+      ]
+    }
+  ]
+}

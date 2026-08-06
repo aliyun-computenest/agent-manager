@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "trialId": "checkpoint-backup-parallel-real-dev",
+  "featureId": "checkpoint-backup",
+  "title": "Checkpoint backup parallel development trial",
+  "tasks": [
+    {
+      "id": "clarify-checkpoint-inputs",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint clarify done') }, 20)\""
+    },
+    {
+      "id": "orchestrate-checkpoint-delivery",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint plan done') }, 20)\""
+    },
+    {
+      "id": "prepare-checkpoint-environment",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint env prepared') }, 20)\""
+    },
+    {
+      "id": "backend-backup-api",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint backend done') }, 120)\""
+    },
+    {
+      "id": "frontend-backup-ui",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint frontend done') }, 120)\""
+    },
+    {
+      "id": "deploy-checkpoint-ephemeral",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint deployed') }, 20)\""
+    },
+    {
+      "id": "api-checkpoint-readback",
+      "command": "node -e \"setTimeout(() => { console.log('checkpoint api verified') }, 20)\""
+    }
+  ]
+}

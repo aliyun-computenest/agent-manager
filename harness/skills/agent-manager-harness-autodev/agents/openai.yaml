@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Manager Harness AutoDev"
+  short_description: "Harness 自动开发卡点、证据、等待与验收规则包"
+  default_prompt: "Use $agent-manager-harness-autodev to run an Agent Manager feature through Harness gates with isolated environment evidence."

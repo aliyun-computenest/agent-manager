@@ -1,0 +1,223 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "instance-lifecycle",
+  "title": "Agent instance lifecycle verification",
+  "sources": {
+    "designDocs": [
+      "docs/design-docs/instance-provisioner.md"
+    ],
+    "uiArtifacts": [
+      "agent-manager/tests/ui"
+    ]
+  },
+  "platformInputs": {
+    "required": [
+      "workItemId",
+      "milestoneId",
+      "ownerTokenRef",
+      "agentId",
+      "acceptanceCommand"
+    ],
+    "optional": [
+      "testBaseUrl",
+      "testRunId",
+      "evidenceUploadTarget"
+    ]
+  },
+  "stages": [
+    "clarify",
+    "dev_orchestration",
+    "env_prepare",
+    "develop",
+    "test_unit",
+    "deploy_ephemeral",
+    "test_api",
+    "test_e2e",
+    "integration_live",
+    "code_review",
+    "deploy"
+  ],
+  "tasks": [
+    {
+      "id": "clarify-instance-lifecycle-inputs",
+      "stage": "clarify",
+      "dependsOn": [],
+      "resources": [],
+      "writeScope": [],
+      "description": "Verify design doc, UI input policy, real instance-lifecycle scope, environment inputs, and success criteria."
+    },
+    {
+      "id": "orchestrate-instance-lifecycle-delivery",
+      "stage": "dev_orchestration",
+      "dependsOn": [
+        "clarify-instance-lifecycle-inputs"
+      ],
+      "resources": [],
+      "writeScope": [],
+      "description": "Publish allowlist, resource locks, isolated environment, API/browser tests, and evidence plan."
+    },
+    {
+      "id": "prepare-instance-lifecycle-environment",
+      "stage": "env_prepare",
+      "dependsOn": [
+        "orchestrate-instance-lifecycle-delivery"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager",
+        "supabase:test",
+        "e2b:quota"
+      ],
+      "writeScope": [],
+      "description": "Create or bind the dedicated namespace/service/baseUrl, image tag, database isolation, E2B input, and secret refs."
+    },
+    {
+      "id": "instance-lifecycle-api",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-instance-lifecycle-environment"
+      ],
+      "resources": [
+        "file:backend",
+        "supabase:test",
+        "e2b:quota"
+      ],
+      "writeScope": [
+        "agent-manager/server/routes/*instance*",
+        "agent-manager/server/services/*instance*",
+        "agent-manager/tests/integration/suites/instance-lifecycle/**"
+      ],
+      "description": "Implement or review instance lifecycle API paths and integration coverage.",
+      "agentPacket": true
+    },
+    {
+      "id": "deploy-instance-lifecycle-ephemeral",
+      "stage": "deploy_ephemeral",
+      "dependsOn": [
+        "instance-lifecycle-api"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "writeScope": [],
+      "description": "Deploy the current instance-lifecycle build into the dedicated namespace/service and read back health."
+    },
+    {
+      "id": "api-instance-lifecycle-readback",
+      "stage": "test_api",
+      "dependsOn": [
+        "deploy-instance-lifecycle-ephemeral"
+      ],
+      "resources": [
+        "k8s:ephemeral-service",
+        "supabase:test",
+        "e2b:quota"
+      ],
+      "writeScope": [],
+      "description": "Run instance-lifecycle API checks against the isolated environment baseUrl."
+    }
+  ],
+  "testMatrix": [
+    {
+      "id": "instance-lifecycle-unit",
+      "stage": "test_unit",
+      "command": "cd agent-manager && npx vitest run tests/unit/*instance*.test.js",
+      "resources": [
+        "file:tests"
+      ],
+      "evidence": [
+        "exitCode",
+        "testsPassed",
+        "totalTests"
+      ]
+    },
+    {
+      "id": "instance-lifecycle-deploy-ephemeral",
+      "stage": "deploy_ephemeral",
+      "command": "kubectl -n <namespace> rollout status deployment/<serviceName> && curl -fsS <baseUrl>/api/health",
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "evidence": [
+        "namespace/service",
+        "imageTag",
+        "rollout status",
+        "/api/health"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "instance-lifecycle-api",
+      "stage": "test_api",
+      "command": "cd agent-manager && TEST_BASE_URL=<baseUrl> npm run test:integration -- suites/instance-lifecycle",
+      "resources": [
+        "k8s:ephemeral-service",
+        "supabase:test",
+        "e2b:quota"
+      ],
+      "evidence": [
+        "baseUrl",
+        "API status flow",
+        "testsPassed",
+        "totalTests",
+        "stdout"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "instance-lifecycle-browser",
+      "stage": "test_e2e",
+      "command": "cd agent-manager && TEST_BASE_URL=<baseUrl> npx playwright test tests/ui/instance-lifecycle.spec.ts --config playwright.config.ts",
+      "resources": [
+        "k8s:ephemeral-service",
+        "file:frontend"
+      ],
+      "evidence": [
+        "feature screenshots",
+        "trace or video on failure",
+        "console/network summary"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "instance-lifecycle-integration",
+      "stage": "integration_live",
+      "command": "cd agent-manager && npm run test:integration -- suites/instance-lifecycle",
+      "resources": [
+        "supabase:test",
+        "e2b:quota"
+      ],
+      "evidence": [
+        "TEST_RUN_ID",
+        "API status flow",
+        "instance id and sandbox id",
+        "Supabase cleanup assertion",
+        "integration.xml or stdout"
+      ],
+      "requiresHumanInput": true
+    }
+  ],
+  "evidence": [
+    "API status flow",
+    "instance and sandbox identifiers",
+    "Supabase cleanup assertion",
+    "integration test output"
+  ],
+  "humanGates": [
+    {
+      "stage": "integration_live",
+      "type": "clarification",
+      "reason": "Full lifecycle verification provisions real sandboxes and needs permission to consume E2B quota."
+    },
+    {
+      "stage": "deploy",
+      "type": "approval",
+      "reason": "Platform acceptance requires Harness work item and milestone acknowledgement."
+    }
+  ]
+}

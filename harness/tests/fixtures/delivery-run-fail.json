@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "harness-autodev-kit",
+  "workItemId": "WI-HARNESS-DELIVERY-KIT",
+  "environment": {
+    "runId": "harness-autodev-kit-e9166ae8f288",
+    "isolated": false,
+    "namespace": "default",
+    "dbPrefix": "public_",
+    "artifactDir": "harness/artifacts/harness-autodev-kit-e9166ae8f288"
+  },
+  "tasks": [
+    {
+      "id": "clarify-delivery-inputs",
+      "stage": "clarify",
+      "status": "done",
+      "output": {
+        "state": "completed"
+      }
+    },
+    {
+      "id": "orchestrate-delivery-dag",
+      "stage": "dev_orchestration",
+      "status": "done",
+      "output": {
+        "state": "completed"
+      }
+    },
+    {
+      "id": "build-skill-package",
+      "stage": "develop",
+      "status": "done",
+      "output": {
+        "state": "completed"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "id": "unit-harness-delivery-tools",
+      "stage": "test_unit",
+      "command": "node --test harness/tests/*.test.mjs",
+      "exitCode": 0,
+      "testsPassed": 3,
+      "totalTests": 4
+    }
+  ],
+  "waiting": [
+    {
+      "taskId": "clarify-delivery-inputs",
+      "waitType": "clarification",
+      "state": "awaiting_human",
+      "reason": "Missing platform decision",
+      "resumeCriteria": "Human answers"
+    }
+  ],
+  "outputs": [],
+  "review": {
+    "status": "failed",
+    "blockingFindings": 1,
+    "scopeGuard": {
+      "status": "failed"
+    }
+  },
+  "platformAcceptance": {
+    "status": "passed",
+    "claimedPlatformComplete": true
+  }
+}

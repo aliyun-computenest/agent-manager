@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 需求澄清"
+  short_description: "校验需求、范围、成功标准和缺失的平台输入"
+  default_prompt: "Use $agent-manager-harness-clarify to complete only the Harness clarify stage."

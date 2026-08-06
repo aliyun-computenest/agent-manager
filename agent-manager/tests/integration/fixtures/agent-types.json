@@ -1,0 +1,16 @@
+{
+  "basic": {
+    "code": "it-basic",
+    "name": "集成测试基础 AgentType",
+    "description": "Integration test fixture - basic agent type",
+    "icon": "bot",
+    "category": "custom",
+    "sandboxTimeout": 300,
+    "configTemplate": { "hello": "world" },
+    "configWritePath": "/tmp/openclaw-it.json",
+    "startupCommand": "echo 'it-start'",
+    "readinessCheck": { "type": "http", "path": "/", "timeout": 5 },
+    "supportsChannels": false,
+    "sortOrder": 9999
+  }
+}

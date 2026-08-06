@@ -1,0 +1,56 @@
+{
+  "id": "dashscope",
+  "name": "DashScope",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "api_key": "",
+  "chat_model": "OpenAIChatModel",
+  "models": [
+    {
+      "id": "qwen3-max",
+      "name": "Qwen3 Max",
+      "supports_multimodal": false,
+      "supports_image": false,
+      "supports_video": false,
+      "probe_source": "documentation",
+      "generate_kwargs": {}
+    },
+    {
+      "id": "qwen3-235b-a22b-thinking-2507",
+      "name": "Qwen3 235B A22B Thinking",
+      "supports_multimodal": false,
+      "supports_image": false,
+      "supports_video": false,
+      "probe_source": "documentation",
+      "generate_kwargs": {}
+    },
+    {
+      "id": "deepseek-v3.2",
+      "name": "DeepSeek-V3.2",
+      "supports_multimodal": false,
+      "supports_image": false,
+      "supports_video": false,
+      "probe_source": "documentation",
+      "generate_kwargs": {}
+    }
+  ],
+  "extra_models": [
+    {
+      "id": "qwen3.5-plus",
+      "name": "qwen3.5-plus",
+      "supports_multimodal": true,
+      "supports_image": true,
+      "supports_video": true,
+      "probe_source": "probed",
+      "generate_kwargs": {}
+    }
+  ],
+  "api_key_prefix": "sk",
+  "is_local": false,
+  "freeze_url": true,
+  "require_api_key": true,
+  "is_custom": false,
+  "support_model_discovery": false,
+  "support_connection_check": true,
+  "generate_kwargs": {},
+  "meta": {}
+}

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "1.0",
+  "name": "agent-manager-harness-core",
+  "description": "Agent Manager 工作项的通用 Harness CLI 交付阶段、等待规则和隔离环境规则。设计文档和 UI 参考是工作流输入，不是自动开发主链路里的默认评审阶段。",
+  "harnessCli": {
+    "docs": [
+      "https://harness-docs.io.alibaba-inc.com/agent/onboarding",
+      "https://harness-docs.io.alibaba-inc.com/agent/cli",
+      "https://harness-docs.io.alibaba-inc.com/agent/workflow"
+    ],
+    "identityPolicy": {
+      "credentialSources": [
+        "~/.harness/credentials.json",
+        "HARNESS_API_KEY",
+        "HARNESS_SERVER_URL",
+        "HARNESS_AGENT_NAME"
+      ],
+      "forbiddenInRepo": [
+        "owner-token",
+        "api-key",
+        "agent-id",
+        "kubeconfig",
+        ".env secrets"
+      ]
+    },
+    "progressCommands": {
+      "startTask": "harness task update <task_id> in_progress",
+      "finishTask": "node harness/scripts/complete-stage.mjs --stage <stage> --task-id <task_id> --output <stage-output.json> [--work-item-id <work_item_id> for test_e2e]",
+      "log": "harness log <task_id> \"<message>\"",
+      "milestone": "harness milestone <kind> <task_id> \"<content>\" --require-ack",
+      "ask": "harness ask <work_item_id> --task-id <task_id> --question \"<question>\" --option \"id=<id>;label=<label>;recommended\""
+    }
+  },
+  "stages": [
+    {
+      "id": "clarify",
+      "taskType": "clarify",
+      "doneWhen": "设计/UI 输入、真实业务路径、范围、成功标准、约束和缺失平台输入都已明确。",
+      "gate": "ask_when_ambiguous"
+    },
+    {
+      "id": "dev_orchestration",
+      "taskType": "dev_orchestration",
+      "doneWhen": "allowlist、DAG、资源锁、隔离环境方案、测试矩阵和证据要求都已明确。",
+      "gate": "ack_for_cross_module_or_high_risk"
+    },
+    {
+      "id": "env_prepare",
+      "taskType": "env_prepare",
+      "doneWhen": "AOneCI 创建环境流水线已成功，专属 namespace、service、base URL、镜像 registry/tag、数据库隔离和 secret 引用已创建或明确绑定，并记录 run id。",
+      "gate": "ask_when_cluster_or_secret_inputs_missing"
+    },
+    {
+      "id": "develop",
+      "taskType": "develop",
+      "doneWhen": "在 writeScope 内修改了真实现有业务代码路径或测试路径，并记录 commit 或 diff 证据。",
+      "gate": "blocker_on_scope_violation"
+    },
+    {
+      "id": "test_unit",
+      "taskType": "test_unit",
+      "doneWhen": "退出码为 0，且 testsPassed 等于 totalTests。",
+      "gate": "strict_test_counts"
+    },
+    {
+      "id": "deploy_ephemeral",
+      "taskType": "deploy_ephemeral",
+      "doneWhen": "AOneCI 构建部署流水线已成功，当前构建已发布到专属 namespace/service，并且从该环境读回 /api/health 成功。",
+      "gate": "blocker_on_deploy_or_rollout_failure"
+    },
+    {
+      "id": "test_api",
+      "taskType": "test_api",
+      "doneWhen": "API 测试已针对隔离环境 base URL 执行，并包含请求/响应或报告证据。",
+      "gate": "isolated_base_url_required"
+    },
+    {
+      "id": "test_e2e",
+      "taskType": "test_e2e",
+      "doneWhen": "浏览器功能测试已针对隔离环境 base URL 执行，输出必须包含可打开的 experienceUrl，并上传功能相关截图、视频、trace 或日志证据；截图不能是登录页、首页、加载态、骨架屏、空白页或暂无数据，且必须带 domText/screenshotText/description/assertions 等功能内容摘要。",
+      "gate": "feature_relevant_evidence"
+    },
+    {
+      "id": "integration_live",
+      "taskType": "integration_live",
+      "doneWhen": "manifest 要求的真实 API/OOS/K8s 读回证据已存在。",
+      "gate": "ask_when_live_inputs_missing"
+    },
+    {
+      "id": "code_review",
+      "taskType": "code_review",
+      "doneWhen": "scope guard 通过，除预期 diff 外工作区干净，并记录代码评审证据。",
+      "gate": "delivery_guard"
+    },
+    {
+      "id": "deploy",
+      "taskType": "deploy",
+      "doneWhen": "平台定义的发布或验收命令已执行完成，并有证据；需要清理时 AOneCI 清理流水线已触发并记录 run id。",
+      "gate": "platform_acceptance_required"
+    }
+  ],
+  "gateTypes": [
+    {
+      "id": "approval",
+      "description": "Use when a stage cannot continue until a human acknowledges a milestone.",
+      "command": "harness milestone <kind> <task_id> \"<content>\" --require-ack"
+    },
+    {
+      "id": "clarification",
+      "description": "Use when a human must choose, confirm, or provide missing information.",
+      "command": "harness ask <work_item_id> --task-id <task_id> --question \"<question>\" --option \"id=<id>;label=<label>;recommended\""
+    },
+    {
+      "id": "blocker",
+      "description": "Use when the current task must remain in_progress until a condition is resolved.",
+      "command": "harness milestone blocker <task_id> \"<reason>\" --require-ack"
+    }
+  ],
+  "waitingProtocol": {
+    "taskStatusWhileWaiting": "in_progress",
+    "forbiddenWhileWaiting": [
+      "marking the task done",
+      "marking the task skipped",
+      "starting blocked downstream stages",
+      "using a plain comment as a structured choice"
+    ],
+    "awaitingOutput": {
+      "state": "awaiting_human",
+      "waitType": "clarification|approval",
+      "reason": "<why the agent cannot continue>",
+      "resumeCriteria": "<what human reply or acknowledgement is required>",
+      "blockedNextStages": [
+        "env_prepare",
+        "develop",
+        "deploy_ephemeral",
+        "test_api",
+        "test_e2e"
+      ]
+    },
+    "resumedOutput": {
+      "state": "resumed",
+      "humanAnswer": "<answer or ack summary>",
+      "decision": "<selected option or approved action>",
+      "resumedAt": "<ISO8601>"
+    }
+  }
+}

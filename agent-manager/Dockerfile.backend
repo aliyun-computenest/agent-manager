@@ -1,0 +1,42 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install backend dependencies
+# ------------------------------------------------------------
+# IMPORTANT: server/package-lock.json MUST be in sync with server/package.json.
+# Do NOT switch to "npm install" — CI must consume the committed lock.
+#
+# If this step fails with errors like:
+#   - "Invalid: lock file's X@... does not satisfy X@..."
+#   - "Missing: X from lock file"
+# 那基本是 lock 与 package.json 脱节，按下面步骤在本地修复：
+#   1) cd agent-manager/server
+#   2) git ls-files -v package-lock.json
+#      若第一列是 'S' (skip-worktree)，先执行：
+#        git update-index --no-skip-worktree package-lock.json
+#   3) rm package-lock.json
+#      npm install --package-lock-only --include=optional
+#   4) git add package-lock.json && git commit -m "chore: sync server lock"
+# 详情参考：docs/DEVELOPMENT_GUIDE.md (依赖管理章节)
+# ------------------------------------------------------------
+COPY server/package.json server/package-lock.json ./
+RUN npm ci --include=optional --omit=dev --ignore-scripts
+
+# Copy server source code
+COPY server/ ./
+
+# Copy data directory for templates
+COPY data/ ../data/
+
+# Create directory for template storage
+RUN mkdir -p /app/data
+
+EXPOSE 3001
+
+# Environment variables (will be overridden at runtime)
+ENV NODE_ENV=production
+ENV SERVER_PORT=3001
+ENV OPENCLAW_TEMPLATE_PATH=/app/data/openclaw-template.json
+
+CMD ["node", "index.js"]

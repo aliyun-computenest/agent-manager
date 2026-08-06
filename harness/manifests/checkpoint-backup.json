@@ -1,0 +1,246 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "checkpoint-backup",
+  "title": "OOS checkpoint backup and restore",
+  "sources": {
+    "designDocs": [
+      "docs/design/1.0.5/oos-batch-checkpoint-backup-restore-design.md"
+    ],
+    "uiArtifacts": [
+      "agent-manager/tests/ui"
+    ]
+  },
+  "platformInputs": {
+    "required": [
+      "workItemId",
+      "milestoneId",
+      "ownerTokenRef",
+      "agentId",
+      "acceptanceCommand"
+    ],
+    "optional": [
+      "evidenceUploadTarget",
+      "liveOosExecutionId",
+      "targetClusterId",
+      "targetNamespace"
+    ]
+  },
+  "stages": [
+    "clarify",
+    "dev_orchestration",
+    "env_prepare",
+    "develop",
+    "test_unit",
+    "deploy_ephemeral",
+    "test_api",
+    "test_e2e",
+    "integration_live",
+    "code_review",
+    "deploy"
+  ],
+  "tasks": [
+    {
+      "id": "clarify-checkpoint-inputs",
+      "stage": "clarify",
+      "dependsOn": [],
+      "resources": [],
+      "writeScope": [],
+      "description": "Verify design doc, UI input, real checkpoint-backup scope, environment inputs, and success criteria."
+    },
+    {
+      "id": "orchestrate-checkpoint-delivery",
+      "stage": "dev_orchestration",
+      "dependsOn": [
+        "clarify-checkpoint-inputs"
+      ],
+      "resources": [],
+      "writeScope": [],
+      "description": "Publish allowlist, resource locks, isolated environment, API/browser tests, and evidence plan."
+    },
+    {
+      "id": "prepare-checkpoint-environment",
+      "stage": "env_prepare",
+      "dependsOn": [
+        "orchestrate-checkpoint-delivery"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager",
+        "supabase:test",
+        "oos:backup-template"
+      ],
+      "writeScope": [],
+      "description": "Create or bind the dedicated namespace/service/baseUrl, image tag, database isolation, OOS input, and secret refs."
+    },
+    {
+      "id": "backend-backup-api",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-checkpoint-environment"
+      ],
+      "resources": [
+        "file:backend",
+        "oos:backup-template",
+        "k8s:target-namespace"
+      ],
+      "writeScope": [
+        "agent-manager/server/routes/*backup*",
+        "agent-manager/server/services/*backup*",
+        "agent-manager/tests/unit/*backup*",
+        "agent-manager/tests/integration/**/*backup*"
+      ],
+      "description": "Implement or review backup API/server behavior only inside backup-related files.",
+      "agentPacket": true
+    },
+    {
+      "id": "frontend-backup-ui",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-checkpoint-environment"
+      ],
+      "resources": [
+        "file:frontend"
+      ],
+      "writeScope": [
+        "agent-manager/src/components/*Backup*",
+        "agent-manager/src/locales/**",
+        "agent-manager/tests/ui/*backup*"
+      ],
+      "description": "Implement or review user/admin checkpoint backup UI and feature-specific Playwright evidence.",
+      "agentPacket": true
+    },
+    {
+      "id": "deploy-checkpoint-ephemeral",
+      "stage": "deploy_ephemeral",
+      "dependsOn": [
+        "backend-backup-api",
+        "frontend-backup-ui"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "writeScope": [],
+      "description": "Deploy the current checkpoint-backup build into the dedicated namespace/service and read back health."
+    },
+    {
+      "id": "api-checkpoint-readback",
+      "stage": "test_api",
+      "dependsOn": [
+        "deploy-checkpoint-ephemeral"
+      ],
+      "resources": [
+        "k8s:ephemeral-service",
+        "supabase:test",
+        "oos:backup-template"
+      ],
+      "writeScope": [],
+      "description": "Run checkpoint-backup API checks against the isolated environment baseUrl."
+    }
+  ],
+  "testMatrix": [
+    {
+      "id": "unit-backup",
+      "stage": "test_unit",
+      "command": "cd agent-manager && npx vitest run tests/unit/checkpoint-backup*.test.js",
+      "resources": [
+        "file:tests"
+      ],
+      "evidence": [
+        "exitCode",
+        "testsPassed",
+        "totalTests",
+        "stdout"
+      ]
+    },
+    {
+      "id": "deploy-backup-ephemeral",
+      "stage": "deploy_ephemeral",
+      "command": "kubectl -n <namespace> rollout status deployment/<serviceName> && curl -fsS <baseUrl>/api/health",
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "evidence": [
+        "namespace/service",
+        "imageTag",
+        "rollout status",
+        "/api/health"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "api-backup",
+      "stage": "test_api",
+      "command": "cd agent-manager && TEST_BASE_URL=<baseUrl> TEST_SUITE_DIR=checkpoint-backups TEST_CHECKPOINT_BACKUP_CREATE_CANCEL=true npm run test:integration",
+      "resources": [
+        "k8s:ephemeral-service",
+        "supabase:test",
+        "oos:backup-template"
+      ],
+      "evidence": [
+        "baseUrl",
+        "request/response transcript",
+        "testsPassed",
+        "totalTests",
+        "stdout"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "ui-backup",
+      "stage": "test_e2e",
+      "command": "cd agent-manager && OPENCLAW_FRONTEND_URL=<baseUrl> npx playwright test tests/ui/checkpoint-backup-admin.spec.ts --reporter=line",
+      "resources": [
+        "k8s:ephemeral-service",
+        "file:frontend"
+      ],
+      "evidence": [
+        "feature screenshots",
+        "trace or video on failure",
+        "playwright report"
+      ]
+    },
+    {
+      "id": "integration-checkpoint-backup",
+      "stage": "integration_live",
+      "command": "cd agent-manager && TEST_SUITE_DIR=checkpoint-backups TEST_CHECKPOINT_BACKUP_CREATE_CANCEL=true npm run test:integration",
+      "resources": [
+        "supabase:test",
+        "e2b:quota",
+        "oos:backup-template",
+        "k8s:target-namespace"
+      ],
+      "evidence": [
+        "OOS execution record",
+        "OOS task logs or execution template",
+        "temporary kubeconfig source",
+        "Checkpoint/ConfigMap readback",
+        "integration.xml or stdout"
+      ],
+      "requiresHumanInput": true
+    }
+  ],
+  "evidence": [
+    "OOS execution record",
+    "OOS task logs or execution template",
+    "Checkpoint/ConfigMap readback",
+    "feature-specific UI screenshots",
+    "unit and integration test outputs"
+  ],
+  "humanGates": [
+    {
+      "stage": "integration_live",
+      "type": "clarification",
+      "reason": "Live OOS/K8s validation needs target environment, execution id or permission to create one, and temporary kubeconfig source."
+    },
+    {
+      "stage": "deploy",
+      "type": "approval",
+      "reason": "Platform acceptance must use the Harness work item, milestone, and acceptance command."
+    }
+  ]
+}

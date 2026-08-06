@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 实施编排"
+  short_description: "生成执行 DAG、文件范围、资源锁和测试证据契约"
+  default_prompt: "Use $agent-manager-harness-orchestration to plan the current Harness delivery stage."

@@ -1,0 +1,97 @@
+# 内置 OpenClaw SandboxSet 模板。
+# 由 init-db.js → ensureSandboxSets() 在 init-admin 时创建。
+#
+# 动态注入字段（在创建时由 buildSandboxSet 从集群已有 SandboxSet 读取覆盖）：
+#   1. metadata.annotations.network.alibabacloud.com/*  （vsw、安全组等网络配置）
+#   2. metadata.annotations.image.alibabacloud.com/*    （镜像缓存等）
+#   3. spec.template.spec.containers[0].image           （容器镜像版本）
+#
+# 其余字段全部固定，由本文件控制。
+apiVersion: agents.kruise.io/v1alpha1
+kind: SandboxSet
+metadata:
+  name: agent-manager-openclaw
+  namespace: default
+spec:
+  persistentContents:
+    - filesystem
+  replicas: 1
+  runtimes:
+    - name: agent-runtime
+    - name: csi
+  template:
+    metadata:
+      labels:
+        app: agent-manager-openclaw
+        alibabacloud.com/acs: "true"
+      annotations:
+        image.alibabacloud.com/enable-image-cache: "true"
+        network.alibabacloud.com/network-policy-mode: "traffic-policy"
+        network.alibabacloud.com/enable-network-policy-agent: "true"
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      shareProcessNamespace: false
+      hostname: openclaw
+      containers:
+        - name: agent-manager-openclaw
+          # image 会在创建时被动态覆盖
+          image: compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/openclaw-manager-openclaw-test:2026.7.16
+          securityContext:
+            readOnlyRootFilesystem: false
+            runAsUser: 0
+            runAsGroup: 0
+          command: ["/usr/local/bin/entrypoint.sh"]
+          ports:
+            - name: gateway
+              containerPort: 18789
+              protocol: TCP
+            - name: runtime
+              containerPort: 49983
+              protocol: TCP
+          env:
+            - name: OPENCLAW_CONFIG_DIR
+              value: /home/node/.openclaw/openclaw.json
+            # Pod name for ARMS service identification (Downward API)
+            - name: SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # 显式置空 Kubernetes 注入的环境变量，避免 SDK 误以为运行在 Pod 内
+            - name: OPENCLAW_GATEWAY_TOKEN
+              value: xxx
+            - name: KUBERNETES_SERVICE_PORT_HTTPS
+              value: ""
+            - name: KUBERNETES_SERVICE_PORT
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_PROTO
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_ADDR
+              value: ""
+            - name: KUBERNETES_SERVICE_HOST
+              value: ""
+            - name: KUBERNETES_PORT
+              value: ""
+            - name: KUBERNETES_PORT_443_TCP_PORT
+              value: ""
+          resources:
+            requests:
+              cpu: 2
+              memory: 4Gi
+            limits:
+              cpu: 2
+              memory: 4Gi
+          startupProbe:
+            exec:
+              command:
+                - node
+                - -e
+                - "require('http').get('http://127.0.0.1:18789/healthz', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            failureThreshold: 150

@@ -1,0 +1,111 @@
+{
+  "nav": {
+    "instanceList": "实例列表",
+    "profile": "个人资料",
+    "groups": "我的分组",
+    "skillMarket": "Skill 市场"
+  },
+  "dashboard": {
+    "myAgents": "我的 Agent",
+    "runningInstances": "运行中实例",
+    "availableModels": "可用模型",
+    "welcomeBack": "欢迎回来，{{name}}！",
+    "runningAgentCount": "您有 {{count}} 个运行中的 Agent 实例",
+    "createInstance": "创建实例",
+    "myAgentInstances": "我的 Agent 实例",
+    "viewAll": "查看全部 →",
+    "table": {
+      "name": "名称",
+      "status": "状态",
+      "model": "模型",
+      "tokenUsage": "Token 用量"
+    },
+    "status": {
+      "running": "运行中",
+      "stopped": "已停止"
+    }
+  },
+  "openClawList": {
+    "myInstances": "我的实例",
+    "todayTokenUsage": "今日 Token 消耗",
+    "last30DaysTokenUsage": "近30天 Token 消耗",
+    "aiGateway": "AI 网关",
+    "limit": "上限"
+  },
+  "profile": {
+    "email": "邮箱",
+    "instanceQuota": "实例配额",
+    "instanceQuotaUnit": "{{count}} 个",
+    "changePassword": "修改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码（至少 6 位）",
+    "confirmNewPassword": "确认新密码",
+    "emailResetHint": "验证当前密码后，将向您的邮箱发送重置链接，通过链接设置新密码",
+    "resetEmailSent": "已发送密码重置邮件",
+    "resetEmailDetail": "请查看您的邮箱并通过邮件中的链接完成密码修改。链接有效期 24 小时。",
+    "emailResetSuccess": "已发送密码重置邮件到您的邮箱，请查收并通过邮件链接完成密码修改",
+    "passwordChanged": "密码修改成功！",
+    "passwordChangedRelogin": "密码修改成功，即将重新登录...",
+    "logoutCountdown": "{{seconds}} 秒后自动跳转到登录页...",
+    "redirecting": "正在跳转...",
+    "sending": "发送中...",
+    "changing": "修改中...",
+    "sendResetEmail": "发送重置邮件",
+    "confirmChange": "确认修改",
+    "validation": {
+      "currentPasswordRequired": "请输入当前密码",
+      "newPasswordTooShort": "新密码至少需要 6 个字符",
+      "passwordMismatch": "两次输入的新密码不一致",
+      "sameAsOld": "新密码不能与当前密码相同",
+      "changeFailed": "密码修改失败",
+      "notLoggedIn": "未登录或会话已过期"
+    }
+  },
+  "currentUser": {
+    "role": "普通用户",
+    "label": "当前用户：{{name}}"
+  },
+  "defaultTitle": "用户中心",
+  "skillMarket": {
+    "title": "Skill 市场",
+    "tabOfficial": "官方 Skills",
+    "tabSpaces": "Skills 空间"
+  },
+  "skillInstall": {
+    "action": "安装 Skill",
+    "disabledByStatus": "实例运行后才可安装 Skill",
+    "installToInstance": "安装到实例",
+    "selectAndInstall": "选择并安装",
+    "selectInstance": "选择目标实例",
+    "selectedSkills": "已选择 {{count}} 个 Skill",
+    "selectSkills": "选择 Skill",
+    "installToCurrentInstance": "选择一个或多个 Skill 安装到当前实例",
+    "selectSkillsThenInstance": "先选择 Skill，再选择一个运行中的目标实例",
+    "officialSkills": "官方 Skill",
+    "skillSpaces": "Skill 空间",
+    "searchSkills": "搜索 Skill...",
+    "refresh": "刷新",
+    "selectAll": "全选",
+    "clearAll": "取消全选",
+    "selectedCount": "已选择 {{count}} 个",
+    "selectionLimit": "每次最多安装 {{max}} 个 Skill",
+    "selectAtLeastOne": "请至少选择一条 Skill",
+    "loadingSkills": "正在加载 Skill...",
+    "loadingInstances": "正在加载实例...",
+    "noSkills": "暂无可选 Skill",
+    "noRunningInstances": "暂无可用的运行中实例",
+    "noRunningInstancesHint": "请先启动一个实例",
+    "instanceSingleSelectHint": "每次选择一个目标实例",
+    "resultOnlyHint": "结果仅用于本次请求，不保存安装历史",
+    "install": "安装",
+    "installing": "正在安装...",
+    "cancel": "取消",
+    "close": "关闭",
+    "succeeded": "安装成功",
+    "failed": "安装失败",
+    "loadInstancesFailed": "加载实例失败",
+    "loadSkillsFailed": "加载 Skill 失败",
+    "loadSpacesFailed": "加载 Skill 空间失败",
+    "requestFailed": "安装请求失败"
+  }
+}

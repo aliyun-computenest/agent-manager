@@ -1,0 +1,68 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: agent-manager-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - SERVER_PORT=3001
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3001}
+      - OPENCLAW_TEMPLATE_PATH=${OPENCLAW_TEMPLATE_PATH:-/app/data/openclaw-template.json}
+      - E2B_DOMAIN=${E2B_DOMAIN}
+      - E2B_API_KEY=${E2B_API_KEY}
+      - SSL_CERT_FILE=${SSL_CERT_FILE}
+      - E2B_IP=${E2B_IP}
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - ENABLE_AI_GATEWAY=${ENABLE_AI_GATEWAY:-false}
+      - APIG_GATEWAY_ID=${APIG_GATEWAY_ID}
+      - APIG_HTTP_API_ID=${APIG_HTTP_API_ID}
+      - APIG_ENVIRONMENT_ID=${APIG_ENVIRONMENT_ID}
+      - APIG_REGION_ID=${APIG_REGION_ID:-cn-shanghai}
+      - AI_GATEWAY_DOMAIN=${AI_GATEWAY_DOMAIN}
+      - API_ENCRYPTION_KEY=${API_ENCRYPTION_KEY}
+      - ALIBABA_CLOUD_ACCESS_KEY_ID=${ALIBABA_CLOUD_ACCESS_KEY_ID}
+      - ALIBABA_CLOUD_ACCESS_KEY_SECRET=${ALIBABA_CLOUD_ACCESS_KEY_SECRET}
+      - VITE_ACS_CLUSTER_ID=${VITE_ACS_CLUSTER_ID}
+      - DEPLOY_ENVIRONMENT=${DEPLOY_ENVIRONMENT:-local-dev}
+    volumes:
+      - ./data:/app/data:ro
+    networks:
+      - agent-manager-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: agent-manager-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - agent-manager-network
+    environment:
+      - VITE_API_URL=http://backend:3001
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_APP_ID=${VITE_APP_ID:-public}
+      - VITE_ACS_CLUSTER_ID=${VITE_ACS_CLUSTER_ID}
+
+networks:
+  agent-manager-network:
+    driver: bridge

@@ -1,0 +1,371 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "harness-autodev-kit",
+  "title": "Harness CLI AutoDev skill and run validation kit",
+  "sources": {
+    "designDocs": [
+      "harness/README.md",
+      "harness/config/stage-skills.json",
+      "harness/skills/agent-manager-harness-core/SKILL.md",
+      "harness/rules/evidence-contract.json"
+    ],
+    "uiArtifacts": [
+      "harness/tests/fixtures/delivery-run-pass.json"
+    ]
+  },
+  "platformInputs": {
+    "required": [
+      "workItemId",
+      "milestoneId",
+      "acceptanceCommand",
+      "envCreatePipelineId",
+      "buildDeployPipelineId",
+      "envCleanupPipelineId"
+    ],
+    "optional": [
+      "ownerTokenRef",
+      "evidenceUploadTarget",
+      "harnessDaemonId",
+      "namespacePrefix",
+      "servicePrefix",
+      "baseDomain",
+      "sourceSecretNamespace"
+    ]
+  },
+  "stages": [
+    "clarify",
+    "dev_orchestration",
+    "env_prepare",
+    "develop",
+    "test_unit",
+    "deploy_ephemeral",
+    "test_api",
+    "test_e2e",
+    "integration_live",
+    "code_review",
+    "deploy"
+  ],
+  "tasks": [
+    {
+      "id": "clarify-delivery-inputs",
+      "stage": "clarify",
+      "dependsOn": [],
+      "resources": [],
+      "writeScope": [],
+      "description": "Confirm platform inputs, feature scope, and whether live Harness acceptance can run."
+    },
+    {
+      "id": "orchestrate-delivery-dag",
+      "stage": "dev_orchestration",
+      "dependsOn": [
+        "clarify-delivery-inputs"
+      ],
+      "resources": [],
+      "writeScope": [],
+      "description": "Publish the DAG, allowlist, isolated environment plan, and test matrix."
+    },
+    {
+      "id": "prepare-delivery-environment",
+      "stage": "env_prepare",
+      "dependsOn": [
+        "orchestrate-delivery-dag"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "writeScope": [],
+      "description": "Run .aoneci/harness_env_create.yaml through AOneCI to create or bind the dedicated namespace, service, base URL, image tag, database isolation, and secret references for this work item."
+    },
+    {
+      "id": "build-skill-package",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-delivery-environment"
+      ],
+      "resources": [
+        "file:harness"
+      ],
+      "writeScope": [
+        "harness/config/stage-skills.json",
+        "harness/skills/agent-manager-harness-*/**"
+      ],
+      "description": "Create and package the shared plus stage-specific cloud Skills for Agent Manager Harness delivery."
+    },
+    {
+      "id": "build-delivery-tools",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-delivery-environment"
+      ],
+      "resources": [
+        "file:harness"
+      ],
+      "writeScope": [
+        "harness/README.md",
+        "harness/config/environment.json",
+        "harness/domains/agent-manager.json",
+        "harness/manifest.schema.json",
+        "harness/manifests/*.json",
+        "harness/platform/**",
+        "harness/scripts/check-platform-*.mjs",
+        "harness/scripts/*delivery*.mjs",
+        "harness/scripts/lib/**",
+        "harness/scripts/plan-parallel-waves.mjs",
+        "harness/scripts/plan-test-environment.mjs",
+        "harness/scripts/render-platform-*.mjs",
+        "harness/scripts/review-delivery-scope.mjs",
+        "harness/scripts/run-parallel-flow-trial.mjs",
+        "harness/scripts/*.sh",
+        "harness/scripts/validate-rules.mjs",
+        "harness/rules/*contract*.json",
+        "harness/rules/*.json",
+        "harness/rules/state-machine.json",
+        "harness/rules/parallelism.json"
+      ],
+      "description": "Create read-only validators for evidence, waiting, parallel waves, output, review, and environment isolation."
+    },
+    {
+      "id": "validate-delivery-tools",
+      "stage": "test_unit",
+      "dependsOn": [
+        "build-skill-package",
+        "build-delivery-tools"
+      ],
+      "resources": [
+        "file:tests"
+      ],
+      "writeScope": [
+        "harness/tests/**",
+        "harness/manifests/harness-autodev-kit.json"
+      ],
+      "description": "Run node:test coverage for the Harness rules and delivery tools."
+    },
+    {
+      "id": "publish-delivery-ephemeral",
+      "stage": "deploy_ephemeral",
+      "dependsOn": [
+        "validate-delivery-tools"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "writeScope": [],
+      "description": "Run .aoneci/harness_build_deploy.yaml through AOneCI to build/push the current branch image, publish it to the dedicated namespace/service, and read back health."
+    },
+    {
+      "id": "api-delivery-check",
+      "stage": "test_api",
+      "dependsOn": [
+        "publish-delivery-ephemeral"
+      ],
+      "resources": [
+        "k8s:ephemeral-service"
+      ],
+      "writeScope": [],
+      "description": "Run API checks against the isolated environment base URL."
+    },
+    {
+      "id": "capture-delivery-evidence",
+      "stage": "test_e2e",
+      "dependsOn": [
+        "api-delivery-check"
+      ],
+      "resources": [
+        "file:harness"
+      ],
+      "writeScope": [],
+      "description": "Render a delivery report and attach feature-specific evidence artifacts."
+    },
+    {
+      "id": "simulate-live-integration",
+      "stage": "integration_live",
+      "dependsOn": [
+        "capture-delivery-evidence"
+      ],
+      "resources": [
+        "file:harness"
+      ],
+      "writeScope": [],
+      "description": "Validate the full delivery run report and stop at platform evidence boundary when external Harness inputs are unavailable."
+    },
+    {
+      "id": "automated-review-gate",
+      "stage": "code_review",
+      "dependsOn": [
+        "simulate-live-integration"
+      ],
+      "resources": [
+        "file:harness"
+      ],
+      "writeScope": [],
+      "description": "Verify scope guard, automated review status, test evidence, waiting state, and platform acceptance boundary."
+    },
+    {
+      "id": "final-acceptance-and-cleanup",
+      "stage": "deploy",
+      "dependsOn": [
+        "automated-review-gate"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service"
+      ],
+      "writeScope": [],
+      "description": "Record final platform acceptance when available, then run .aoneci/harness_env_cleanup.yaml through AOneCI when the isolated environment should be removed."
+    }
+  ],
+  "testMatrix": [
+    {
+      "id": "unit-harness-delivery-tools",
+      "stage": "test_unit",
+      "command": "node --test harness/tests/*.test.mjs",
+      "resources": [
+        "file:tests"
+      ],
+      "evidence": [
+        "exitCode",
+        "testsPassed",
+        "totalTests",
+        "stdout",
+        "scope guard output"
+      ]
+    },
+    {
+      "id": "env-create-delivery-ephemeral",
+      "stage": "env_prepare",
+      "command": "a1 ci pipeline run <env_create_pipeline_id> --repo acs-automation/agent-manager --branch <remote-branch> --param work_item_id=<work_item_id> --param namespace=<namespace> --param service_name=<service_name> --watch",
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service"
+      ],
+      "evidence": [
+        "AOneCI run id",
+        ".aoneci/harness_env_create.yaml",
+        "namespace label readback",
+        "Service readback",
+        "agent-manager-env-prepare ConfigMap"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "deploy-delivery-ephemeral",
+      "stage": "deploy_ephemeral",
+      "command": "a1 ci pipeline run <build_deploy_pipeline_id> --repo acs-automation/agent-manager --branch <remote-branch> --param image_tag=<image_tag> --param namespace=<namespace> --param service_name=<service_name> --param work_item_id=<work_item_id> --watch",
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "evidence": [
+        "AOneCI run id",
+        ".aoneci/harness_build_deploy.yaml",
+        "namespace",
+        "serviceName",
+        "imageTag",
+        "rollout status",
+        "/api/health readback"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "api-delivery-health",
+      "stage": "test_api",
+      "command": "curl -fsS <baseUrl>/api/health",
+      "resources": [
+        "k8s:ephemeral-service"
+      ],
+      "evidence": [
+        "baseUrl",
+        "request",
+        "response",
+        "exitCode"
+      ]
+    },
+    {
+      "id": "e2e-delivery-report",
+      "stage": "test_e2e",
+      "command": "node harness/scripts/render-delivery-report.mjs --run harness/tests/fixtures/delivery-run-pass.json",
+      "resources": [
+        "file:harness"
+      ],
+      "evidence": [
+        "rendered delivery report",
+        "feature-specific report screenshot or uploaded artifact",
+        "desktop/mobile overflow result"
+      ],
+      "requiredAssertions": [
+        "feature-postcondition-visible-in-target-ui"
+      ],
+      "requiresPostActionReadback": true,
+      "postActionReadback": {
+        "targetPathPattern": "^/harness/delivery-report/?$",
+        "resultMatchFields": [
+          "targetUrl"
+        ],
+        "requiredEvidenceText": [
+          "Harness",
+          "隔离环境"
+        ]
+      }
+    },
+    {
+      "id": "integration-delivery-run",
+      "stage": "integration_live",
+      "command": "node harness/scripts/validate-delivery-run.mjs --manifest harness/manifests/harness-autodev-kit.json --run harness/tests/fixtures/delivery-run-pass.json",
+      "resources": [
+        "file:harness"
+      ],
+      "evidence": [
+        "isolated environment plan",
+        "validated delivery run report",
+        "platform acceptance evidence boundary"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "cleanup-delivery-ephemeral",
+      "stage": "deploy",
+      "command": "a1 ci pipeline run <env_cleanup_pipeline_id> --repo acs-automation/agent-manager --branch <remote-branch> --param namespace=<namespace> --param work_item_id=<work_item_id> --watch",
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service"
+      ],
+      "evidence": [
+        "AOneCI run id",
+        ".aoneci/harness_env_cleanup.yaml",
+        "namespace label guard result",
+        "namespace delete result"
+      ],
+      "requiresHumanInput": true
+    }
+  ],
+  "evidence": [
+    "Harness skill package files",
+    "isolated test environment plan",
+    "AOneCI environment create run",
+    "AOneCI build deploy run",
+    "AOneCI cleanup run when environment should be removed",
+    "unit test output",
+    "rendered delivery report artifact",
+    "delivery run validation output",
+    "parallel wave plan",
+    "automated review gate output",
+    "explicit platform acceptance boundary"
+  ],
+  "humanGates": [
+    {
+      "stage": "clarify",
+      "type": "clarification",
+      "reason": "External Harness work item, milestone, owner-token reference, daemon id, or acceptance command may be missing."
+    },
+    {
+      "stage": "deploy",
+      "type": "approval",
+      "reason": "Platform acceptance cannot be claimed without a Harness work item and acceptance command."
+    }
+  ]
+}

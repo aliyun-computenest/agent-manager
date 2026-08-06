@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "name": "agent-manager-harness-state-machine",
+  "description": "State and transition contract for Harness delivery run reports.",
+  "taskStates": [
+    "pending",
+    "in_progress",
+    "awaiting_human",
+    "resumed",
+    "done",
+    "skipped",
+    "blocked"
+  ],
+  "terminalStates": [
+    "done",
+    "skipped",
+    "blocked"
+  ],
+  "successfulTerminalStates": [
+    "done",
+    "skipped"
+  ],
+  "blockedDownstreamRule": "A downstream task cannot be done while an ancestor task is awaiting_human or blocked.",
+  "resumeRule": "A resumed task must include humanAnswer, decision, resumedAt, and resumeCriteriaSatisfied=true before downstream tasks continue.",
+  "completionRule": "A task can be done only when all manifest dependencies are done or explicitly skipped with reason."
+}

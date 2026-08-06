@@ -1,0 +1,336 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "skill-market-install",
+  "title": "Install Skill marketplace packages into a running Agent",
+  "sources": {
+    "designDocs": [
+      "docs/design/1.0.6/agent-skill-market-install.md"
+    ],
+    "uiArtifacts": [
+      "docs/design/1.0.6/images/agent-skill-market-user.png",
+      "docs/design/1.0.6/images/agent-skill-market-target-instance.png",
+      "docs/design/1.0.6/images/agent-instance-skill-picker.png",
+      "docs/design/1.0.6/images/agent-instance-skill-space-picker.png"
+    ]
+  },
+  "platformInputs": {
+    "required": [
+      "workItemId",
+      "envCreatePipelineId",
+      "buildDeployPipelineId",
+      "runningOpenClawInstanceId",
+      "agentSkillsUrl"
+    ],
+    "optional": [
+      "privateSkillSpaceId",
+      "evidenceUploadTarget",
+      "acceptanceCommand"
+    ]
+  },
+  "stages": [
+    "clarify",
+    "dev_orchestration",
+    "env_prepare",
+    "develop",
+    "test_unit",
+    "deploy_ephemeral",
+    "test_api",
+    "test_e2e",
+    "integration_live",
+    "code_review",
+    "deploy"
+  ],
+  "tasks": [
+    {
+      "id": "clarify-skill-install-inputs",
+      "stage": "clarify",
+      "dependsOn": [],
+      "resources": [],
+      "writeScope": [],
+      "description": "Confirm the approved Skill install scope, UI references, OpenClaw target instance, and observable post-install result."
+    },
+    {
+      "id": "orchestrate-skill-install-delivery",
+      "stage": "dev_orchestration",
+      "dependsOn": [
+        "clarify-skill-install-inputs"
+      ],
+      "resources": [],
+      "writeScope": [],
+      "description": "Publish the implementation allowlist, isolated deployment plan, install action correlation, and Agent UI post-action evidence contract."
+    },
+    {
+      "id": "prepare-skill-install-environment",
+      "stage": "env_prepare",
+      "dependsOn": [
+        "orchestrate-skill-install-delivery"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager",
+        "e2b:quota"
+      ],
+      "writeScope": [],
+      "description": "Create the isolated manager environment and retain a running OpenClaw instance whose native Skills page is reachable."
+    },
+    {
+      "id": "implement-skill-install-backend",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-skill-install-environment"
+      ],
+      "resources": [
+        "file:backend",
+        "e2b:quota"
+      ],
+      "writeScope": [
+        "agent-manager/server/routes/install-skills.js",
+        "agent-manager/server/services/skill-installer.js",
+        "agent-manager/server/services/aliyun-sts.js",
+        "agent-manager/server/openapi/**",
+        "agent-manager/server/schemas/**",
+        "agent-manager/tests/unit/*skill*",
+        "agent-manager/tests/integration/suites/skill-install/**"
+      ],
+      "description": "Implement the installskills API, sandbox command execution, temporary credential handling, redaction, and serialization."
+    },
+    {
+      "id": "implement-skill-install-ui",
+      "stage": "develop",
+      "dependsOn": [
+        "prepare-skill-install-environment"
+      ],
+      "resources": [
+        "file:frontend"
+      ],
+      "writeScope": [
+        "agent-manager/src/components/skill-market/**",
+        "agent-manager/src/components/*Detail*",
+        "agent-manager/src/pages/**",
+        "agent-manager/src/api/**",
+        "agent-manager/src/locales/**",
+        "agent-manager/tests/ui/skill-install.spec.ts"
+      ],
+      "description": "Implement the user and provider Skill market flows plus the instance-detail multi-select installer."
+    },
+    {
+      "id": "validate-skill-install-unit",
+      "stage": "test_unit",
+      "dependsOn": [
+        "implement-skill-install-backend",
+        "implement-skill-install-ui"
+      ],
+      "resources": [
+        "file:tests"
+      ],
+      "writeScope": [],
+      "description": "Run architecture, build, and unit coverage for public/private installs and UI state."
+    },
+    {
+      "id": "deploy-skill-install-ephemeral",
+      "stage": "deploy_ephemeral",
+      "dependsOn": [
+        "validate-skill-install-unit"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "writeScope": [],
+      "description": "Deploy the branch to the retained isolated environment and read back manager and gateway health."
+    },
+    {
+      "id": "verify-skill-install-api",
+      "stage": "test_api",
+      "dependsOn": [
+        "deploy-skill-install-ephemeral"
+      ],
+      "resources": [
+        "k8s:ephemeral-service",
+        "e2b:quota"
+      ],
+      "writeScope": [],
+      "description": "Call the real installskills route and retain per-Skill action results for later UI correlation."
+    },
+    {
+      "id": "verify-skill-install-agent-ui",
+      "stage": "test_e2e",
+      "dependsOn": [
+        "verify-skill-install-api"
+      ],
+      "resources": [
+        "k8s:ephemeral-service",
+        "e2b:quota",
+        "file:frontend"
+      ],
+      "writeScope": [],
+      "description": "Install a Skill, enter the same OpenClaw Agent Skills page, search its manifest display name, and capture the enabled result."
+    },
+    {
+      "id": "verify-skill-install-live",
+      "stage": "integration_live",
+      "dependsOn": [
+        "verify-skill-install-agent-ui"
+      ],
+      "resources": [
+        "k8s:ephemeral-service",
+        "e2b:quota"
+      ],
+      "writeScope": [],
+      "description": "Correlate the successful API result, sandbox SKILL.md path, CLI eligibility readback, and native Agent UI screenshot."
+    },
+    {
+      "id": "review-skill-install-delivery",
+      "stage": "code_review",
+      "dependsOn": [
+        "verify-skill-install-live"
+      ],
+      "resources": [],
+      "writeScope": [],
+      "description": "Require clean scope, passing tests, live readback, and the uploaded post-install Agent Skills screenshot."
+    },
+    {
+      "id": "accept-skill-install-delivery",
+      "stage": "deploy",
+      "dependsOn": [
+        "review-skill-install-delivery"
+      ],
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service"
+      ],
+      "writeScope": [],
+      "description": "Wait for owner acceptance and preserve the review environment until approval explicitly permits cleanup."
+    }
+  ],
+  "testMatrix": [
+    {
+      "id": "unit-skill-install",
+      "stage": "test_unit",
+      "command": "make lint-arch && make build && make test",
+      "resources": [
+        "file:tests"
+      ],
+      "evidence": [
+        "exitCode",
+        "testsPassed",
+        "totalTests",
+        "stdout"
+      ]
+    },
+    {
+      "id": "deploy-skill-install",
+      "stage": "deploy_ephemeral",
+      "command": "node harness/scripts/aone-lifecycle.mjs deploy-image --work-item <work_item_id> --task-id <task_id> --branch <remote-branch> --namespace <namespace>",
+      "resources": [
+        "k8s:ephemeral-namespace",
+        "k8s:ephemeral-service",
+        "image:agent-manager"
+      ],
+      "evidence": [
+        "AOneCI run id",
+        "image tag",
+        "rollout status",
+        "manager and gateway health"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "api-skill-install",
+      "stage": "test_api",
+      "command": "cd agent-manager && TEST_BASE_URL=<baseUrl> TEST_SUITE_DIR=skill-install npm run test:integration",
+      "resources": [
+        "k8s:ephemeral-service",
+        "e2b:quota"
+      ],
+      "evidence": [
+        "POST /api/instances/{instanceId}/installskills request and response",
+        "successful actionResults",
+        "sandbox manifest path",
+        "testsPassed/totalTests"
+      ],
+      "requiresHumanInput": true
+    },
+    {
+      "id": "e2e-skill-install-agent-readback",
+      "stage": "test_e2e",
+      "command": "cd agent-manager && OPENCLAW_FRONTEND_URL=<baseUrl> npx playwright test tests/ui/skill-install.spec.ts --reporter=line",
+      "resources": [
+        "k8s:ephemeral-service",
+        "e2b:quota",
+        "file:frontend"
+      ],
+      "evidence": [
+        "Skill market interaction screenshots",
+        "successful install action result",
+        "target OpenClaw Agent Skills page screenshot",
+        "visible and enabled Skill result"
+      ],
+      "requiredAssertions": [
+        "installed-skill-visible-in-agent-ui",
+        "feature-postcondition-visible-in-target-ui"
+      ],
+      "requiresPostActionReadback": true,
+      "postActionReadback": {
+        "targetPathPattern": "^/[^/?#]+/skills/?$",
+        "resultMatchFields": [
+          "instanceId",
+          "skillName"
+        ],
+        "evidenceTextFields": [
+          "skillName"
+        ],
+        "requiredEvidenceText": [
+          "Skills",
+          "Installed skills"
+        ],
+        "actionResultMatchFields": [
+          "instanceId",
+          "skillName"
+        ],
+        "actionResultStatuses": [
+          "succeeded"
+        ]
+      },
+      "requiresHumanInput": true
+    },
+    {
+      "id": "integration-skill-install-live",
+      "stage": "integration_live",
+      "command": "cd agent-manager && TEST_BASE_URL=<baseUrl> TEST_SUITE_DIR=skill-install npm run test:integration",
+      "resources": [
+        "k8s:ephemeral-service",
+        "e2b:quota"
+      ],
+      "evidence": [
+        "instanceId and sandboxId",
+        "SKILL.md path readback",
+        "openclaw skills list eligibility",
+        "same Agent UI screenshot URL"
+      ],
+      "requiresHumanInput": true
+    }
+  ],
+  "evidence": [
+    "installskills API response",
+    "sandbox SKILL.md readback",
+    "OpenClaw CLI eligibility readback",
+    "Skill market screenshots",
+    "post-action Agent Skills page screenshot",
+    "unit, API, E2E, and live integration outputs"
+  ],
+  "humanGates": [
+    {
+      "stage": "test_e2e",
+      "type": "clarification",
+      "reason": "Native Agent UI readback requires a reachable running OpenClaw instance and a Skill whose display name can be searched."
+    },
+    {
+      "stage": "deploy",
+      "type": "approval",
+      "reason": "The isolated review environment must be retained until the owner accepts the screenshots and code review."
+    }
+  ]
+}

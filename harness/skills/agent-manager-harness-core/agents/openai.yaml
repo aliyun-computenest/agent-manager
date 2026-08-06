@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness 公共规则"
+  short_description: "所有 Harness 阶段共享的状态、等待和完成规则"
+  default_prompt: "Use $agent-manager-harness-core with the selected stage skill and keep Harness state and evidence consistent."

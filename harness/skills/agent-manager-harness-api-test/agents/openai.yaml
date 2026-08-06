@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · API 测试"
+  short_description: "针对隔离环境执行 API 断言并保留请求响应证据"
+  default_prompt: "Use $agent-manager-harness-api-test to verify APIs on the isolated Harness URL."

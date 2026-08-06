@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 单元测试"
+  short_description: "执行真实 lint、build 和 unit 并记录精确计数"
+  default_prompt: "Use $agent-manager-harness-unit-test to verify the Harness unit-test stage."

@@ -1,0 +1,19 @@
+{
+  "agent": {
+    "agentId": "agent-current",
+    "agentName": "current-agent"
+  },
+  "workItem": {
+    "id": "wi-owned",
+    "status": "in_progress",
+    "assigneeAgentId": "agent-current",
+    "tasks": [
+      {
+        "id": "task-dev-orchestration",
+        "type": "dev_orchestration",
+        "status": "pending",
+        "agentId": "agent-current"
+      }
+    ]
+  }
+}

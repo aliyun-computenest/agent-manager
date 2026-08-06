@@ -1,0 +1,39 @@
+{
+  "nav": {
+    "welcome": "Welcome, {{name}}",
+    "userCenter": "User Center",
+    "adminCenter": "Admin Center",
+    "logout": "Logout",
+    "login": "Login",
+    "admin": "Admin"
+  },
+  "hero": {
+    "title": "Enterprise AI Agent Management Platform",
+    "description": "Agent Manager provides comprehensive AI agent creation, configuration, and management capabilities, supporting multi-model integration and multi-channel connectivity, helping enterprises quickly build intelligent customer service systems",
+    "userLogin": "User Login",
+    "adminLogin": "Admin Login",
+    "enterConsole": "Enter Console"
+  },
+  "features": {
+    "title": "Core Features",
+    "agentManagement": {
+      "title": "Agent Management",
+      "description": "Create, configure, and manage your AI agents with multi-instance deployment support"
+    },
+    "multiModel": {
+      "title": "Multi-Model Support",
+      "description": "Support mainstream AI large models including Qwen, DeepSeek, and more"
+    },
+    "userManagement": {
+      "title": "User Management",
+      "description": "Fine-grained user instance quota management and token quota management"
+    }
+  },
+  "welcome": {
+    "userCenter": "User Center",
+    "adminCenter": "Admin Center"
+  },
+  "admin": {
+    "adminCenter": "Admin Center"
+  }
+}

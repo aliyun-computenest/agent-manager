@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0",
+  "name": "agent-manager-harness-parallelism",
+  "description": "DAG and resource-lock rules for Harness platform parallel dispatch.",
+  "dispatchModel": "Harness platform dispatches tasks; this repository only declares locks and dependencies.",
+  "resourceLocks": [
+    {
+      "id": "supabase:test",
+      "kind": "shared-database",
+      "defaultConcurrency": 1,
+      "reason": "Integration tests mutate test users, instances, profiles, and cleanup prefixes."
+    },
+    {
+      "id": "e2b:quota",
+      "kind": "external-quota",
+      "defaultConcurrency": 1,
+      "reason": "Instance lifecycle tests provision real E2B sandboxes."
+    },
+    {
+      "id": "k8s:target-namespace",
+      "kind": "cluster-namespace",
+      "defaultConcurrency": 1,
+      "reason": "SandboxUpdateOps, Checkpoints, and ConfigMaps share namespace state."
+    },
+    {
+      "id": "k8s:ephemeral-namespace",
+      "kind": "cluster-namespace",
+      "defaultConcurrency": 1,
+      "reason": "Each work item should own a dedicated namespace, but namespace creation/deletion still needs an exclusive lock per work item."
+    },
+    {
+      "id": "k8s:ephemeral-service",
+      "kind": "cluster-service",
+      "defaultConcurrency": 1,
+      "reason": "Service, ingress, and port-forward endpoints are exclusive per work item."
+    },
+    {
+      "id": "image:agent-manager",
+      "kind": "image-registry",
+      "defaultConcurrency": 1,
+      "reason": "Image tags must be unique per work item and build, and registry push credentials are shared external resources."
+    },
+    {
+      "id": "oos:backup-template",
+      "kind": "oos-template",
+      "defaultConcurrency": 1,
+      "reason": "Checkpoint backup executions share OOS template and execution history."
+    },
+    {
+      "id": "file:backend",
+      "kind": "write-scope",
+      "defaultConcurrency": 1,
+      "reason": "Server route/service edits should be isolated per worktree."
+    },
+    {
+      "id": "file:frontend",
+      "kind": "write-scope",
+      "defaultConcurrency": 1,
+      "reason": "UI edits should be isolated per worktree and merged intentionally."
+    },
+    {
+      "id": "file:tests",
+      "kind": "write-scope",
+      "defaultConcurrency": 1,
+      "reason": "Test updates can conflict when multiple agents update the same suites."
+    },
+    {
+      "id": "file:harness",
+      "kind": "write-scope",
+      "defaultConcurrency": 1,
+      "reason": "Harness rules, skills, templates, manifests, and validation scripts should be edited as one delivery surface."
+    }
+  ],
+  "rules": [
+    "Only tasks in the same DAG wave and with non-overlapping resource locks may run in parallel.",
+    "Every develop task must declare writeScope.",
+    "Every env_prepare, deploy_ephemeral, test_api, and test_e2e task must use the work item namespace/service/baseUrl from the same isolated environment.",
+    "Every integration_live task must declare the external environment resources it touches.",
+    "Shared live OOS/K8s verification is serial unless the platform provides isolated namespaces or clusters.",
+    "Each parallel task must report its own task output, evidence, and resume state."
+  ],
+  "blockedWhen": [
+    "A task references an unknown dependency.",
+    "A task references an unknown stage.",
+    "A task attempts to write outside writeScope.",
+    "A live verification task lacks required platform inputs."
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "nav": {
+    "instanceList": "Instances",
+    "profile": "Profile",
+    "groups": "My Groups",
+    "skillMarket": "Skill Market"
+  },
+  "dashboard": {
+    "myAgents": "My Agents",
+    "runningInstances": "Running Instances",
+    "availableModels": "Available Models",
+    "welcomeBack": "Welcome back, {{name}}!",
+    "runningAgentCount": "You have {{count}} running agent instances",
+    "createInstance": "Create Instance",
+    "myAgentInstances": "My Agent Instances",
+    "viewAll": "View All →",
+    "table": {
+      "name": "Name",
+      "status": "Status",
+      "model": "Model",
+      "tokenUsage": "Token Usage"
+    },
+    "status": {
+      "running": "Running",
+      "stopped": "Stopped"
+    }
+  },
+  "openClawList": {
+    "myInstances": "My Instances",
+    "todayTokenUsage": "Today's Token Usage",
+    "last30DaysTokenUsage": "Last 30 Days Token Usage",
+    "aiGateway": "AI Gateway",
+    "limit": "Limit"
+  },
+  "profile": {
+    "email": "Email",
+    "instanceQuota": "Instance Quota",
+    "instanceQuotaUnit": "{{count}}",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password (at least 6 characters)",
+    "confirmNewPassword": "Confirm New Password",
+    "emailResetHint": "After verifying your current password, a reset link will be sent to your email to set a new password",
+    "resetEmailSent": "Password reset email sent",
+    "resetEmailDetail": "Please check your email and complete the password change via the link. The link is valid for 24 hours.",
+    "emailResetSuccess": "A password reset email has been sent to your inbox. Please check and follow the link to complete the password change",
+    "passwordChanged": "Password changed successfully!",
+    "passwordChangedRelogin": "Password changed, redirecting to login...",
+    "logoutCountdown": "Redirecting to login in {{seconds}}s...",
+    "redirecting": "Redirecting...",
+    "sending": "Sending...",
+    "changing": "Changing...",
+    "sendResetEmail": "Send Reset Email",
+    "confirmChange": "Confirm Change",
+    "validation": {
+      "currentPasswordRequired": "Please enter your current password",
+      "newPasswordTooShort": "New password must be at least 6 characters",
+      "passwordMismatch": "The new passwords do not match",
+      "sameAsOld": "New password cannot be the same as current password",
+      "changeFailed": "Password change failed",
+      "notLoggedIn": "Not logged in or session expired"
+    }
+  },
+  "currentUser": {
+    "role": "User",
+    "label": "Current user: {{name}}"
+  },
+  "defaultTitle": "User Center",
+  "skillMarket": {
+    "title": "Skill Market",
+    "tabOfficial": "Official Skills",
+    "tabSpaces": "Skill Spaces"
+  },
+  "skillInstall": {
+    "action": "Install Skill",
+    "disabledByStatus": "Start the instance before installing Skills",
+    "installToInstance": "Install to instance",
+    "selectAndInstall": "Select and install",
+    "selectInstance": "Select target instance",
+    "selectedSkills": "{{count}} Skills selected",
+    "selectSkills": "Select Skills",
+    "installToCurrentInstance": "Select one or more Skills to install to this instance",
+    "selectSkillsThenInstance": "Select Skills, then choose one running target instance",
+    "officialSkills": "Official Skills",
+    "skillSpaces": "Skill Spaces",
+    "searchSkills": "Search Skills...",
+    "refresh": "Refresh",
+    "selectAll": "Select all",
+    "clearAll": "Clear all",
+    "selectedCount": "{{count}} selected",
+    "selectionLimit": "You can install up to {{max}} Skills at a time",
+    "selectAtLeastOne": "Select at least one Skill",
+    "loadingSkills": "Loading Skills...",
+    "loadingInstances": "Loading instances...",
+    "noSkills": "No Skills available",
+    "noRunningInstances": "No available running instances",
+    "noRunningInstancesHint": "Start an instance first",
+    "instanceSingleSelectHint": "Choose one target instance per request",
+    "resultOnlyHint": "Results apply to this request only; installation history is not stored",
+    "install": "Install",
+    "installing": "Installing...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "succeeded": "Installed",
+    "failed": "Installation failed",
+    "loadInstancesFailed": "Failed to load instances",
+    "loadSkillsFailed": "Failed to load Skills",
+    "loadSpacesFailed": "Failed to load Skill Spaces",
+    "requestFailed": "Installation request failed"
+  }
+}

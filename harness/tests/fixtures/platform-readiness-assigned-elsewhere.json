@@ -1,0 +1,19 @@
+{
+  "agent": {
+    "agentId": "agent-current",
+    "agentName": "current-agent"
+  },
+  "workItem": {
+    "id": "wi-assigned-elsewhere",
+    "status": "in_progress",
+    "assigneeAgentId": "agent-other",
+    "tasks": [
+      {
+        "id": "task-clarify",
+        "type": "clarify",
+        "status": "pending",
+        "agentId": "agent-other"
+      }
+    ]
+  }
+}

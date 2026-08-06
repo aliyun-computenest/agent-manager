@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 发布验收"
+  short_description: "执行最终验收并在人工审核前保留体验环境"
+  default_prompt: "Use $agent-manager-harness-release for final acceptance and approval-aware cleanup."

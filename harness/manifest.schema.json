@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-manager.local/harness/manifest.schema.json",
+  "title": "Agent Manager Harness Feature Manifest",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "featureId",
+    "title",
+    "sources",
+    "platformInputs",
+    "stages",
+    "tasks",
+    "testMatrix",
+    "evidence",
+    "humanGates"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "featureId": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "sources": {
+      "type": "object",
+      "required": ["designDocs", "uiArtifacts"],
+      "properties": {
+        "designDocs": { "type": "array", "items": { "type": "string" } },
+        "uiArtifacts": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "platformInputs": {
+      "type": "object",
+      "required": ["required", "optional"],
+      "properties": {
+        "required": { "type": "array", "items": { "type": "string" } },
+        "optional": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "stages": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/task" }
+    },
+    "testMatrix": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/test" }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "humanGates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage", "type", "reason"],
+        "properties": {
+          "stage": { "type": "string" },
+          "type": { "enum": ["approval", "clarification", "blocker"] },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": ["id", "stage", "dependsOn", "resources", "writeScope"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "stage": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string" } },
+        "resources": { "type": "array", "items": { "type": "string" } },
+        "writeScope": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "agentPacket": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "test": {
+      "type": "object",
+      "required": ["id", "stage", "command", "resources", "evidence"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "stage": { "type": "string", "minLength": 1 },
+        "command": { "type": "string", "minLength": 1 },
+        "resources": { "type": "array", "items": { "type": "string" } },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "requiredAssertions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "requiresPostActionReadback": { "type": "boolean" },
+        "postActionReadback": { "$ref": "#/$defs/postActionReadback" },
+        "requiresHumanInput": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "postActionReadback": {
+      "type": "object",
+      "required": ["targetPathPattern", "resultMatchFields"],
+      "properties": {
+        "targetPathPattern": { "type": "string", "minLength": 1 },
+        "resultMatchFields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidenceTextFields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "requiredEvidenceText": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "actionResultMatchFields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "actionResultStatuses": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "required": ["actionResultMatchFields"] },
+          "then": { "required": ["actionResultStatuses"] }
+        },
+        {
+          "if": { "required": ["actionResultStatuses"] },
+          "then": { "required": ["actionResultMatchFields"] }
+        }
+      ]
+    }
+  }
+}

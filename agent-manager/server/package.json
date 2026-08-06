@@ -1,0 +1,40 @@
+{
+  "name": "openclaw-server",
+  "version": "1.0.0",
+  "description": "Agent Manager Backend API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "validate:openapi": "node scripts/validate-openapi.js"
+  },
+  "dependencies": {
+    "@alicloud/apig20240327": "^6.0.6",
+    "@alicloud/arms20210422": "^1.0.2",
+    "@alicloud/cms20240330": "^9.0.1",
+    "@alicloud/computenest20210601": "^3.4.0",
+    "@alicloud/credentials": "^2.4.4",
+    "@alicloud/cs20151215": "^6.6.0",
+    "@alicloud/openapi-client": "^0.4.12",
+    "@alicloud/openapi-util": "^0.3.3",
+    "@alicloud/sls20201230": "^5.9.0",
+    "@alicloud/sts20150401": "^1.2.0",
+    "@alicloud/tea-util": "^1.4.11",
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "@e2b/code-interpreter": "^2.4.2",
+    "@kubernetes/client-node": "^1.4.0",
+    "@scalar/api-reference": "^1.57.4",
+    "@scalar/express-api-reference": "^0.9.18",
+    "@supabase/supabase-js": "^2.39.0",
+    "adm-zip": "^0.5.17",
+    "ali-oss": "^6.23.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.1",
+    "multer": "^1.4.5-lts.1",
+    "ws": "^8.20.1",
+    "zod": "^3.25.76"
+  }
+}

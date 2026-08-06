@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "commonSkills": [
+    "agent-manager-harness-core"
+  ],
+  "stages": {
+    "clarify": ["agent-manager-harness-clarify"],
+    "dev_orchestration": ["agent-manager-harness-orchestration"],
+    "env_prepare": ["agent-manager-harness-env-prepare"],
+    "develop": ["agent-manager-harness-develop"],
+    "test_unit": ["agent-manager-harness-unit-test"],
+    "deploy_ephemeral": ["agent-manager-harness-ephemeral-deploy"],
+    "test_api": ["agent-manager-harness-api-test"],
+    "test_e2e": ["agent-manager-harness-e2e-test"],
+    "integration_live": ["agent-manager-harness-live-integration"],
+    "code_review": ["agent-manager-harness-code-review"],
+    "deploy": ["agent-manager-harness-release"]
+  }
+}

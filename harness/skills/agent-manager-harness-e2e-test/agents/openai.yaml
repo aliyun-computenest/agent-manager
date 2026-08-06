@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 浏览器验证"
+  short_description: "验证隔离环境真实功能并上传操作后页面证据"
+  default_prompt: "Use $agent-manager-harness-e2e-test to capture feature-specific browser evidence."

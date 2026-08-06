@@ -1,0 +1,28 @@
+{
+  "id": "aliyun-ai-gateway",
+  "name": "阿里云AI 网关",
+  "base_url": "",
+  "api_key": "",
+  "chat_model": "OpenAIChatModel",
+  "models": [],
+  "extra_models": [
+    {
+      "id": "qwen3.5-plus",
+      "name": "qwen3.5-plus",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    }
+  ],
+  "api_key_prefix": "",
+  "is_local": false,
+  "freeze_url": false,
+  "require_api_key": true,
+  "is_custom": true,
+  "support_model_discovery": false,
+  "support_connection_check": false,
+  "generate_kwargs": {},
+  "meta": {}
+}

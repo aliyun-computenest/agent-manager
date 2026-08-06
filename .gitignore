@@ -1,0 +1,87 @@
+# Python
+*.pyc
+__pycache__/
+
+# Qoder
+.qoder/
+
+# Node
+node_modules/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+agent-manager/.env
+agent-manager/.env.local
+agent-manager/.env.*.local
+
+# 证书文件
+*.pem
+*.key
+*.crt
+
+# Build
+dist/
+build/
+.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+template/*.py
+/scripts
+agent-manager/scripts/setup-oauth.sh
+/template
+agent-manager/docs/
+# OS
+.DS_Store
+Thumbs.db
+
+# 阿里云测试脚本（包含敏感配置）
+agent-manager/scripts/aliyun-*.sh
+agent-manager/scripts/aliyun-*.py
+agent-manager/scripts/supabase-*.ts
+agent-manager/scripts/idp-metadata.xml
+agent-manager/venv/
+__pycache__/
+# Qoder
+.qoder/
+
+# Node
+node_modules/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+build/
+.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+agent-manager/基于Supabase实现企业SSO接入.md
+agent-manager/playwright-report/
+agent-manager/test-results/
+/agent-manager/build-pack.sh
+
+# ─── Harness-generated files ───
+# These ARE tracked in git (the harness is the source of truth for agents).
+# Only Phase 2 scratch artifacts are ignored.
+harness/.analysis/
+harness/trace/
+harness/memory/

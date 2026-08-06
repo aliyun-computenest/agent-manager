@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 代码开发"
+  short_description: "在声明范围内实现真实业务代码并补充对应测试"
+  default_prompt: "Use $agent-manager-harness-develop to implement only the assigned Harness develop task."

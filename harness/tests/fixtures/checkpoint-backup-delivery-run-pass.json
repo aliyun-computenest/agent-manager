@@ -1,0 +1,378 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "checkpoint-backup",
+  "workItemId": "WI-CHECKPOINT-BACKUP-REAL-DEV",
+  "commit": "local-real-dev-validation",
+  "environment": {
+    "runId": "checkpoint-backup-a1b2c3d4e5f6",
+    "featureId": "checkpoint-backup",
+    "workItemId": "WI-CHECKPOINT-BACKUP-REAL-DEV",
+    "taskId": "TASK-CHECKPOINT-BACKUP-REAL-DEV",
+    "isolated": true,
+    "namespace": "hm-cpbackup-a1b2c3d4e5f6",
+    "serviceName": "openclaw-platform",
+    "baseUrl": "http://127.0.0.1:5187",
+    "imageRegistry": "registry.example.invalid/agent-manager",
+    "imageTag": "checkpoint-backup-a1b2c3d4e5f6",
+    "imageRef": "registry.example.invalid/agent-manager:checkpoint-backup-a1b2c3d4e5f6",
+    "computenestRegion": "ap-southeast-1",
+    "deployRegionId": "cn-hongkong",
+    "acsServiceId": "service-731298a621304868a3a4",
+    "dbPrefix": "it_a1b2c3d4e5f6_",
+    "artifactDir": "harness/artifacts/checkpoint-backup-a1b2c3d4e5f6",
+    "ci": {
+      "envCreateRunId": "aoneci-env-create-checkpoint-001",
+      "buildDeployRunId": "aoneci-build-deploy-checkpoint-001",
+      "envCleanupRunId": "aoneci-cleanup-checkpoint-001",
+      "envCreatePipelinePath": ".aoneci/harness_env_create.yaml",
+      "buildDeployPipelinePath": ".aoneci/harness_build_deploy.yaml",
+      "envCleanupPipelinePath": ".aoneci/harness_env_cleanup.yaml"
+    }
+  },
+  "tasks": [
+    {
+      "id": "clarify-checkpoint-inputs",
+      "stage": "clarify",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "确认本轮从已包含设计文档和 UI 的分支开始，验证 checkpoint backup 后端、前端、OOS/K8s 证据链和隔离环境发布。"
+      }
+    },
+    {
+      "id": "orchestrate-checkpoint-delivery",
+      "stage": "dev_orchestration",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "发布 allowlist、DAG、资源锁、A1 CI 隔离环境、单测/API/浏览器/live 验证矩阵。"
+      }
+    },
+    {
+      "id": "prepare-checkpoint-environment",
+      "stage": "env_prepare",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "通过专用 AOneCI 规划专属 namespace/service/baseUrl，并记录 ComputeNest RegionId 与 DeployRegionId。"
+      }
+    },
+    {
+      "id": "backend-backup-api",
+      "stage": "develop",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "验证 checkpoint backup service/OOS client/K8s readback 路径，保持 Checkpoint CR 与 snapshot ConfigMap 为权威来源。",
+        "artifacts": [
+          {
+            "kind": "unit-source",
+            "path": "agent-manager/tests/unit/checkpoint-backup-service.test.js"
+          }
+        ]
+      }
+    },
+    {
+      "id": "frontend-backup-ui",
+      "stage": "develop",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "补齐 checkpoint backup 管理页浏览器验收，覆盖执行列表、详情记录和创建立即执行。"
+      }
+    },
+    {
+      "id": "deploy-checkpoint-ephemeral",
+      "stage": "deploy_ephemeral",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "构建镜像并部署到专属 namespace/service，read back /api/health。"
+      }
+    },
+    {
+      "id": "api-checkpoint-readback",
+      "stage": "test_api",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "API 验证覆盖管理员执行列表、执行记录、用户备份列表、备份创建和恢复冲突。"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "id": "env-create-checkpoint",
+      "stage": "env_prepare",
+      "taskId": "prepare-checkpoint-environment",
+      "command": "a1 ci pipeline run env-create-pipeline --repo acs-automation/agent-manager --branch codex/checkpoint-backup-real-dev --param work_item_id=WI-CHECKPOINT-BACKUP-REAL-DEV --param namespace=hm-cpbackup-a1b2c3d4e5f6 --param service_name=openclaw-platform --param computenest_region=ap-southeast-1 --param deploy_region_id=cn-hongkong --param acs_service_id=service-731298a621304868a3a4 --param acs_cluster_id=c2aa8f25b3d9443d28012b53cf7482920 --param vpc_id=vpc-j6c11tziiynqsicwit1gv --param vswitch_id=vsw-j6ceq555bjkzfgmm5kewl --param zone_id=cn-hongkong-d --param skillhub_oss_bucket=skillhub-pre-test-intl --param skillhub_oss_region=cn-hongkong --param ros_region=cn-hongkong --param ros_template_path=template/platform_template.yaml --watch",
+      "exitCode": 0,
+      "aoneCiRunId": "aoneci-env-create-checkpoint-001",
+      "pipelinePath": ".aoneci/harness_env_create.yaml",
+      "namespace": "hm-cpbackup-a1b2c3d4e5f6",
+      "serviceName": "openclaw-platform",
+      "readback": {
+        "computenestRegion": "ap-southeast-1",
+        "deployRegionId": "cn-hongkong",
+        "filter": [
+          {
+            "Name": "ServiceId",
+            "Value": [
+              "service-731298a621304868a3a4"
+            ]
+          },
+          {
+            "Name": "DeployRegionId",
+            "Value": [
+              "cn-hongkong"
+            ]
+          }
+        ],
+        "configMap": "agent-manager-env-prepare"
+      },
+      "artifacts": [
+        {
+          "kind": "env-create-log",
+          "url": "harness://artifacts/checkpoint-backup/env-create.log"
+        }
+      ]
+    },
+    {
+      "id": "unit-backup",
+      "stage": "test_unit",
+      "taskId": "backend-backup-api",
+      "command": "cd agent-manager && npx vitest run tests/unit/checkpoint-backup-service.test.js tests/unit/checkpoint-backup-rebuild.test.js tests/unit/backup-mounts-service.test.js",
+      "exitCode": 0,
+      "testsPassed": 36,
+      "totalTests": 36,
+      "artifacts": [
+        {
+          "kind": "stdout",
+          "url": "harness://artifacts/checkpoint-backup/unit.log"
+        }
+      ]
+    },
+    {
+      "id": "deploy-backup-ephemeral",
+      "stage": "deploy_ephemeral",
+      "taskId": "deploy-checkpoint-ephemeral",
+      "command": "a1 ci pipeline run build-deploy-pipeline --repo acs-automation/agent-manager --branch codex/checkpoint-backup-real-dev --param image_tag=checkpoint-backup-a1b2c3d4e5f6 --param namespace=hm-cpbackup-a1b2c3d4e5f6 --param service_name=openclaw-platform --param container_name=openclaw-platform --param work_item_id=WI-CHECKPOINT-BACKUP-REAL-DEV --watch",
+      "exitCode": 0,
+      "aoneCiRunId": "aoneci-build-deploy-checkpoint-001",
+      "pipelinePath": ".aoneci/harness_build_deploy.yaml",
+      "namespace": "hm-cpbackup-a1b2c3d4e5f6",
+      "serviceName": "openclaw-platform",
+      "baseUrl": "http://127.0.0.1:5187",
+      "imageTag": "checkpoint-backup-a1b2c3d4e5f6",
+      "rolloutStatus": "success",
+      "healthReadback": {
+        "statusCode": 200,
+        "body": {
+          "status": "ok"
+        }
+      },
+      "artifacts": [
+        {
+          "kind": "deploy-log",
+          "url": "harness://artifacts/checkpoint-backup/deploy.log"
+        }
+      ]
+    },
+    {
+      "id": "api-backup",
+      "stage": "test_api",
+      "taskId": "api-checkpoint-readback",
+      "command": "cd agent-manager && TEST_BASE_URL=http://127.0.0.1:5187 TEST_SUITE_DIR=checkpoint-backups TEST_CHECKPOINT_BACKUP_CREATE_CANCEL=true npm run test:integration",
+      "exitCode": 0,
+      "baseUrl": "http://127.0.0.1:5187",
+      "testsPassed": 2,
+      "totalTests": 2,
+      "apiEvidence": [
+        {
+          "method": "GET",
+          "apiPath": "/api/admin/backups/executions",
+          "statusCode": 200,
+          "target": "管理员备份执行列表"
+        },
+        {
+          "method": "POST",
+          "apiPath": "/api/admin/backups/executions",
+          "statusCode": 201,
+          "target": "管理员创建周期备份执行"
+        },
+        {
+          "method": "POST",
+          "apiPath": "/api/admin/backups/executions/:executionId/cancel",
+          "statusCode": 204,
+          "target": "管理员取消周期备份执行"
+        }
+      ],
+      "artifacts": [
+        {
+          "kind": "api-log",
+          "url": "harness://artifacts/checkpoint-backup/api.log"
+        }
+      ]
+    },
+    {
+      "id": "ui-backup",
+      "stage": "test_e2e",
+      "taskId": "frontend-backup-ui",
+      "command": "cd agent-manager && OPENCLAW_FRONTEND_URL=http://127.0.0.1:5187 npx playwright test tests/ui/checkpoint-backup-admin.spec.ts --reporter=line",
+      "exitCode": 0,
+      "baseUrl": "http://127.0.0.1:5187",
+      "screenshots": [
+        {
+          "kind": "screenshot",
+          "target": "checkpoint backup admin list/detail/create flow",
+          "targetPath": "agent-manager/tests/ui/checkpoint-backup-admin.spec.ts",
+          "url": "harness://artifacts/checkpoint-backup/checkpoint-admin-list-detail-create.png"
+        }
+      ],
+      "artifacts": [
+        {
+          "kind": "playwright-report",
+          "target": "checkpoint backup admin Playwright report",
+          "targetPath": "agent-manager/playwright-report/batch-import-ui/index.html",
+          "url": "harness://artifacts/checkpoint-backup/playwright-report"
+        }
+      ],
+      "consoleErrors": [],
+      "failedNetwork": [],
+      "layoutOverflow": {
+        "desktop": 0,
+        "mobile": 0
+      },
+      "experienceUrl": "http://127.0.0.1:5187/admin/checkpoint-backups",
+      "featureAssertions": [
+        "备份历史列表可见",
+        "创建备份入口可见并可触发",
+        "桌面和移动视口无横向溢出"
+      ]
+    },
+    {
+      "id": "integration-checkpoint-backup",
+      "stage": "integration_live",
+      "taskId": "api-checkpoint-readback",
+      "command": "aliyun oos ListExecutions --ExecutionId exec-checkpoint-nightly && kubectl -n hm-cpbackup-a1b2c3d4e5f6 get checkpoint,configmap -l backup-id=bk-20260703-001 -o yaml",
+      "exitCode": 0,
+      "testsPassed": 4,
+      "totalTests": 4,
+      "liveEvidence": [
+        {
+          "kind": "oos-execution-record",
+          "target": "OOS execution exec-checkpoint-nightly",
+          "url": "harness://artifacts/checkpoint-backup/oos-execution-exec-checkpoint-nightly.json"
+        },
+        {
+          "kind": "oos-task-logs",
+          "target": "OOS task logs for checkpoint template",
+          "url": "harness://artifacts/checkpoint-backup/oos-task-logs.txt"
+        },
+        {
+          "kind": "temporary-kubeconfig-source",
+          "target": "aliyun cs DescribeClusterUserKubeconfig",
+          "url": "harness://artifacts/checkpoint-backup/temporary-kubeconfig-source.json"
+        },
+        {
+          "kind": "checkpoint-cr-readback",
+          "target": "Checkpoint CR and snapshot ConfigMap backup history",
+          "url": "harness://artifacts/checkpoint-backup/checkpoint-configmap-readback.yaml"
+        }
+      ],
+      "artifacts": [
+        {
+          "kind": "integration-log",
+          "url": "harness://artifacts/checkpoint-backup/integration-live.log"
+        }
+      ]
+    },
+    {
+      "id": "cleanup-checkpoint-ephemeral",
+      "stage": "deploy",
+      "taskId": "api-checkpoint-readback",
+      "command": "a1 ci pipeline run env-cleanup-pipeline --repo acs-automation/agent-manager --branch codex/checkpoint-backup-real-dev --param namespace=hm-cpbackup-a1b2c3d4e5f6 --param work_item_id=WI-CHECKPOINT-BACKUP-REAL-DEV --watch",
+      "exitCode": 0,
+      "aoneCiRunId": "aoneci-cleanup-checkpoint-001",
+      "pipelinePath": ".aoneci/harness_env_cleanup.yaml",
+      "namespace": "hm-cpbackup-a1b2c3d4e5f6",
+      "readback": {
+        "namespaceLabelGuard": "passed",
+        "deleteTriggered": true
+      },
+      "artifacts": [
+        {
+          "kind": "cleanup-log",
+          "url": "harness://artifacts/checkpoint-backup/cleanup.log"
+        }
+      ]
+    }
+  ],
+  "waiting": [
+    {
+      "taskId": "clarify-checkpoint-inputs",
+      "waitType": "clarification",
+      "state": "resumed",
+      "reason": "需要确认是否允许在专属 namespace 中运行 OOS/K8s live 验证。",
+      "resumeCriteria": "人工回复允许真实验证，或明确停在本地/API/浏览器证据边界。",
+      "blockedNextStages": [
+        "integration_live",
+        "deploy"
+      ],
+      "humanAnswer": "允许在隔离 namespace 中运行 OOS/K8s 验证，但最终 Harness 平台验收仍需 work item/milestone/acceptance command。",
+      "decision": "run_live_in_isolated_environment",
+      "resumedAt": "2026-07-03T08:30:00.000Z",
+      "resumeCriteriaSatisfied": true
+    }
+  ],
+  "outputs": [
+    {
+      "taskId": "backend-backup-api",
+      "state": "completed",
+      "summary": "Checkpoint backup service tests passed and no DB backup history duplication was introduced."
+    },
+    {
+      "taskId": "frontend-backup-ui",
+      "state": "completed",
+      "summary": "Checkpoint backup admin browser flow passed with feature-specific Playwright evidence."
+    }
+  ],
+  "review": {
+    "status": "passed",
+    "blockingFindings": 0,
+    "scopeGuard": {
+      "status": "passed",
+      "allowlist": [
+        ".aoneci/harness_env_create.yaml",
+        ".aoneci/harness_build_deploy.yaml",
+        ".aoneci/harness_env_cleanup.yaml",
+        "agent-manager/src/components/CheckpointBackupAdmin.tsx",
+        "agent-manager/tests/ui/checkpoint-backup-admin.spec.ts",
+        "harness/**",
+        "docs/design/1.0.5/harness-autopilot-auto-dev-design.md"
+      ],
+      "outOfScopeFiles": []
+    },
+    "artifact": {
+      "kind": "review",
+      "url": "harness://artifacts/checkpoint-backup/cross-review.json"
+    }
+  },
+  "platformAcceptance": {
+    "status": "evidence_boundary",
+    "claimedPlatformComplete": false,
+    "reason": "仓库内验证已覆盖规则、CI 契约、本地单测和浏览器用例；真实 Harness 平台最终验收还缺 work item、milestoneId、owner-token 引用、agent-id 和 acceptanceCommand。",
+    "missingInputs": [
+      "milestoneId",
+      "ownerTokenRef",
+      "agentId",
+      "acceptanceCommand"
+    ],
+    "evidence": [
+      {
+        "kind": "boundary",
+        "url": "harness://artifacts/checkpoint-backup/platform-acceptance-boundary.json"
+      }
+    ]
+  }
+}

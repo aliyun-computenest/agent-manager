@@ -1,0 +1,63 @@
+{
+  "loading": {
+    "default": "加载中...",
+    "permissions": "加载权限..."
+  },
+  "buttons": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "confirm": "确认",
+    "close": "关闭",
+    "logout": "退出登录",
+    "login": "登录"
+  },
+  "roles": {
+    "admin": "管理员",
+    "user": "普通用户",
+    "alicloudUser": "阿里云用户"
+  },
+  "status": {
+    "running": "运行中",
+    "stopped": "已停止",
+    "starting": "启动中...",
+    "stopping": "停止中...",
+    "active": "已启用",
+    "disabled": "已禁用",
+    "error": "错误"
+  },
+  "nav": {
+    "userCenter": "用户中心",
+    "adminCenter": "管理中心",
+    "instanceList": "实例列表",
+    "collapseSidebar": "收起侧边栏",
+    "expandSidebar": "展开侧边栏"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "description": "抱歉，您访问的页面不存在或已被移除",
+    "goBack": "返回上一页",
+    "goHome": "返回首页"
+  },
+  "table": {
+    "name": "名称",
+    "status": "状态",
+    "model": "模型"
+  },
+  "messages": {
+    "currentUser": "当前用户：{{name}}",
+    "noData": "暂无数据",
+    "unknownUser": "未知用户",
+    "notConfigured": "未配置"
+  },
+  "pleaseWait": "请稍候",
+  "redirecting": "跳转中...",
+  "or": "或",
+  "iframe": {
+    "loadFailed": "页面加载失败",
+    "embedFailed": "无法嵌入该页面，可能是由于安全策略限制",
+    "retry": "重试",
+    "openInNewTab": "在新标签页打开"
+  }
+}

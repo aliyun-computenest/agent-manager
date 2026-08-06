@@ -1,0 +1,13 @@
+{
+    "wecom": {
+		"enabled": true,
+		"connectionMode": "websocket",
+		"botId": "${CHANNEL_CLIENT_ID}",
+		"secret": "${CHANNEL_CLIENT_SECRET}",
+		"streamPlaceholderContent": "正在思考...",
+		"welcomeText": "你好！我是 AI 助手",
+		"dm": {
+			"policy": "open"
+		}
+	}
+}

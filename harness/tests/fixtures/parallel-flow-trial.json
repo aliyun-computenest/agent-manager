@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "trialId": "parallel-flow-trial-pass",
+  "featureId": "harness-parallel-flow",
+  "title": "Harness parallel flow passing trial",
+  "tasks": [
+    {
+      "id": "edit-api-route",
+      "stage": "develop",
+      "dependsOn": [],
+      "resources": [
+        "file:backend"
+      ],
+      "writeScope": [
+        "agent-manager/server/routes/parallel-flow.js"
+      ],
+      "command": "node -e \"setTimeout(() => { console.log('api route done') }, 80)\"",
+      "durationMs": 40
+    },
+    {
+      "id": "edit-ui-panel",
+      "stage": "develop",
+      "dependsOn": [],
+      "resources": [
+        "file:frontend"
+      ],
+      "writeScope": [
+        "agent-manager/src/components/ParallelFlowPanel.tsx"
+      ],
+      "command": "node -e \"setTimeout(() => { console.log('ui panel done') }, 80)\"",
+      "durationMs": 40
+    },
+    {
+      "id": "verify-parallel-flow",
+      "stage": "test_unit",
+      "dependsOn": [
+        "edit-api-route",
+        "edit-ui-panel"
+      ],
+      "resources": [
+        "file:tests"
+      ],
+      "writeScope": [
+        "harness/tests/rules-tools.test.mjs"
+      ],
+      "command": "node -e \"setTimeout(() => { console.log('parallel flow verified') }, 10)\"",
+      "durationMs": 20
+    }
+  ]
+}

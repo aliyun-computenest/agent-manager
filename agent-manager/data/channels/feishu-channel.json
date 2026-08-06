@@ -1,0 +1,12 @@
+{
+    "feishu": {
+        "enabled": true,
+        "appId": "${CHANNEL_CLIENT_ID}",
+        "appSecret": "${CHANNEL_CLIENT_SECRET}",
+        "domain": "feishu",
+        "connectionMode": "websocket",
+        "requireMention": true,
+        "dmPolicy": "open",
+        "groupPolicy": "open"
+    }
+}

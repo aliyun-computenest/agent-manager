@@ -1,0 +1,467 @@
+{
+  "schemaVersion": "1.0",
+  "featureId": "harness-autodev-kit",
+  "workItemId": "WI-HARNESS-DELIVERY-KIT",
+  "commit": "local-dry-run",
+  "environment": {
+    "runId": "harness-autodev-kit-e9166ae8f288",
+    "featureId": "harness-autodev-kit",
+    "workItemId": "WI-HARNESS-DELIVERY-KIT",
+    "taskId": "TASK-HARNESS-DELIVERY-KIT",
+    "isolated": true,
+    "namespace": "hm-e9166ae8f288",
+    "serviceName": "openclaw-platform",
+    "baseUrl": "https://openclaw-platform.example.invalid",
+    "imageRegistry": "registry.example.invalid/agent-manager",
+    "imageTag": "harness-autodev-kit-e9166ae8f288",
+    "imageRef": "registry.example.invalid/agent-manager:harness-autodev-kit-e9166ae8f288",
+    "computenestRegion": "ap-southeast-1",
+    "deployRegionId": "cn-hongkong",
+    "acsServiceId": "service-731298a621304868a3a4",
+    "dbPrefix": "it_e9166ae8f288_",
+    "artifactDir": "harness/artifacts/harness-autodev-kit-e9166ae8f288",
+    "ci": {
+      "envCreateRunId": "aoneci-env-create-001",
+      "buildDeployRunId": "aoneci-build-deploy-001",
+      "envCleanupRunId": "aoneci-cleanup-001",
+      "envCreatePipelinePath": ".aoneci/harness_env_create.yaml",
+      "buildDeployPipelinePath": ".aoneci/harness_build_deploy.yaml",
+      "envCleanupPipelinePath": ".aoneci/harness_env_cleanup.yaml"
+    }
+  },
+  "tasks": [
+    {
+      "id": "clarify-delivery-inputs",
+      "stage": "clarify",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Confirmed local dry run and recorded missing external Harness acceptance inputs."
+      }
+    },
+    {
+      "id": "orchestrate-delivery-dag",
+      "stage": "dev_orchestration",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Defined DAG, write scopes, isolated environment, and validation matrix."
+      }
+    },
+    {
+      "id": "prepare-delivery-environment",
+      "stage": "env_prepare",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Created the dedicated namespace/service/baseUrl plan and recorded image/database isolation references."
+      }
+    },
+    {
+      "id": "build-skill-package",
+      "stage": "develop",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Created the Agent Manager Harness delivery skill package.",
+        "artifacts": [
+          {
+            "kind": "skill",
+            "path": "harness/skills/agent-manager-harness-core/SKILL.md"
+          }
+        ]
+      }
+    },
+    {
+      "id": "build-delivery-tools",
+      "stage": "develop",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Created deterministic environment planning, delivery validation, and report rendering tools.",
+        "artifacts": [
+          {
+            "kind": "script",
+            "path": "harness/scripts/validate-delivery-run.mjs"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validate-delivery-tools",
+      "stage": "test_unit",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Node test suite covers rules validation, delivery run validation, report rendering, and failure paths.",
+        "artifacts": [
+          {
+            "kind": "stdout",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/node-test.log"
+          }
+        ]
+      }
+    },
+    {
+      "id": "publish-delivery-ephemeral",
+      "stage": "deploy_ephemeral",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Published the current build to the dedicated namespace/service and read back /api/health.",
+        "artifacts": [
+          {
+            "kind": "deploy-log",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/deploy.log"
+          }
+        ]
+      }
+    },
+    {
+      "id": "api-delivery-check",
+      "stage": "test_api",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "API health check passed against the isolated environment baseUrl.",
+        "artifacts": [
+          {
+            "kind": "api-log",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/api.log"
+          }
+        ]
+      }
+    },
+    {
+      "id": "capture-delivery-evidence",
+      "stage": "test_e2e",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Rendered the delivery report and attached feature-specific evidence artifacts.",
+        "artifacts": [
+          {
+            "kind": "report",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/delivery-report.md"
+          },
+          {
+            "kind": "screenshot",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/report-preview-desktop.png"
+          }
+        ]
+      }
+    },
+    {
+      "id": "simulate-live-integration",
+      "stage": "integration_live",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Validated the full run contract and stopped at external platform evidence boundary.",
+        "artifacts": [
+          {
+            "kind": "validation",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/validation.log"
+          }
+        ]
+      }
+    },
+    {
+      "id": "automated-review-gate",
+      "stage": "code_review",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Automated review gate passed with no blocking findings."
+      }
+    },
+    {
+      "id": "final-acceptance-and-cleanup",
+      "stage": "deploy",
+      "status": "done",
+      "output": {
+        "state": "completed",
+        "summary": "Stopped at platform evidence boundary and recorded cleanup AOneCI evidence for the isolated namespace.",
+        "aoneCiRunId": "aoneci-cleanup-001",
+        "pipelinePath": ".aoneci/harness_env_cleanup.yaml",
+        "artifacts": [
+          {
+            "kind": "cleanup-log",
+            "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/cleanup.log"
+          }
+        ]
+      }
+    }
+  ],
+  "tests": [
+    {
+      "id": "unit-harness-delivery-tools",
+      "stage": "test_unit",
+      "taskId": "validate-delivery-tools",
+      "command": "node --test harness/tests/*.test.mjs",
+      "exitCode": 0,
+      "testsPassed": 30,
+      "totalTests": 30,
+      "artifacts": [
+        {
+          "kind": "stdout",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/unit.log"
+        }
+      ]
+    },
+    {
+      "id": "env-create-delivery-ephemeral",
+      "stage": "env_prepare",
+      "taskId": "prepare-delivery-environment",
+      "command": "a1 ci pipeline run env-create-pipeline --repo acs-automation/agent-manager --branch harness/example --param work_item_id=WI-HARNESS-DELIVERY-KIT --param namespace=hm-e9166ae8f288 --param service_name=openclaw-platform --param computenest_region=ap-southeast-1 --param deploy_region_id=cn-hongkong --param acs_service_id=service-731298a621304868a3a4 --param acs_cluster_id=c2aa8f25b3d9443d28012b53cf7482920 --param vpc_id=vpc-j6c11tziiynqsicwit1gv --param vswitch_id=vsw-j6ceq555bjkzfgmm5kewl --param zone_id=cn-hongkong-d --param skillhub_oss_bucket=skillhub-pre-test-intl --param skillhub_oss_region=cn-hongkong --param ros_region=cn-hongkong --param ros_template_path=template/platform_template.yaml --watch",
+      "exitCode": 0,
+      "aoneCiRunId": "aoneci-env-create-001",
+      "pipelinePath": ".aoneci/harness_env_create.yaml",
+      "namespace": "hm-e9166ae8f288",
+      "serviceName": "openclaw-platform",
+      "readback": {
+        "namespaceLabel": "WI-HARNESS-DELIVERY-KIT",
+        "serviceExists": true,
+        "configMap": "agent-manager-env-prepare"
+      },
+      "artifacts": [
+        {
+          "kind": "env-create-log",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/env-create.log"
+        }
+      ]
+    },
+    {
+      "id": "e2e-delivery-report",
+      "stage": "test_e2e",
+      "taskId": "capture-delivery-evidence",
+      "command": "node harness/scripts/render-delivery-report.mjs --run harness/tests/fixtures/delivery-run-pass.json",
+      "exitCode": 0,
+      "baseUrl": "https://openclaw-platform.example.invalid",
+      "screenshots": [
+        {
+          "kind": "screenshot",
+          "target": "Harness delivery report preview",
+          "targetUrl": "https://openclaw-platform.example.invalid/harness/delivery-report",
+          "targetPath": "harness/tests/fixtures/delivery-run-pass.json",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/report-preview-desktop.png",
+          "phase": "post_action_readback",
+          "assertionIds": [
+            "feature-postcondition-visible-in-target-ui"
+          ],
+          "domText": "Harness 交付报告展示隔离环境、测试矩阵、证据链接和平台验收边界"
+        },
+        {
+          "kind": "screenshot",
+          "target": "Harness delivery report preview mobile",
+          "targetPath": "harness/tests/fixtures/delivery-run-pass.json",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/report-preview-mobile.png"
+        }
+      ],
+      "consoleErrors": [],
+      "failedNetwork": [],
+      "layoutOverflow": {
+        "desktop": 0,
+        "mobile": 0
+      },
+      "artifacts": [
+        {
+          "kind": "report",
+          "target": "Harness delivery report markdown",
+          "targetPath": "harness/tests/fixtures/delivery-run-pass.json",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/delivery-report.md"
+        }
+      ],
+      "experienceUrl": "https://openclaw-platform.example.invalid/harness/delivery-report",
+      "featureAssertions": [
+        "交付报告页面可打开",
+        "报告展示隔离环境、测试矩阵和平台验收边界",
+        "桌面和移动视口无横向溢出"
+      ],
+      "assertionResults": [
+        {
+          "id": "feature-postcondition-visible-in-target-ui",
+          "passed": true,
+          "targetUrl": "https://openclaw-platform.example.invalid/harness/delivery-report",
+          "summary": "交付报告终态页面已展示隔离环境、测试矩阵和平台验收边界。"
+        }
+      ]
+    },
+    {
+      "id": "deploy-delivery-ephemeral",
+      "stage": "deploy_ephemeral",
+      "taskId": "publish-delivery-ephemeral",
+      "command": "a1 ci pipeline run build-deploy-pipeline --repo acs-automation/agent-manager --branch harness/example --param image_tag=harness-autodev-kit-e9166ae8f288 --param namespace=hm-e9166ae8f288 --param service_name=openclaw-platform --param container_name=openclaw-platform --param work_item_id=WI-HARNESS-DELIVERY-KIT --watch",
+      "exitCode": 0,
+      "aoneCiRunId": "aoneci-build-deploy-001",
+      "pipelinePath": ".aoneci/harness_build_deploy.yaml",
+      "namespace": "hm-e9166ae8f288",
+      "serviceName": "openclaw-platform",
+      "baseUrl": "https://openclaw-platform.example.invalid",
+      "imageTag": "harness-autodev-kit-e9166ae8f288",
+      "rolloutStatus": "success",
+      "healthReadback": {
+        "statusCode": 200,
+        "body": {
+          "status": "ok"
+        }
+      },
+      "artifacts": [
+        {
+          "kind": "deploy-log",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/deploy.log"
+        }
+      ]
+    },
+    {
+      "id": "api-delivery-health",
+      "stage": "test_api",
+      "taskId": "api-delivery-check",
+      "command": "curl -fsS https://openclaw-platform.example.invalid/api/health",
+      "exitCode": 0,
+      "baseUrl": "https://openclaw-platform.example.invalid",
+      "testsPassed": 1,
+      "totalTests": 1,
+      "apiEvidence": [
+        {
+          "method": "GET",
+          "apiPath": "/api/health",
+          "statusCode": 200,
+          "target": "isolated service health"
+        }
+      ],
+      "artifacts": [
+        {
+          "kind": "api-log",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/api.log"
+        }
+      ]
+    },
+    {
+      "id": "integration-delivery-run",
+      "stage": "integration_live",
+      "taskId": "simulate-live-integration",
+      "command": "node harness/scripts/validate-delivery-run.mjs --manifest harness/manifests/harness-autodev-kit.json --run harness/tests/fixtures/delivery-run-pass.json",
+      "exitCode": 0,
+      "testsPassed": 1,
+      "totalTests": 1,
+      "liveEvidence": [
+        {
+          "kind": "run-report-readback",
+          "target": "delivery run JSON",
+          "path": "harness/tests/fixtures/delivery-run-pass.json"
+        },
+        {
+          "kind": "evidence-boundary",
+          "target": "external Harness platform acceptance",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/platform-boundary.json"
+        }
+      ],
+      "artifacts": [
+        {
+          "kind": "validation",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/validate-delivery-run.log"
+        }
+      ]
+    },
+    {
+      "id": "cleanup-delivery-ephemeral",
+      "stage": "deploy",
+      "taskId": "final-acceptance-and-cleanup",
+      "command": "a1 ci pipeline run env-cleanup-pipeline --repo acs-automation/agent-manager --branch harness/example --param namespace=hm-e9166ae8f288 --param work_item_id=WI-HARNESS-DELIVERY-KIT --watch",
+      "exitCode": 0,
+      "aoneCiRunId": "aoneci-cleanup-001",
+      "pipelinePath": ".aoneci/harness_env_cleanup.yaml",
+      "namespace": "hm-e9166ae8f288",
+      "readback": {
+        "namespaceLabelGuard": "passed",
+        "deleteTriggered": true
+      },
+      "artifacts": [
+        {
+          "kind": "cleanup-log",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/cleanup.log"
+        }
+      ]
+    }
+  ],
+  "waiting": [
+    {
+      "taskId": "clarify-delivery-inputs",
+      "waitType": "clarification",
+      "state": "resumed",
+      "reason": "External Harness platform acceptance input was not available in the local dry run.",
+      "resumeCriteria": "Human chooses evidence boundary or provides real platform inputs.",
+      "blockedNextStages": [
+        "deploy"
+      ],
+      "humanAnswer": "Proceed with local dry run and record the missing platform inputs explicitly.",
+      "decision": "stop_at_evidence_boundary",
+      "resumedAt": "2026-07-02T10:00:00.000Z",
+      "resumeCriteriaSatisfied": true
+    }
+  ],
+  "outputs": [
+    {
+      "taskId": "validate-delivery-tools",
+      "state": "completed",
+      "summary": "Rules and delivery tools passed local validation.",
+      "artifacts": [
+        {
+          "kind": "stdout",
+          "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/node-test.log"
+        }
+      ]
+    }
+  ],
+  "review": {
+    "status": "passed",
+    "blockingFindings": 0,
+    "scopeGuard": {
+      "status": "passed",
+      "allowlist": [
+        "harness/config/stage-skills.json",
+        "harness/skills/agent-manager-harness-*/**",
+        "harness/config/environment.json",
+        "harness/manifest.schema.json",
+        "harness/manifests/*.json",
+        "harness/scripts/check-platform-*.mjs",
+        "harness/scripts/*delivery*.mjs",
+        "harness/scripts/lib/**",
+        "harness/scripts/plan-parallel-waves.mjs",
+        "harness/scripts/plan-test-environment.mjs",
+        "harness/scripts/render-platform-*.mjs",
+        "harness/scripts/review-delivery-scope.mjs",
+        "harness/scripts/run-parallel-flow-trial.mjs",
+        "harness/scripts/*.sh",
+        "harness/scripts/validate-rules.mjs",
+        "harness/rules/*.json",
+        "harness/manifests/harness-autodev-kit.json",
+        "harness/platform/**",
+        "harness/domains/agent-manager.json",
+        "harness/tests/**"
+      ],
+      "outOfScopeFiles": []
+    },
+    "artifact": {
+      "kind": "review",
+      "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/review.json"
+    }
+  },
+  "platformAcceptance": {
+    "status": "evidence_boundary",
+    "claimedPlatformComplete": false,
+    "reason": "External Harness work item, milestone, owner-token reference, and acceptance command were not provided to this repository dry run.",
+    "missingInputs": [
+      "milestoneId",
+      "ownerTokenRef",
+      "acceptanceCommand"
+    ],
+    "evidence": [
+      {
+        "kind": "boundary",
+        "url": "https://harness.example.invalid/artifacts/harness-autodev-kit/platform-boundary.json"
+      }
+    ]
+  }
+}

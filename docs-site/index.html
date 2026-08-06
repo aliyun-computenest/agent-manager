@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Manager 用户文档</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
+    <style>
+      :root {
+        --theme-color: #1677ff;
+        --sidebar-width: 280px;
+      }
+
+      body {
+        color: #1f2329;
+      }
+
+      .app-name-link {
+        font-weight: 600;
+      }
+
+      .markdown-section h1,
+      .markdown-section h2,
+      .markdown-section h3 {
+        color: #1f2329;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">正在加载文档...</div>
+    <script>
+      window.$docsify = {
+        name: "Agent Manager",
+        repo: "https://code.alibaba-inc.com/acs-automation/agent-manager",
+        homepage: "index.md",
+        loadSidebar: "_sidebar.md",
+        relativePath: true,
+        subMaxLevel: 3,
+        auto2top: true,
+        search: {
+          depth: 4,
+          placeholder: "搜索文档",
+          noData: "没有找到相关内容",
+          paths: "auto",
+        },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  </body>
+</html>

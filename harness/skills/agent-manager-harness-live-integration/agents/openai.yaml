@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness · 真实集成"
+  short_description: "读回真实云端或沙箱状态并分类集成失败"
+  default_prompt: "Use $agent-manager-harness-live-integration for real-system readback and failure classification."

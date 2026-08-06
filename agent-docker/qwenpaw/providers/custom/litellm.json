@@ -1,0 +1,18 @@
+{
+  "id": "litellm",
+  "name": "LiteLLM 网关",
+  "base_url": "",
+  "api_key": "",
+  "chat_model": "OpenAIChatModel",
+  "models": [],
+  "extra_models": [],
+  "api_key_prefix": "",
+  "is_local": false,
+  "freeze_url": false,
+  "require_api_key": true,
+  "is_custom": true,
+  "support_model_discovery": false,
+  "support_connection_check": false,
+  "generate_kwargs": {},
+  "meta": {}
+}

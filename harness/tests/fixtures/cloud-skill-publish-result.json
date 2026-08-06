@@ -1,0 +1,119 @@
+{
+  "success": true,
+  "summary": {
+    "total": 12,
+    "created": 12,
+    "updated": 0,
+    "unchanged": 0
+  },
+  "skills": [
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "slug": "agent-manager-harness-core",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "slug": "agent-manager-harness-clarify",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "slug": "agent-manager-harness-orchestration",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "slug": "agent-manager-harness-env-prepare",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "slug": "agent-manager-harness-develop",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "slug": "agent-manager-harness-unit-test",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000007",
+        "slug": "agent-manager-harness-ephemeral-deploy",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000008",
+        "slug": "agent-manager-harness-api-test",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000009",
+        "slug": "agent-manager-harness-e2e-test",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000010",
+        "slug": "agent-manager-harness-live-integration",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "slug": "agent-manager-harness-code-review",
+        "currentVersion": "v0.1"
+      }
+    },
+    {
+      "action": "created",
+      "attachedApps": 1,
+      "skill": {
+        "id": "00000000-0000-4000-8000-000000000012",
+        "slug": "agent-manager-harness-release",
+        "currentVersion": "v0.1"
+      }
+    }
+  ]
+}

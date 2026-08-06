@@ -1,0 +1,2228 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Description:
+  en: '[Prerelease] Deploy Agent Manager — fully automated with public access'
+  zh-cn: '[预发] 一键部署 Agent Manager，含 Supabase + EIP + 公网 SLB'
+
+Parameters:
+  # ==================== 前置确认 ====================
+  WhitelistConfirmation:
+    Type: String
+    Label:
+      en: Whitelist Confirmation
+      zh-cn: 白名单配置确认
+    AssociationProperty: AlertCheckbox
+    Default: false
+    AssociationPropertyMetadata:
+      Description:
+        zh-cn: |
+          实例升级能力和 Skill 挂载依赖此能力：<a href="https://help.aliyun.com/zh/cs/user-guide/mount-shared-storage-for-agent-sandbox#16781e5bb94hw" target="_blank">Agent Sandbox 挂载共享存储</a>。
+          <br/>
+          使用此能力需要为容器开放特权容器 (Privileged Container) 和宿主机路径 (hostPath，/var/run/csi) 的容器安全验证，可以<a href="https://selfservice.console.aliyun.com/ticket/createIndex?spm=a2c4g.11186623.0.0.604d136410wzPg" target="_blank">提交工单</a>放开限制，但由此带来的安全风险需要用户承担一定责任，相关机制请参见<a href="https://help.aliyun.com/zh/cs/security-and-compliance/security-responsibility-sharing-model?spm=a2c4g.11186623.0.0.604d136410wzPg" target="_blank">安全责任共担模型</a>。
+          <br/>
+        en: |
+          Instance upgrade and Skill mounting depend on this capability: <a href="https://help.aliyun.com/zh/cs/user-guide/mount-shared-storage-for-agent-sandbox#16781e5bb94hw" target="_blank">Mount shared storage for Agent Sandbox</a>.
+          <br/>
+          To use this capability, the container security verification must be relaxed for Privileged Container and hostPath (/var/run/csi). You can <a href="https://selfservice.console.aliyun.com/ticket/createIndex?spm=a2c4g.11186623.0.0.604d136410wzPg" target="_blank">submit a ticket</a> to lift the restriction, but you must take responsibility for the related security risks. See the <a href="https://help.aliyun.com/zh/cs/security-and-compliance/security-responsibility-sharing-model?spm=a2c4g.11186623.0.0.604d136410wzPg" target="_blank">Shared Responsibility Model</a> for details.
+          <br/>
+      ConfirmText:
+        zh-cn: 我已阅读并理解上述说明，确认可进行部署
+        en: I have read and understood the above, and confirm I am ready to deploy
+      Alert: true
+      Type: warning
+      MustChecked: true
+
+  ClusterId:
+    Type: String
+    Label: { zh-cn: Sandbox 集群 ID, en: Sandbox Cluster ID }
+    AssociationProperty: ALIYUN::CS::Cluster::ClusterId
+    Description:
+      zh-cn: 选择已有 ACS Sandbox 所在的 K8s 集群。如果没有该集群，国内站推荐通过 <a href="https://computenest.console.aliyun.com/service/instance/create/cn-hangzhou?type=user&ServiceId=service-56531b838b524f5a83da" target="_blank">ACS Sandbox 国内站服务</a>安装，国际站推荐通过 <a href="https://computenest.console.aliyun.com/service/instance/create/ap-southeast-1?type=user&ServiceId=service-731298a621304868a3a4" target="_blank">ACS Sandbox 国际站服务</a>安装。
+      en: Select the Kubernetes cluster that hosts an existing ACS Sandbox. If you do not have one, install it from the <a href="https://computenest.console.aliyun.com/service/instance/create/cn-hangzhou?type=user&ServiceId=service-56531b838b524f5a83da" target="_blank">ACS Sandbox China site service</a> for China site deployments, or the <a href="https://computenest.console.aliyun.com/service/instance/create/ap-southeast-1?type=user&ServiceId=service-731298a621304868a3a4" target="_blank">ACS Sandbox international site service</a> for international site deployments.
+    Required: true
+
+  PlatformNamespaceName:
+    Type: String
+    Label: { zh-cn: K8s 命名空间, en: K8s Namespace }
+    Default: openclaw-platform
+    Required: true
+
+  VpcId:
+    Type: String
+    Label:
+      en: VPC ID
+      zh-cn: 专有网络VPC实例ID
+    Description:
+      en: Please search the ID starting with (vpc-xxx) from console-Virtual Private Cloud
+      zh-cn: 现有虚拟专有网络的实例ID
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::VPC::VPCId
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - CreateNew
+
+  ZoneId:
+    Type: String
+    Label: { zh-cn: Supabase 可用区, en: Supabase Zone ID }
+    AssociationProperty: ALIYUN::ECS::Instance:ZoneId
+    AllowedValues: [cn-hangzhou-j, cn-shanghai-l, cn-beijing-i, cn-zhangjiakou-b, cn-zhangjiakou-c, cn-shenzhen-f, cn-chengdu-a, cn-hongkong-c, cn-hongkong-d, ap-southeast-1a, ap-southeast-1b, ap-southeast-1c, ap-southeast-3a, ap-southeast-5a, ap-northeast-1b, '']
+    Default: ''
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - CreateNew
+
+  VSwitchId:
+    Type: String
+    Label:
+      en: VSwitch ID
+      zh-cn: 交换机实例ID
+    Description:
+      en: >-
+        Select the cluster control-plane VSwitch, or manually create one in the
+        corresponding zone. Do NOT select the OpenClaw dedicated VSwitch.
+      zh-cn: >-
+        请选择集群的管控交换机或选择对应的可用区手动新建。
+        <font color='red'><b>严禁选择 OpenClaw 专属交换机。</b></font>
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    AssociationPropertyMetadata:
+      VpcId: ${VpcId}
+      ZoneId: ${ZoneId}
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - CreateNew
+
+  SupabaseProjectSpec:
+    Type: String
+    Label: { zh-cn: Supabase 实例规格, en: Supabase Instance Spec }
+    Default: 2C2G
+    AllowedValues: [2C2G, 2C4G, 2C8G, 4C16G, 8C32G, 16C64G, 32C128G, 64C256G]
+    Required: true
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - CreateNew
+
+  SupabaseStorageSize:
+    Type: Number
+    Label: { zh-cn: Supabase 存储空间(GB), en: Supabase Storage Size (GB) }
+    Default: 10
+    MinValue: 1
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - CreateNew
+
+  SupabaseDeploymentMode:
+    Type: String
+    Label: { zh-cn: Supabase 来源, en: Supabase Source }
+    Description:
+      zh-cn: 推荐新建阿里云托管 Supabase。已有开源 Supabase 仅用于兼容、迁移或测试，不推荐生产环境使用。
+      en: Creating an Alibaba Cloud hosted Supabase project is recommended. Use an existing open-source Supabase only for compatibility, migration, or testing; it is not recommended for production.
+    Default: CreateNew
+    AllowedValues:
+      - CreateNew
+      - UseExistingOpenSource
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        CreateNew:
+          zh-cn: 新建阿里云托管 Supabase
+          en: Create hosted Supabase
+        UseExistingOpenSource:
+          zh-cn: 使用已有开源 Supabase（不推荐生产）
+          en: Use existing open-source Supabase (not recommended for production)
+
+  ExistingSupabaseUrl:
+    Type: String
+    Label: { zh-cn: 已有 Supabase 公网 URL, en: Existing Supabase Public URL }
+    Description:
+      zh-cn: 已有开源 Supabase 的浏览器访问地址，不要以 / 结尾。
+      en: Browser access URL of the existing open-source Supabase. Do not end with a slash.
+    Default: ''
+    Required:
+      Fn::Equals:
+        - ${SupabaseDeploymentMode}
+        - UseExistingOpenSource
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - UseExistingOpenSource
+
+  ExistingSupabaseInternalUrl:
+    Type: String
+    Label: { zh-cn: 已有 Supabase 服务端访问 URL, en: Existing Supabase Server URL }
+    Description:
+      zh-cn: Agent Manager 后端访问 Supabase 的地址。同集群部署时请填写 K8s Service 地址。
+      en: Server-side Supabase URL for Agent Manager. Use a Kubernetes Service URL when deployed in the same cluster.
+    Default: ''
+    Required:
+      Fn::Equals:
+        - ${SupabaseDeploymentMode}
+        - UseExistingOpenSource
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - UseExistingOpenSource
+
+  ExistingSupabaseAnonKey:
+    Type: String
+    NoEcho: true
+    Label: { zh-cn: 已有 Supabase Anon Key, en: Existing Supabase Anon Key }
+    Description:
+      zh-cn: 已有开源 Supabase 的 anon key，供前端调用 Auth/REST API。
+      en: Anon key of the existing open-source Supabase, used by the frontend for Auth and REST API calls.
+    Default: ''
+    Required:
+      Fn::Equals:
+        - ${SupabaseDeploymentMode}
+        - UseExistingOpenSource
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - UseExistingOpenSource
+
+  ExistingSupabaseServiceRoleKey:
+    Type: String
+    NoEcho: true
+    Label: { zh-cn: 已有 Supabase Service Role Key, en: Existing Supabase Service Role Key }
+    Description:
+      zh-cn: 已有开源 Supabase 的 service_role key，仅服务端使用。
+      en: Service role key of the existing open-source Supabase. Server-side only.
+    Default: ''
+    Required:
+      Fn::Equals:
+        - ${SupabaseDeploymentMode}
+        - UseExistingOpenSource
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - UseExistingOpenSource
+
+  ExistingSupabaseDatabaseUrl:
+    Type: String
+    NoEcho: true
+    Label: { zh-cn: 已有 Supabase 数据库连接串, en: Existing Supabase Database URL }
+    Description:
+      zh-cn: 用于初始化 OpenClaw 表结构和管理员账号的 PostgreSQL 连接串。密码含特殊字符时请先做 URL 编码。
+      en: PostgreSQL connection string used to initialize OpenClaw tables and the admin account. URL-encode special characters in the password.
+    Default: ''
+    Required:
+      Fn::Equals:
+        - ${SupabaseDeploymentMode}
+        - UseExistingOpenSource
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${SupabaseDeploymentMode}
+            - UseExistingOpenSource
+
+  AccessKeyMode:
+    Type: String
+    Label: { zh-cn: 阿里云访问凭证来源, en: Alibaba Cloud AccessKey Source }
+    Description:
+      zh-cn: 选择自动创建或使用已有 AccessKey，用于平台访问 OSS、AI 网关等云资源。
+      en: Choose whether to auto-create or use an existing AccessKey for OSS, AI Gateway, and other cloud resources.
+    Default: AutoCreate
+    AllowedValues:
+      - AutoCreate
+      - Existing
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        AutoCreate:
+          zh-cn: 自动创建 AccessKey
+          en: Auto-create AccessKey
+        Existing:
+          zh-cn: 使用已有 AccessKey
+          en: Use existing AccessKey
+
+  OssOption:
+    Type: String
+    Label:
+      en: Select Existing or New OSS Bucket
+      zh-cn: 选择已有/新建的OSS存储桶
+    Description:
+      zh-cn: <font color='green'>存储 Agent 备份数据。</font>
+      en: <font color='green'>Stores Agent backup data.</font>
+    Required: true
+    Default: NewOSS
+    AllowedValues:
+      - NewOSS
+      - ExistingOSS
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        NewOSS:
+          zh-cn: 新建OSS存储桶
+          en: New OSS Bucket
+        ExistingOSS:
+          zh-cn: 已有OSS存储桶
+          en: Existing OSS Bucket
+
+  ExistingBucketName:
+    Type: String
+    Label:
+      en: OSS Bucket Name
+      zh-cn: OSS存储桶名称
+    Description:
+      zh-cn: 当选择"已有OSS存储桶"时必填。
+      en: Required when using an existing OSS bucket.
+    Required:
+      Fn::Equals:
+        - ExistingOSS
+        - ${OssOption}
+    Default: ''
+    AssociationProperty: ALIYUN::OSS::Bucket::BucketName
+    AssociationPropertyMetadata:
+      RegionId: ${RegionId}
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ExistingOSS
+            - ${OssOption}
+
+  SkillHubConfig:
+    Type: Json
+    Label:
+      en: SkillHub OSS Configuration
+      zh-cn: SkillHub OSS 配置
+    AssociationProperty: ALIYUN::ComputeNest::SkillHubConfig
+    Description:
+      zh-cn: '<font color="green">该 OSS 用于存储用户 Skill。</font>'
+      en: '<font color="green">This OSS bucket stores user Skills.</font>'
+    Required: true
+
+  ExistingAccessKeyId:
+    Type: String
+    Label: { zh-cn: 已有 AccessKey ID, en: Existing AccessKey ID }
+    Description:
+      zh-cn: 当访问凭证来源选择 Existing 时必填；选择 AutoCreate 时留空。
+      en: Required when AccessKey Source is Existing. Leave empty when AutoCreate is selected.
+    Default: ''
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${AccessKeyMode}
+            - Existing
+
+  ExistingAccessKeySecret:
+    Type: String
+    NoEcho: true
+    Label: { zh-cn: 已有 AccessKey Secret, en: Existing AccessKey Secret }
+    Description:
+      zh-cn: 当访问凭证来源选择 Existing 时必填；选择 AutoCreate 时留空。
+      en: Required when AccessKey Source is Existing. Leave empty when AutoCreate is selected.
+    Default: ''
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${AccessKeyMode}
+            - Existing
+
+  ExistingAccessKeyRequiredPolicy:
+    Type: String
+    Label: { zh-cn: 已有 AccessKey 权限策略参考, en: Existing AccessKey Required Policy }
+    Description:
+      zh-cn: 当访问凭证来源选择 Existing 时，请为该 AccessKey 对应的 RAM 用户或角色配置以下权限。<font color='red'>选择新建 OSS 时，模板会创建名称以 agent-manager-oss- 开头的 Bucket，授权策略可直接使用 agent-manager-oss*。SkillHub OSS 存储桶权限已自动填充。</font>
+      en: When AccessKey Source is Existing, grant the following permissions to the RAM user or role that owns the AccessKey. <font color='red'>When creating a new OSS bucket, the template creates a bucket whose name starts with agent-manager-oss-, and the policy can use agent-manager-oss* directly. SkillHub OSS bucket permissions are auto-filled.</font>
+    AssociationProperty: ALIYUN::OOS::Command::CommandContent
+    ReadOnly: true
+    Default: ''
+    AssociationPropertyMetadata:
+      DynamicValue:
+        - Condition:
+            Fn::Equals:
+              - NewOSS
+              - ${OssOption}
+          Value:
+            Fn::Sub:
+              - |-
+                {
+                  "Version": "1",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "oss:*"
+                      ],
+                      "Resource": [
+                        "acs:oss:*:*:agent-manager-oss*",
+                        "acs:oss:*:*:agent-manager-oss*/*",
+                        "acs:oss:*:*:${SkillHubBucket}",
+                        "acs:oss:*:*:${SkillHubBucket}/*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "apig:*",
+                        "log:*",
+                        "cms:*",
+                        "arms:*"
+                      ],
+                      "Resource": [
+                        "*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "computenest:*"
+                      ],
+                      "Resource": [
+                        "*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "sts:AssumeRole"
+                      ],
+                      "Resource": [
+                        "acs:ram::${ALIYUN::TenantId}:role/agentmanageroosservicerole-*",
+                        "acs:ram::${ALIYUN::TenantId}:role/ComputeNestSkillHubAccessRole"
+                      ]
+                    }
+                  ]
+                }
+              - SkillHubBucket:
+                  Fn::Jq:
+                    - First
+                    - '.OssBucketName'
+                    - Ref: SkillHubConfig
+        - Condition:
+            Fn::Equals:
+              - ExistingOSS
+              - ${OssOption}
+          Value:
+            Fn::Sub:
+              - |-
+                {
+                  "Version": "1",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "oss:*"
+                      ],
+                      "Resource": [
+                        "acs:oss:*:*:${ExistingBucketName}",
+                        "acs:oss:*:*:${ExistingBucketName}/*",
+                        "acs:oss:*:*:${SkillHubBucket}",
+                        "acs:oss:*:*:${SkillHubBucket}/*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "apig:*",
+                        "log:*",
+                        "cms:*",
+                        "arms:*"
+                      ],
+                      "Resource": [
+                        "*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "computenest:*"
+                      ],
+                      "Resource": [
+                        "*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "sts:AssumeRole"
+                      ],
+                      "Resource": [
+                        "acs:ram::${ALIYUN::TenantId}:role/agentmanageroosservicerole-*",
+                        "acs:ram::${ALIYUN::TenantId}:role/ComputeNestSkillHubAccessRole"
+                      ]
+                    }
+                  ]
+                }
+              - SkillHubBucket:
+                  Fn::Jq:
+                    - First
+                    - '.OssBucketName'
+                    - Ref: SkillHubConfig
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${AccessKeyMode}
+            - Existing
+
+  EnableAIGateway:
+    Type: String
+    Label: { zh-cn: 是否配置 AI 网关, en: Enable AI Gateway }
+    Description:
+      zh-cn: 选择"是"将自动创建阿里云 AI 网关及百炼模型代理，并在平台中默认启用。
+      en: Select "Yes" to automatically create Alibaba Cloud AI Gateway with DashScope model proxy and enable it by default.
+    Default: 'No'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        'Yes':
+          zh-cn: 是
+          en: 'Yes'
+        'No':
+          zh-cn: 否
+          en: 'No'
+
+  DashScopeApiKey:
+    Type: String
+    NoEcho: true
+    Label: { zh-cn: DashScope API Key, en: DashScope API Key }
+    Description:
+      zh-cn: 百炼平台 API Key，用于 AI 网关代理模型调用。在 https://dashscope.console.aliyun.com/ 获取。
+      en: DashScope API Key for AI Gateway model proxy. Get it from https://dashscope.console.aliyun.com/
+    Default: ''
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${EnableAIGateway}
+            - 'Yes'
+
+  AIGatewaySpec:
+    Type: String
+    Label: { zh-cn: AI 网关规格, en: AI Gateway Specification }
+    Description:
+      zh-cn: AI 网关实例规格，规格越高支持的并发请求越多。
+      en: AI Gateway instance specification. Higher specs support more concurrent requests.
+    Default: aigw.small.x1
+    AllowedValues:
+      - aigw.small.x1
+      - aigw.small.x2
+      - aigw.small.x4
+      - aigw.medium.x1
+      - aigw.medium.x2
+      - aigw.medium.x3
+      - aigw.large.x1
+      - aigw.large.x2
+      - aigw.large.x3
+      - aigw.large.x4
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${EnableAIGateway}
+            - 'Yes'
+
+  AIGatewayNetworkType:
+    Type: String
+    Label: { zh-cn: AI 网关网络访问类型, en: AI Gateway Network Access Type }
+    Description:
+      zh-cn: 通过公网访问网关时，将会产生相应的公网流量费用，公网流量将基于云数据传输 CDT 进行统一计费和出账，采用 BGP（多线）模式，详情可参考 CDT 公网流量。
+      en: 'Internet access incurs public traffic fees, billed via Cloud Data Transfer (CDT) using BGP (multi-line) mode. See CDT documentation for details.'
+    Default: InternetAndIntranet
+    AllowedValues:
+      - Internet
+      - Intranet
+      - InternetAndIntranet
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        Internet:
+          zh-cn: 仅公网
+          en: Internet Only
+        Intranet:
+          zh-cn: 仅内网
+          en: Intranet Only
+        InternetAndIntranet:
+          zh-cn: 公网+内网
+          en: Internet and Intranet
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${EnableAIGateway}
+            - 'Yes'
+
+Conditions:
+  CreateSupabaseProject:
+    Fn::Equals:
+      - Ref: SupabaseDeploymentMode
+      - CreateNew
+  UseExistingSupabaseInternalUrl:
+    Fn::Not:
+      Fn::Equals:
+        - Ref: ExistingSupabaseInternalUrl
+        - ''
+  CreateAgentManagerRamAccessKey:
+    Fn::Equals:
+      - Ref: AccessKeyMode
+      - AutoCreate
+  CreateOssBucket:
+    Fn::Equals:
+      - Ref: OssOption
+      - NewOSS
+  CreateAIGateway:
+    Fn::Equals:
+      - Ref: EnableAIGateway
+      - 'Yes'
+
+Locals:
+  CurTime:
+    Type: Eval
+    Value:
+      Fn::FormatTime:
+        - '%Y%m%d-%H%M%S'
+        - Asia/Shanghai
+
+Resources:
+  # ===== 0. 随机密码 =====
+  SupabasePassword:
+    Type: ALIYUN::RandomString
+    Condition: CreateSupabaseProject
+    Properties:
+      length: 16
+      character_classes:
+        - class: lowercase
+          min: 4
+        - class: uppercase
+          min: 4
+        - class: digits
+          min: 2
+      character_sequences:
+        - sequence: '!*-_'
+
+  # ===== 0.2 共享 OSS Bucket =====
+  SharedOssBucket:
+    Type: ALIYUN::OSS::Bucket
+    Condition: CreateOssBucket
+    Properties:
+      BucketName:
+        Fn::Join:
+          - ''
+          - - agent-manager-oss-
+            - Fn::Select:
+                - 0
+                - Fn::Split:
+                    - '-'
+                    - Ref: ALIYUN::StackId
+      AccessControl: private
+      StorageClass: Standard
+      ServerSideEncryptionConfiguration:
+        SSEAlgorithm: AES256
+
+  # ===== 0.3 Agent Manager RAM 用户（自动创建 AccessKey 时使用） =====
+  AgentManagerRamUser:
+    Type: ALIYUN::RAM::User
+    Condition: CreateAgentManagerRamAccessKey
+    Properties:
+      UserName:
+        Fn::Sub: ${ALIYUN::StackName}-agent-manager
+      Policies:
+        - PolicyName:
+            Fn::Sub: ${ALIYUN::StackName}-agent-manager
+          PolicyDocument:
+            Version: '1'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'oss:*'
+                Resource:
+                  # Platform's own OSS bucket
+                  - Fn::Sub:
+                      - 'acs:oss:*:*:${Bucket}'
+                      - Bucket:
+                          Fn::If:
+                            - CreateOssBucket
+                            - Fn::GetAtt: [SharedOssBucket, Name]
+                            - Ref: ExistingBucketName
+                  - Fn::Sub:
+                      - 'acs:oss:*:*:${Bucket}/*'
+                      - Bucket:
+                          Fn::If:
+                            - CreateOssBucket
+                            - Fn::GetAtt: [SharedOssBucket, Name]
+                            - Ref: ExistingBucketName
+                  # ComputeNest SkillHub OSS bucket (required for Skill create/update)
+                  - Fn::Sub:
+                      - 'acs:oss:*:*:${SkillHubBucket}'
+                      - SkillHubBucket:
+                          Fn::Jq:
+                            - First
+                            - '.OssBucketName'
+                            - Ref: SkillHubConfig
+                  - Fn::Sub:
+                      - 'acs:oss:*:*:${SkillHubBucket}/*'
+                      - SkillHubBucket:
+                          Fn::Jq:
+                            - First
+                            - '.OssBucketName'
+                            - Ref: SkillHubConfig
+              - Effect: Allow
+                Action:
+                  - 'apig:*'
+                  - 'log:*'
+                  - 'cms:*'
+                  - 'arms:*'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'computenest:*'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'sts:AssumeRole'
+                Resource:
+                  - Fn::GetAtt: [AgentManagerOOSExecutionRole, Arn]
+                  - Fn::GetAtt: [ComputeNestSkillHubAccessRole, Arn]
+
+  # ===== 0.4 Checkpoint 备份 OOS 执行角色 =====
+  AgentManagerOOSExecutionRole:
+    Type: ALIYUN::RAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub:
+          - AgentManagerOOSServiceRole-${RoleSuffix}
+          - RoleSuffix:
+              Ref: ALIYUN::StackId
+      Description:
+        Fn::Sub: Agent Manager checkpoint backup OOS execution role for ${ALIYUN::StackName}
+      AssumeRolePolicyDocument:
+        Version: '1'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - oos.aliyuncs.com
+              RAM:
+                - Fn::Sub: acs:ram::${ALIYUN::TenantId}:root
+      Policies:
+        - PolicyName:
+            Fn::Sub: ${ALIYUN::StackName}-checkpoint-backup-oos
+          PolicyDocument:
+            Version: '1'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'cs:DescribeClusterEndpoints'
+                  - 'cs:DescribeEdasClusterToken'
+                  - 'cs:DescribeUserPermission'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'cs:DescribeClusterDetail'
+                Resource:
+                  - Fn::Sub: acs:cs:${ALIYUN::Region}:${ALIYUN::TenantId}:cluster/${ClusterId}
+              - Effect: Allow
+                Action:
+                  - 'sts:AssumeRoleWithServiceIdentity'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'oos:StartExecution'
+                  - 'oos:CancelExecution'
+                  - 'oos:ListExecutions'
+                  - 'oos:ListTaskExecutions'
+                  - 'oos:GetExecution'
+                  - 'oos:GetTemplate'
+                  - 'oos:ValidateTemplateContent'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'ram:PassRole'
+                Resource:
+                  - Fn::Sub: acs:ram::${ALIYUN::TenantId}:role/agentmanageroosservicerole-*
+              - Effect: Allow
+                Action:
+                  - 'ram:CreateServiceLinkedRole'
+                Resource:
+                  - '*'
+
+  # ===== 0.5 SkillHub 临时凭证角色 =====
+  ComputeNestSkillHubAccessRole:
+    Type: ALIYUN::RAM::Role
+    Properties:
+      IgnoreExisting: true
+      RoleName: ComputeNestSkillHubAccessRole
+      Description:
+        Fn::Sub: Agent Manager SkillHub download role for ${ALIYUN::StackName}
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '1'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              RAM:
+                - Fn::Sub: acs:ram::${ALIYUN::TenantId}:root
+      Policies:
+        - PolicyName:
+            Fn::Sub: ${ALIYUN::StackName}-skillhub-download
+          PolicyDocument:
+            Version: '1'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'computenest:ListSkillSpaces'
+                  - 'computenest:ListSkills'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'oss:GetObject'
+                Resource:
+                  - Fn::Sub:
+                      - 'acs:oss:*:*:${SkillHubBucket}/archives/*'
+                      - SkillHubBucket:
+                          Fn::Jq:
+                            - First
+                            - '.OssBucketName'
+                            - Ref: SkillHubConfig
+
+  # ===== 0.6 Agent Manager RAM AccessKey =====
+  AgentManagerRamAccessKey:
+    Type: ALIYUN::RAM::AccessKey
+    Condition: CreateAgentManagerRamAccessKey
+    DependsOn: AgentManagerRamUser
+    Properties:
+      UserName:
+        Fn::GetAtt: [AgentManagerRamUser, UserName]
+
+  # ===== 0.6 AI 网关（GatewayType: AI，公网+VPC 双网络） =====
+  AIGateway:
+    Type: ALIYUN::APIG::Gateway
+    Condition: CreateAIGateway
+    Properties:
+      GatewayName:
+        Fn::Sub: ${ALIYUN::StackName}-ai-gw
+      Spec:
+        Ref: AIGatewaySpec
+      PaymentType: PayAsYouGo
+      GatewayType: AI
+      NetworkAccessConfig:
+        Type:
+          Ref: AIGatewayNetworkType
+      Vpc:
+        VpcId:
+          Ref: VpcId
+      VSwitch:
+        VSwitchId:
+          Ref: VSwitchId
+      ZoneConfig:
+        SelectOption: Auto
+      LogConfig:
+        Sls:
+          Enable: true
+
+  # ===== 0.7 AI 网关 - 百炼后端服务（DashScope 兼容模式） =====
+  AIGatewayService:
+    Type: ALIYUN::APIG::Service
+    Condition: CreateAIGateway
+    DependsOn: AIGateway
+    Properties:
+      GatewayId:
+        Fn::GetAtt: [AIGateway, GatewayId]
+      SourceType: AI
+      ServiceName:
+        Fn::Sub: ${ALIYUN::StackName}-bailian
+      Addresses:
+        - https://dashscope.aliyuncs.com
+      AiServiceConfig:
+        Provider: qwen
+        Protocols:
+          - OpenAI/v1
+        Address: https://dashscope.aliyuncs.com/compatible-mode/v1
+        ApiKeys:
+          - Ref: DashScopeApiKey
+        EnableHealthCheck: false
+
+  # ===== 0.8 AI 网关 - HttpApi（Model API） =====
+  AIGatewayHttpApi:
+    Type: ALIYUN::APIG::HttpApi
+    Condition: CreateAIGateway
+    DependsOn: AIGatewayService
+    Properties:
+      HttpApiName:
+        Fn::Sub: ${ALIYUN::StackName}-model-api
+      Type: LLM
+      ModelCategory: Text
+      BasePath: /
+      Description: Bailian text generation model proxy (auto-created by ROS)
+      AiProtocols:
+        - OpenAI/v1
+      BuiltinRouteNames:
+        - create-chat-completion
+        - create-completion
+        - model-responses
+      AuthConfig:
+        AuthType: Apikey
+        AuthMode: Custom
+      EnableAuth: true
+      DeployConfigs:
+        - EnvironmentId:
+            Fn::Jq:
+              - First
+              - '.[0].EnvironmentId'
+              - Fn::GetAtt: [AIGateway, Environments]
+          GatewayId:
+            Fn::GetAtt: [AIGateway, GatewayId]
+          AutoDeploy: true
+          BackendScene: "SingleService"
+          GatewayType: "AI"
+          PolicyConfigs:
+            - Type: AiStatistics
+              Enable: true
+          ServiceConfigs:
+            - ServiceId:
+                Fn::GetAtt: [AIGatewayService, ServiceId]
+              Weight: 100
+
+  # ===== 1.5 VPC 信息（获取 CIDR） =====
+  VpcInfo:
+    Type: DATASOURCE::VPC::Vpc
+    Condition: CreateSupabaseProject
+    Properties:
+      VpcId:
+        Ref: VpcId
+
+  # ===== 2. Supabase =====
+  SupabaseProject:
+    Type: ALIYUN::GPDB::SupabaseProject
+    Condition: CreateSupabaseProject
+    DependsOn: [VpcInfo]
+    Properties:
+      VpcId:
+        Ref: VpcId
+      ProjectName:
+        Ref: ALIYUN::StackName
+      ZoneId:
+        Ref: ZoneId
+      ProjectSpec:
+        Ref: SupabaseProjectSpec
+      VSwitchId:
+        Ref: VSwitchId
+      SecurityIPList: 0.0.0.0/0
+      DatabaseIPList:
+        Fn::GetAtt:
+          - VpcInfo
+          - CidrBlock
+      StorageSize:
+        Ref: SupabaseStorageSize
+      AccountPassword:
+        Fn::GetAtt:
+          - SupabasePassword
+          - value
+      PayType: PayAsYouGo
+
+  # ===== 5. EIP（Supabase 公网） =====
+  SupabaseEip:
+    Type: ALIYUN::VPC::EIP
+    Condition: CreateSupabaseProject
+    DependsOn: SupabaseProject
+    Properties:
+      Bandwidth: 5
+      InternetChargeType: PayByTraffic
+      Name:
+        Fn::Sub: ${ALIYUN::StackName}-supabase-eip
+
+  # ===== 6. EIP → ENI（直接使用 SupabaseProject.Eni 属性） =====
+  SupabaseEipBinding:
+    Type: ALIYUN::VPC::EIPAssociation
+    Condition: CreateSupabaseProject
+    DependsOn: SupabaseEip
+    Properties:
+      AllocationId:
+        Fn::GetAtt: [SupabaseEip, AllocationId]
+      InstanceId:
+        Fn::GetAtt: [SupabaseProject, Eni]
+
+  # ===== 7. 公网 SLB（平台入口） =====
+  PlatformSlb:
+    Type: ALIYUN::SLB::LoadBalancer
+    Properties:
+      AddressType: internet
+      InternetChargeType: paybytraffic
+      LoadBalancerName:
+        Fn::Sub: ${ALIYUN::StackName}-platform
+      LoadBalancerSpec: slb.s1.small
+
+  # ===== 8. Namespace =====
+  PlatformNamespace:
+    Type: ALIYUN::CS::ClusterApplication
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              name: ${Namespace}
+          - Namespace:
+              Ref: PlatformNamespaceName
+
+  # ===== 8.1 查询 E2B CA 证书（从 sandbox-system/sandbox-manager-tls） =====
+  E2BCaCertSecret:
+    Type: DATASOURCE::CS::ClusterApplicationResources
+    DependsOn: PlatformNamespace
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      Kind: Secret
+      Namespace: sandbox-system
+      Name: sandbox-manager-tls
+      FirstMatch: true
+
+  # ===== 8.1.1 查询 E2B API Key（从 sandbox-system/e2b-key-store） =====
+  E2BApiKeyStoreSecret:
+    Type: DATASOURCE::CS::ClusterApplicationResources
+    DependsOn: PlatformNamespace
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      Kind: Secret
+      Namespace: sandbox-system
+      Name: e2b-key-store
+      FirstMatch: true
+
+  # ===== 8.1.2 查询 sandbox-manager Ingress（从 host 推断 E2B 根域名） =====
+  E2BIngress:
+    Type: DATASOURCE::CS::ClusterApplicationResources
+    DependsOn: PlatformNamespace
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      Kind: Ingress
+      Namespace: sandbox-system
+      Name: sandbox-manager
+      FirstMatch: true
+
+  # ===== 8.2 CA 证书 Secret =====
+  E2BCaCertConfigMap:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: PlatformNamespace
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: e2b-ca-cert
+              namespace: ${Namespace}
+            type: Opaque
+            data:
+              ca-fullchain.pem: ${CaCertB64}
+          - CaCertB64:
+              Fn::Jq:
+                - First
+                - '.data["tls.crt"]'
+                - Fn::GetAtt: [E2BCaCertSecret, Response]
+            Namespace:
+              Ref: PlatformNamespaceName
+
+  # ===== 9. ConfigMap =====
+  PlatformConfigMap:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformNamespace]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: ConfigMap
+            metadata:
+              name: openclaw-platform-config
+              namespace: ${Namespace}
+            data:
+              VITE_SUPABASE_URL: "${SupabaseUrl}"
+              SUPABASE_INTERNAL_URL: "${SupabaseInternalUrl}"
+              E2B_DOMAIN: "${E2BDomain}"
+              PLATFORM_PUBLIC_URL: "${PlatformPublicUrl}"
+              NATIVE_AGENT_UI_ENABLED: "true"
+              DEPLOY_ENVIRONMENT: "cloud-dev"
+              RUN_MIGRATIONS: "true"
+              INIT_ADMIN: "true"
+              OSS_BUCKET: "${OssBucket}"
+              OSS_ENDPOINT: "oss-${Region}-internal.aliyuncs.com"
+              OSS_ENDPOINT_PUBLIC: "oss-${Region}.aliyuncs.com"
+              OSS_PV_NAME: "oss-pv-${StackName}"
+              VITE_OSS_PV_NAME: "oss-pv-${StackName}"
+              VITE_SKILLHUB_OSS_PV_NAME: "oss-pv-skillhub-${StackName}"
+              VITE_OSS_URL: "https://oss.console.aliyun.com/bucket/${Region}/${OssBucket}/object"
+              BACKUP_MOUNT_PATH: "/backup"
+              CHECKPOINT_BACKUP_OOS_TEMPLATE_NAME: "ACS-CS-CreateAgentManagercheckpointBackup"
+              CHECKPOINT_BACKUP_OOS_ASSUME_ROLE: "${CheckpointBackupOOSRoleName}"
+              CHECKPOINT_BACKUP_OOS_ASSUME_ROLE_ARN: "${CheckpointBackupOOSRoleArn}"
+              APIG_ENABLED: "${ApigEnabled}"
+              APIG_REGION_ID: "${Region}"
+              APIG_GATEWAY_ID: "${ApigGatewayId}"
+              APIG_HTTP_API_ID: "${ApigHttpApiId}"
+              VITE_ACS_CLUSTER_ID: "${AcsClusterId}"
+          - StackName:
+              Ref: ALIYUN::StackName
+            SupabaseUrl:
+              Fn::If:
+                - CreateSupabaseProject
+                - Fn::Sub:
+                    - https://${Url}
+                    - Url:
+                        Fn::GetAtt: [SupabaseProject, PublicConnectUrl]
+                - Ref: ExistingSupabaseUrl
+            SupabaseInternalUrl:
+              Fn::If:
+                - CreateSupabaseProject
+                - Fn::Sub:
+                    - https://${Url}
+                    - Url:
+                        Fn::GetAtt: [SupabaseProject, PrivateConnectUrl]
+                - Fn::If:
+                    - UseExistingSupabaseInternalUrl
+                    - Ref: ExistingSupabaseInternalUrl
+                    - Ref: ExistingSupabaseUrl
+            E2BDomain:
+              Fn::Jq:
+                - First
+                - '.spec.rules[] | .host | select((startswith("*.") or startswith("api.")) | not)'
+                - Fn::GetAtt: [E2BIngress, Response]
+            PlatformPublicUrl:
+              Fn::Sub:
+                - http://${PlatformIp}:8080
+                - PlatformIp:
+                    Fn::GetAtt: [PlatformSlb, IpAddress]
+            Namespace:
+              Ref: PlatformNamespaceName
+            OssBucket:
+              Fn::If:
+                - CreateOssBucket
+                - Fn::GetAtt: [SharedOssBucket, Name]
+                - Ref: ExistingBucketName
+            Region:
+              Ref: ALIYUN::Region
+            CheckpointBackupOOSRoleName:
+              Fn::GetAtt: [AgentManagerOOSExecutionRole, RoleName]
+            CheckpointBackupOOSRoleArn:
+              Fn::GetAtt: [AgentManagerOOSExecutionRole, Arn]
+            ApigEnabled:
+              Fn::If:
+                - CreateAIGateway
+                - 'true'
+                - 'false'
+            ApigGatewayId:
+              Fn::If:
+                - CreateAIGateway
+                - Fn::GetAtt: [AIGateway, GatewayId]
+                - ''
+            ApigHttpApiId:
+              Fn::If:
+                - CreateAIGateway
+                - Fn::GetAtt: [AIGatewayHttpApi, HttpApiId]
+                - ''
+            AcsClusterId:
+              Ref: ClusterId
+
+  # ===== 10. Secret =====
+  PlatformSecret:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformNamespace]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: openclaw-platform-secret
+              namespace: ${Namespace}
+            type: Opaque
+            data:
+              VITE_SUPABASE_ANON_KEY: ${SupabaseAnonKeyB64}
+              SERVICE_ROLE_KEY: ${ServiceRoleKeyB64}
+              E2B_API_KEY: ${E2BApiKeyB64}
+              DATABASE_URL: ${DatabaseUrlB64}
+              API_ENCRYPTION_KEY: ${ApiEncryptionKeyB64}
+              ALIBABA_CLOUD_ACCESS_KEY_ID: ${CloudAccessKeyIdB64}
+              ALIBABA_CLOUD_ACCESS_KEY_SECRET: ${CloudAccessKeySecretB64}
+              SKILLHUB_ASSUME_ROLE_ARN: ${SkillHubAssumeRoleArnB64}
+              COMPUTENEST_SKILLHUB_OSS_BUCKET: ${SkillHubOssBucketB64}
+              COMPUTENEST_SKILLHUB_OSS_REGION: ${SkillHubOssRegionB64}
+          - SupabaseAnonKeyB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateSupabaseProject
+                  - Fn::Jq:
+                      - First
+                      - '.[] | select(.Name == "anonKey") | .ApiKey'
+                      - Fn::GetAtt: [SupabaseProject, ApiKeys]
+                  - Ref: ExistingSupabaseAnonKey
+            ServiceRoleKeyB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateSupabaseProject
+                  - Fn::Jq:
+                      - First
+                      - '.[] | select(.Name == "serviceRoleKey") | .ApiKey'
+                      - Fn::GetAtt: [SupabaseProject, ApiKeys]
+                  - Ref: ExistingSupabaseServiceRoleKey
+            E2BApiKeyB64:
+              Fn::Base64Encode:
+                Fn::Jq:
+                  - First
+                  - '.data | to_entries[0].value | @base64d | fromjson | .key'
+                  - Fn::GetAtt: [E2BApiKeyStoreSecret, Response]
+            DatabaseUrlB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateSupabaseProject
+                  - Fn::Sub:
+                      - postgresql://postgres:${EncodedPassword}@${SupabaseHost}:5432/postgres
+                      - EncodedPassword:
+                          Fn::GetAtt:
+                            - SupabasePassword
+                            - value
+                        SupabaseHost:
+                          Fn::GetAtt: [SupabaseProject, PrivateConnectUrl]
+                  - Ref: ExistingSupabaseDatabaseUrl
+            ApiEncryptionKeyB64:
+              Fn::Base64Encode:
+                Fn::Sub: openclaw-enc-${ALIYUN::StackId}-${ALIYUN::StackName}
+            CloudAccessKeyIdB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateAgentManagerRamAccessKey
+                  - Fn::GetAtt: [AgentManagerRamAccessKey, AccessKeyId]
+                  - Ref: ExistingAccessKeyId
+            CloudAccessKeySecretB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateAgentManagerRamAccessKey
+                  - Fn::GetAtt: [AgentManagerRamAccessKey, AccessKeySecret]
+                  - Ref: ExistingAccessKeySecret
+            SkillHubAssumeRoleArnB64:
+              Fn::Base64Encode:
+                Fn::GetAtt: [ComputeNestSkillHubAccessRole, Arn]
+            SkillHubOssBucketB64:
+              Fn::Base64Encode:
+                Fn::Jq:
+                  - First
+                  - '.OssBucketName'
+                  - Ref: SkillHubConfig
+            SkillHubOssRegionB64:
+              Fn::Base64Encode:
+                Fn::Jq:
+                  - First
+                  - '.OssRegionId'
+                  - Ref: SkillHubConfig
+            Namespace:
+              Ref: PlatformNamespaceName
+
+  # ===== 10.1 共享 OSS Secret（固定部署在 sandbox-system，OSS CSI 驱动从该命名空间读取 AK/SK） =====
+  SharedOssSecret:
+    Type: ALIYUN::CS::ClusterApplication
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace: sandbox-system
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: oss-secret-${StackName}
+              namespace: sandbox-system
+            type: Opaque
+            data:
+              akId: ${AkIdB64}
+              akSecret: ${AkSecretB64}
+          - StackName:
+              Ref: ALIYUN::StackName
+            AkIdB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateAgentManagerRamAccessKey
+                  - Fn::GetAtt: [AgentManagerRamAccessKey, AccessKeyId]
+                  - Ref: ExistingAccessKeyId
+            AkSecretB64:
+              Fn::Base64Encode:
+                Fn::If:
+                  - CreateAgentManagerRamAccessKey
+                  - Fn::GetAtt: [AgentManagerRamAccessKey, AccessKeySecret]
+                  - Ref: ExistingAccessKeySecret
+
+  # ===== 10.2 共享 OSS PV（集群级，供 sandbox 跨命名空间以 subPath 挂载） =====
+  SharedOssPv:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [SharedOssSecret]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: PersistentVolume
+            metadata:
+              name: oss-pv-${StackName}
+              labels:
+                alicloud-pvname: oss-pv-${StackName}
+            spec:
+              capacity:
+                storage: 100Gi
+              accessModes:
+                - ReadWriteMany
+              persistentVolumeReclaimPolicy: Retain
+              storageClassName: oss-${StackName}
+              csi:
+                driver: ossplugin.csi.alibabacloud.com
+                volumeHandle: oss-pv-${StackName}
+                nodePublishSecretRef:
+                  name: oss-secret-${StackName}
+                  namespace: sandbox-system
+                volumeAttributes:
+                  bucket: ${OssBucket}
+                  url: oss-${Region}-internal.aliyuncs.com
+                  path: "/"
+                  otherOpts: "-o max_stat_cache_size=0 -o allow_other"
+          - StackName:
+              Ref: ALIYUN::StackName
+            OssBucket:
+              Fn::If:
+                - CreateOssBucket
+                - Fn::GetAtt: [SharedOssBucket, Name]
+                - Ref: ExistingBucketName
+            Region:
+              Ref: ALIYUN::Region
+            Namespace:
+              Ref: PlatformNamespaceName
+
+  # ===== 10.3 共享 SkillHub OSS PV（集群级，复用 SharedOssSecret 的 AK/SK） =====
+  SharedSkillHubPv:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [SharedOssSecret]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: PersistentVolume
+            metadata:
+              name: oss-pv-skillhub-${StackName}
+              labels:
+                alicloud-pvname: oss-pv-skillhub-${StackName}
+            spec:
+              capacity:
+                storage: 100Gi
+              accessModes:
+                - ReadWriteMany
+              persistentVolumeReclaimPolicy: Retain
+              storageClassName: oss-skillhub-${StackName}
+              csi:
+                driver: ossplugin.csi.alibabacloud.com
+                volumeHandle: oss-pv-skillhub-${StackName}
+                nodePublishSecretRef:
+                  name: oss-secret-${StackName}
+                  namespace: sandbox-system
+                volumeAttributes:
+                  bucket: ${SkillHubOssBucketName}
+                  url: oss-${SkillHubOssRegionId}.aliyuncs.com
+                  path: "/"
+                  otherOpts: "-o max_stat_cache_size=0 -o allow_other -o umask=022"
+          - StackName:
+              Ref: ALIYUN::StackName
+            SkillHubOssBucketName:
+                Fn::Jq:
+                  - First
+                  - '.OssBucketName'
+                  - Ref: SkillHubConfig
+            SkillHubOssRegionId:
+                Fn::Jq:
+                  - First
+                  - '.OssRegionId'
+                  - Ref: SkillHubConfig
+            Namespace:
+              Ref: PlatformNamespaceName
+
+  # ===== 11. DbInitJob =====
+  DbInitJob:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformSecret, PlatformConfigMap]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::If:
+          - CreateSupabaseProject
+          - Fn::Sub:
+              - |
+                apiVersion: batch/v1
+                kind: Job
+                metadata:
+                  name: openclaw-db-init-${CurTime}
+                  namespace: ${Namespace}
+                  labels:
+                    app: openclaw-platform
+                    component: db-init
+                spec:
+                  ttlSecondsAfterFinished: 3600
+                  backoffLimit: 6
+                  template:
+                    metadata:
+                      labels:
+                        alibabacloud.com/acs: "true"
+                    spec:
+                      restartPolicy: Never
+                      containers:
+                        - name: db-init
+                          image: "{{ computenest::acrimage::agent-manager }}"
+                          command: ["sh", "-c"]
+                          args:
+                            - |
+                              echo "=== Database initialization (ts=${CurTime}) ==="
+                              cd /app
+                              cat > .env <<ENVEOF
+                              VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+                              VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+                              SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
+                              DATABASE_URL=$DATABASE_URL
+                              ADMIN_PASSWORD=$ADMIN_PASSWORD
+                              ENVEOF
+                              DB_HOST=$(node -e "console.log(new URL(process.env.DATABASE_URL).hostname)")
+                              echo "Waiting for DNS of $DB_HOST..."
+                              for i in $(seq 1 36); do
+                                if node -e "require('dns').lookup('$DB_HOST',(e)=>process.exit(e?1:0))" 2>/dev/null; then
+                                  echo "DNS ready after $((i*5))s"; break
+                                fi
+                                sleep 5
+                              done
+                              node migrations/init-db.js init
+                              INIT_RC=$?
+                              node migrations/init-db.js init-admin
+                              ADMIN_RC=$?
+                              if [ $INIT_RC -ne 0 ] || [ $ADMIN_RC -ne 0 ]; then
+                                echo "⚠️ init exit=$INIT_RC, init-admin exit=$ADMIN_RC"
+                                echo "=== Keeping pod alive 300s for log inspection ==="
+                                sleep 300
+                                exit 1
+                              fi
+                              echo "=== Done ==="
+                          envFrom:
+                            - configMapRef:
+                                name: openclaw-platform-config
+                            - secretRef:
+                                name: openclaw-platform-secret
+              - Namespace:
+                  Ref: PlatformNamespaceName
+                CurTime:
+                  Ref: CurTime
+          - Fn::Sub:
+              - |
+                apiVersion: batch/v1
+                kind: Job
+                metadata:
+                  name: openclaw-db-init-${CurTime}
+                  namespace: ${Namespace}
+                  labels:
+                    app: openclaw-platform
+                    component: db-init
+                spec:
+                  ttlSecondsAfterFinished: 3600
+                  backoffLimit: 6
+                  template:
+                    metadata:
+                      labels:
+                        alibabacloud.com/acs: "true"
+                    spec:
+                      restartPolicy: Never
+                      containers:
+                        - name: db-init
+                          image: "{{ computenest::acrimage::agent-manager }}"
+                          command: ["sh", "-c"]
+                          args:
+                            - |
+                              echo "=== Database initialization for open-source Supabase (ts=${CurTime}) ==="
+                              cd /app
+                              cat > .env <<ENVEOF
+                              VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+                              SUPABASE_INTERNAL_URL=$SUPABASE_INTERNAL_URL
+                              VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+                              SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
+                              DATABASE_URL=$DATABASE_URL
+                              ADMIN_PASSWORD=$ADMIN_PASSWORD
+                              ENVEOF
+                              DB_HOST=$(node -e "console.log(new URL(process.env.DATABASE_URL).hostname)")
+                              echo "Waiting for DNS of $DB_HOST..."
+                              for i in $(seq 1 36); do
+                                if node -e "require('dns').lookup('$DB_HOST',(e)=>process.exit(e?1:0))" 2>/dev/null; then
+                                  echo "DNS ready after $((i*5))s"; break
+                                fi
+                                sleep 5
+                              done
+                              node migrations/init-db.js init
+                              INIT_RC=$?
+                              node migrations/init-db.js init-admin
+                              ADMIN_RC=$?
+                              if [ $INIT_RC -ne 0 ] || [ $ADMIN_RC -ne 0 ]; then
+                                echo "⚠️ init exit=$INIT_RC, init-admin exit=$ADMIN_RC"
+                                echo "=== Keeping pod alive 300s for log inspection ==="
+                                sleep 300
+                                exit 1
+                              fi
+                              echo "Reloading PostgREST schema cache..."
+                              cd /app/migrations && node -e "
+                                const { Client } = require('pg');
+                                const c = new Client(process.env.DATABASE_URL);
+                                c.connect()
+                                  .then(() => c.query(\"NOTIFY pgrst, 'reload schema'\"))
+                                  .then(() => { console.log('PostgREST schema reload notified'); c.end(); })
+                                  .catch(e => { console.warn('NOTIFY failed (non-fatal):', e.message); c.end(); });
+                              "
+                              cd /app
+                              echo "=== Done ==="
+                          envFrom:
+                            - configMapRef:
+                                name: openclaw-platform-config
+                            - secretRef:
+                                name: openclaw-platform-secret
+              - Namespace:
+                  Ref: PlatformNamespaceName
+                CurTime:
+                  Ref: CurTime
+      WaitUntil:
+        - Kind: Job
+          ApiVersion: batch/v1
+          Name:
+            Fn::Sub:
+              - openclaw-db-init-${CurTime}
+              - CurTime:
+                  Ref: CurTime
+          Namespace:
+            Ref: PlatformNamespaceName
+          JsonPath: $.status.completionTime
+          Operator: NotEmpty
+          Timeout: 300
+          FirstMatch: true
+
+  # ===== 11.1 DbMigrateJob =====
+  DbMigrateJob:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformSecret, PlatformConfigMap, DbInitJob]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::If:
+          - CreateSupabaseProject
+          - Fn::Sub:
+              - |
+                apiVersion: batch/v1
+                kind: Job
+                metadata:
+                  name: openclaw-db-migrate-${CurTime}
+                  namespace: ${Namespace}
+                  labels:
+                    app: openclaw-platform
+                    component: db-migrate
+                spec:
+                  ttlSecondsAfterFinished: 86400
+                  backoffLimit: 3
+                  template:
+                    metadata:
+                      labels:
+                        alibabacloud.com/acs: "true"
+                    spec:
+                      restartPolicy: Never
+                      containers:
+                        - name: db-migrate
+                          image: "{{ computenest::acrimage::agent-manager }}"
+                          command: ["sh", "-c"]
+                          args:
+                            - |
+                              echo "=== DB Migration (ts=${CurTime}) ==="
+                              cd /app
+                              cat > .env <<ENVEOF
+                              VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+                              VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+                              SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
+                              DATABASE_URL=$DATABASE_URL
+                              ENVEOF
+                              DB_HOST=$(node -e "console.log(new URL(process.env.DATABASE_URL).hostname)")
+                              echo "Waiting for DNS of $DB_HOST..."
+                              for i in $(seq 1 36); do
+                                if node -e "require('dns').lookup('$DB_HOST',(e)=>process.exit(e?1:0))" 2>/dev/null; then
+                                  echo "DNS ready after $((i*5))s"; break
+                                fi
+                                sleep 5
+                              done
+                              node migrations/init-db.js migrate
+                              EXIT_CODE=$?
+                              if [ $EXIT_CODE -ne 0 ]; then
+                                echo "❌ Migration failed with exit code $EXIT_CODE"
+                                echo "=== Keeping pod alive 300s for log inspection ==="
+                                sleep 300
+                                exit $EXIT_CODE
+                              fi
+                              echo "=== Migration done ==="
+                          envFrom:
+                            - configMapRef:
+                                name: openclaw-platform-config
+                            - secretRef:
+                                name: openclaw-platform-secret
+              - Namespace:
+                  Ref: PlatformNamespaceName
+                CurTime:
+                  Ref: CurTime
+          - Fn::Sub:
+              - |
+                apiVersion: batch/v1
+                kind: Job
+                metadata:
+                  name: openclaw-db-migrate-${CurTime}
+                  namespace: ${Namespace}
+                  labels:
+                    app: openclaw-platform
+                    component: db-migrate
+                spec:
+                  ttlSecondsAfterFinished: 86400
+                  backoffLimit: 3
+                  template:
+                    metadata:
+                      labels:
+                        alibabacloud.com/acs: "true"
+                    spec:
+                      restartPolicy: Never
+                      containers:
+                        - name: db-migrate
+                          image: "{{ computenest::acrimage::agent-manager }}"
+                          command: ["sh", "-c"]
+                          args:
+                            - |
+                              echo "=== DB Migration for open-source Supabase (ts=${CurTime}) ==="
+                              cd /app
+                              cat > .env <<ENVEOF
+                              VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+                              SUPABASE_INTERNAL_URL=$SUPABASE_INTERNAL_URL
+                              VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+                              SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
+                              DATABASE_URL=$DATABASE_URL
+                              ENVEOF
+                              DB_HOST=$(node -e "console.log(new URL(process.env.DATABASE_URL).hostname)")
+                              echo "Waiting for DNS of $DB_HOST..."
+                              for i in $(seq 1 36); do
+                                if node -e "require('dns').lookup('$DB_HOST',(e)=>process.exit(e?1:0))" 2>/dev/null; then
+                                  echo "DNS ready after $((i*5))s"; break
+                                fi
+                                sleep 5
+                              done
+                              node migrations/init-db.js migrate
+                              EXIT_CODE=$?
+                              if [ $EXIT_CODE -ne 0 ]; then
+                                echo "❌ Migration failed with exit code $EXIT_CODE"
+                                echo "=== Keeping pod alive 300s for log inspection ==="
+                                sleep 300
+                                exit $EXIT_CODE
+                              fi
+                              echo "Reloading PostgREST schema cache..."
+                              cd /app/migrations && node -e "
+                                const { Client } = require('pg');
+                                const c = new Client(process.env.DATABASE_URL);
+                                c.connect()
+                                  .then(() => c.query(\"NOTIFY pgrst, 'reload schema'\"))
+                                  .then(() => { console.log('PostgREST schema reload notified'); c.end(); })
+                                  .catch(e => { console.warn('NOTIFY failed (non-fatal):', e.message); c.end(); });
+                              "
+                              cd /app
+                              echo "=== Migration done ==="
+                          envFrom:
+                            - configMapRef:
+                                name: openclaw-platform-config
+                            - secretRef:
+                                name: openclaw-platform-secret
+              - Namespace:
+                  Ref: PlatformNamespaceName
+                CurTime:
+                  Ref: CurTime
+      WaitUntil:
+        - Kind: Job
+          ApiVersion: batch/v1
+          Name:
+            Fn::Sub:
+              - openclaw-db-migrate-${CurTime}
+              - CurTime:
+                  Ref: CurTime
+          Namespace:
+            Ref: PlatformNamespaceName
+          JsonPath: $.status.completionTime
+          Operator: NotEmpty
+          Timeout: 300
+          FirstMatch: true
+
+  # ===== 12. RBAC for SandboxSet CRD =====
+  PlatformRBAC:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformNamespace]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: openclaw-platform
+              namespace: ${Namespace}
+            ---
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRole
+            metadata:
+              name: openclaw-sandboxset-manager-${StackName}
+            rules:
+              - apiGroups: ["agents.kruise.io"]
+                resources: ["sandboxsets"]
+                verbs: ["get", "list", "create", "update", "patch", "delete"]
+              - apiGroups: ["agents.kruise.io"]
+                resources: ["sandboxes"]
+                verbs: ["get", "list", "create", "update", "patch", "delete"]
+              - apiGroups: ["agents.kruise.io"]
+                resources: ["checkpoints"]
+                verbs: ["get", "list", "create", "update", "patch", "delete"]
+              - apiGroups: ["agents.kruise.io"]
+                resources: ["sandboxupdateops"]
+                verbs: ["create", "get", "list", "patch", "delete"]
+              - apiGroups: [""]
+                resources: ["pods"]
+                verbs: ["get", "list"]
+              - apiGroups: [""]
+                resources: ["namespaces"]
+                verbs: ["get", "list"]
+              - apiGroups: [""]
+                resources: ["configmaps"]
+                verbs: ["get", "list", "create", "update", "patch", "delete"]
+            ---
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRoleBinding
+            metadata:
+              name: openclaw-sandboxset-manager-binding-${StackName}
+            subjects:
+              - kind: ServiceAccount
+                name: openclaw-platform
+                namespace: ${Namespace}
+            roleRef:
+              kind: ClusterRole
+              name: openclaw-sandboxset-manager-${StackName}
+              apiGroup: rbac.authorization.k8s.io
+          - Namespace:
+              Ref: PlatformNamespaceName
+            StackName:
+              Ref: ALIYUN::StackName
+
+  AgentManagerOOSClusterPermissions:
+    Type: ALIYUN::CS::GrantPermissions
+    DependsOn: [AgentManagerOOSExecutionRole, PlatformRBAC]
+    Properties:
+      UserId:
+        Fn::GetAtt: [AgentManagerOOSExecutionRole, RoleId]
+      Permissions:
+        - ClusterId:
+            Ref: ClusterId
+          # ACS::Kubectl currently rejects custom, restricted, dev, and ops grants in its RBAC preflight.
+          # The Manager AK only assumes this role; in-cluster Kubernetes calls use the pod service account.
+          RoleName: admin
+          RoleType: cluster
+          IsCustom: false
+          IsRamRole: true
+
+  # ===== 13. Deployment =====
+  PlatformDeployment:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformConfigMap, PlatformSecret, E2BCaCertConfigMap, DbMigrateJob, PlatformRBAC, AgentManagerOOSClusterPermissions]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: openclaw-platform
+              namespace: ${Namespace}
+              labels:
+                app: openclaw-platform
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: openclaw-platform
+              template:
+                metadata:
+                  labels:
+                    app: openclaw-platform
+                    alibabacloud.com/acs: "true"
+                  annotations:
+                    openclaw.io/deploy-ts: "${CurTime}"
+                spec:
+                  serviceAccountName: openclaw-platform
+                  volumes:
+                    - name: e2b-ca-cert
+                      secret:
+                        secretName: e2b-ca-cert
+                    - name: agent-manager-logs
+                      emptyDir:
+                        sizeLimit: 1Gi
+                  containers:
+                    - name: openclaw-platform
+                      image: "{{ computenest::acrimage::agent-manager }}"
+                      command: ["/sbin/tini", "--"]
+                      args:
+                        - sh
+                        - -c
+                        - |
+                          # TODO: Remove sed patch after image >= 202605271757 which natively writes SUPABASE_INTERNAL_URL in docker-entrypoint.sh
+                          if [ -n "$SUPABASE_INTERNAL_URL" ]; then
+                            grep -q 'SUPABASE_INTERNAL_URL' /docker-entrypoint.sh || \
+                              sed -i '/^VITE_SUPABASE_URL=/a SUPABASE_INTERNAL_URL='"$SUPABASE_INTERNAL_URL" /docker-entrypoint.sh
+                          fi
+                          exec /docker-entrypoint.sh
+                      ports:
+                        - name: http
+                          containerPort: 8080
+                        - name: api
+                          containerPort: 3001
+                      env:
+                        - name: NODE_EXTRA_CA_CERTS
+                          value: /app/data/ca-fullchain.pem
+                        - name: SSL_CERT_FILE
+                          value: /app/data/ca-fullchain.pem
+                        - name: LOG_DIR
+                          value: /var/log/agent-manager
+                        - name: LOG_LEVEL
+                          value: info
+                        - name: LOG_ACCESS_BODY_MAX_BYTES
+                          value: "65536"
+                        - name: aliyun_logs_agent-manager-info
+                          value: /var/log/agent-manager/info.log
+                        - name: aliyun_logs_agent-manager-info_logstore
+                          value: agent-manager-info
+                        - name: aliyun_logs_agent-manager-warn
+                          value: /var/log/agent-manager/warn.log
+                        - name: aliyun_logs_agent-manager-warn_logstore
+                          value: agent-manager-warn
+                        - name: aliyun_logs_agent-manager-error
+                          value: /var/log/agent-manager/error.log
+                        - name: aliyun_logs_agent-manager-error_logstore
+                          value: agent-manager-error
+                        - name: aliyun_logs_agent-manager-access
+                          value: /var/log/agent-manager/access.log
+                        - name: aliyun_logs_agent-manager-access_logstore
+                          value: agent-manager-access
+                      envFrom:
+                        - configMapRef:
+                            name: openclaw-platform-config
+                        - secretRef:
+                            name: openclaw-platform-secret
+                      volumeMounts:
+                        - name: e2b-ca-cert
+                          mountPath: /app/data/ca-fullchain.pem
+                          subPath: ca-fullchain.pem
+                          readOnly: true
+                        - name: agent-manager-logs
+                          mountPath: /var/log/agent-manager
+                      resources:
+                        requests:
+                          cpu: "1"
+                          memory: 1Gi
+                        limits:
+                          cpu: "2"
+                          memory: 2Gi
+                      startupProbe:
+                        httpGet:
+                          path: /api/health
+                          port: 3001
+                        initialDelaySeconds: 10
+                        periodSeconds: 5
+                        failureThreshold: 30
+                      readinessProbe:
+                        httpGet:
+                          path: /api/health
+                          port: 3001
+                        periodSeconds: 10
+                        timeoutSeconds: 5
+          - Namespace:
+              Ref: PlatformNamespaceName
+            CurTime:
+              Ref: CurTime
+
+  # ===== 14. Service（LoadBalancer，绑定 ROS 创建的 SLB） =====
+  PlatformService:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformDeployment, PlatformSlb]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: openclaw-platform
+              namespace: ${Namespace}
+              labels:
+                app: openclaw-platform
+              annotations:
+                service.beta.kubernetes.io/alibaba-cloud-loadbalancer-id: "${SlbId}"
+                service.beta.kubernetes.io/alibaba-cloud-loadbalancer-force-override-listeners: "true"
+            spec:
+              type: LoadBalancer
+              selector:
+                app: openclaw-platform
+              ports:
+                - name: http
+                  port: 8080
+                  targetPort: 8080
+          - SlbId:
+              Fn::GetAtt: [PlatformSlb, LoadBalancerId]
+            Namespace:
+              Ref: PlatformNamespaceName
+
+  # ===== 15. HealthCheckJob =====
+  # Job 名字带时间戳以避免升级时 spec.template 不可变冲突。
+  HealthCheckJob:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn: [PlatformDeployment, DbInitJob]
+    Properties:
+      ClusterId:
+        Ref: ClusterId
+      DefaultNamespace:
+        Ref: PlatformNamespaceName
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: batch/v1
+            kind: Job
+            metadata:
+              name: openclaw-healthcheck-${CurTime}
+              namespace: ${Namespace}
+              labels:
+                app: openclaw-platform
+                component: healthcheck
+            spec:
+              ttlSecondsAfterFinished: 3600
+              backoffLimit: 5
+              template:
+                metadata:
+                  labels:
+                    alibabacloud.com/acs: "true"
+                spec:
+                  restartPolicy: OnFailure
+                  containers:
+                    - name: healthcheck
+                      image: "{{ computenest::acrimage::agent-manager }}"
+                      command: ["sh", "-c"]
+                      args:
+                        - |
+                          echo "=== Health Check (ts=${CurTime}) ==="
+                          sleep 15
+                          for i in 1 2 3 4 5; do
+                            CODE=$(node -e "
+                              const http = require('http');
+                              http.get('http://openclaw-platform.${Namespace}.svc:3001/api/health', r => {
+                                process.stdout.write(String(r.statusCode));
+                              }).on('error', () => process.stdout.write('0'));
+                            " 2>/dev/null)
+                            echo "Attempt $i: HTTP $CODE"
+                            [ "$CODE" = "200" ] && break
+                            sleep 5
+                          done
+                          [ "$CODE" != "200" ] && exit 1
+                          echo "OK"
+          - Namespace:
+              Ref: PlatformNamespaceName
+            CurTime:
+              Ref: CurTime
+
+Outputs:
+  PlatformUrl:
+    Label: { zh-cn: 平台公网访问地址, en: Platform Public URL }
+    Value:
+      Fn::Sub:
+        - http://${SlbIp}:8080
+        - SlbIp:
+            Fn::GetAtt: [PlatformSlb, IpAddress]
+
+  AdminLoginUrl:
+    Label: { zh-cn: 管理员登录地址, en: Admin Login URL }
+    Value:
+      Fn::Sub:
+        - http://${SlbIp}:8080/admin/login
+        - SlbIp:
+            Fn::GetAtt: [PlatformSlb, IpAddress]
+
+  AdminEmail:
+    Label: { zh-cn: 管理员邮箱, en: Admin Email }
+    Value: admin@openclaw.local
+
+  AdminPassword:
+    Label: { zh-cn: 管理员密码, en: Admin Password }
+    Value: admin123
+
+  ApiHealthUrl:
+    Label: { zh-cn: API 健康检查, en: API Health URL }
+    Value:
+      Fn::Sub:
+        - http://${SlbIp}:8080/api/health
+        - SlbIp:
+            Fn::GetAtt: [PlatformSlb, IpAddress]
+
+  SupabaseProjectId:
+    Label: { zh-cn: Supabase 项目ID, en: Supabase Project ID }
+    Value:
+      Fn::If:
+        - CreateSupabaseProject
+        - Fn::GetAtt: [SupabaseProject, ProjectId]
+        - ''
+
+  SupabaseUrl:
+    Label: { zh-cn: Supabase URL, en: Supabase URL }
+    Value:
+      Fn::If:
+        - CreateSupabaseProject
+        - Fn::Sub:
+            - https://${Url}
+            - Url:
+                Fn::GetAtt: [SupabaseProject, PublicConnectUrl]
+        - Ref: ExistingSupabaseUrl
+
+  SupabaseInternalUrl:
+    Label: { zh-cn: Supabase 服务端访问 URL, en: Supabase Server URL }
+    Value:
+      Fn::If:
+        - CreateSupabaseProject
+        - Fn::Sub:
+            - https://${Url}
+            - Url:
+                Fn::GetAtt: [SupabaseProject, PrivateConnectUrl]
+        - Fn::If:
+            - UseExistingSupabaseInternalUrl
+            - Ref: ExistingSupabaseInternalUrl
+            - Ref: ExistingSupabaseUrl
+
+  SupabaseOAuthCallbackUrl:
+    Label: { zh-cn: OAuth App 回调地址, en: OAuth App Callback URL }
+    Value:
+      Fn::Sub:
+        - ${SupabasePublicUrl}/auth/v1/callback
+        - SupabasePublicUrl:
+            Fn::If:
+              - CreateSupabaseProject
+              - Fn::Sub:
+                  - https://${Url}
+                  - Url:
+                      Fn::GetAtt: [SupabaseProject, PublicConnectUrl]
+              - Ref: ExistingSupabaseUrl
+
+  SupabaseSamlMetadataUrl:
+    Label: { zh-cn: SAML SP Metadata 地址, en: SAML SP Metadata URL }
+    Value:
+      Fn::Sub:
+        - ${SupabasePublicUrl}/auth/v1/sso/saml/metadata
+        - SupabasePublicUrl:
+            Fn::If:
+              - CreateSupabaseProject
+              - Fn::Sub:
+                  - https://${Url}
+                  - Url:
+                      Fn::GetAtt: [SupabaseProject, PublicConnectUrl]
+              - Ref: ExistingSupabaseUrl
+
+  SupabaseSamlAcsUrl:
+    Label: { zh-cn: SAML ACS 地址, en: SAML ACS URL }
+    Value:
+      Fn::Sub:
+        - ${SupabasePublicUrl}/auth/v1/sso/saml/acs
+        - SupabasePublicUrl:
+            Fn::If:
+              - CreateSupabaseProject
+              - Fn::Sub:
+                  - https://${Url}
+                  - Url:
+                      Fn::GetAtt: [SupabaseProject, PublicConnectUrl]
+              - Ref: ExistingSupabaseUrl
+
+  SupabaseEipAddress:
+    Label: { zh-cn: Supabase 公网 EIP, en: Supabase EIP Address }
+    Value:
+      Fn::If:
+        - CreateSupabaseProject
+        - Fn::GetAtt: [SupabaseEip, EipAddress]
+        - ''
+
+  SupabaseEniId:
+    Label: { zh-cn: Supabase ENI, en: Supabase ENI ID }
+    Value:
+      Fn::If:
+        - CreateSupabaseProject
+        - Fn::GetAtt: [SupabaseProject, Eni]
+        - ''
+
+  SupabaseAccountPassword:
+    NoEcho: true
+    Label: { zh-cn: Supabase 数据库密码, en: Supabase Account Password }
+    Value:
+      Fn::If:
+        - CreateSupabaseProject
+        - Fn::GetAtt:
+            - SupabasePassword
+            - value
+        - ''
+
+  ClusterId:
+    Label: { zh-cn: 集群ID, en: Cluster ID }
+    Value:
+      Ref: ClusterId
+
+  CheckpointBackupOOSRoleName:
+    Label: { zh-cn: Checkpoint 备份 OOS 角色名, en: Checkpoint Backup OOS Role Name }
+    Value:
+      Fn::GetAtt: [AgentManagerOOSExecutionRole, RoleName]
+
+  CheckpointBackupOOSRoleId:
+    Label: { zh-cn: Checkpoint 备份 OOS 角色 ID, en: Checkpoint Backup OOS Role ID }
+    Value:
+      Fn::GetAtt: [AgentManagerOOSExecutionRole, RoleId]
+
+  CheckpointBackupOOSRoleArn:
+    Label: { zh-cn: Checkpoint 备份 OOS 角色 ARN, en: Checkpoint Backup OOS Role ARN }
+    Value:
+      Fn::GetAtt: [AgentManagerOOSExecutionRole, Arn]
+
+  SharedOssBucketName:
+    Label: { zh-cn: 共享 OSS Bucket, en: Shared OSS Bucket }
+    Value:
+      Fn::If:
+        - CreateOssBucket
+        - Fn::GetAtt: [SharedOssBucket, Name]
+        - Ref: ExistingBucketName
+
+  SharedOssEndpoint:
+    Label: { zh-cn: 共享 OSS Endpoint（内网）, en: Shared OSS Endpoint (Internal) }
+    Value:
+      Fn::Sub: oss-${ALIYUN::Region}-internal.aliyuncs.com
+
+  SharedOssEndpointPublic:
+    Label: { zh-cn: 共享 OSS Endpoint（外网）, en: Shared OSS Endpoint (Public) }
+    Value:
+      Fn::Sub: oss-${ALIYUN::Region}.aliyuncs.com
+
+  SharedOssConsoleUrl:
+    Label: { zh-cn: 共享 OSS 控制台, en: Shared OSS Console URL }
+    Value:
+      Fn::Sub:
+        - https://oss.console.aliyun.com/bucket/oss-${ALIYUN::Region}/${Bucket}/object
+        - Bucket:
+            Fn::If:
+              - CreateOssBucket
+              - Fn::GetAtt: [SharedOssBucket, Name]
+              - Ref: ExistingBucketName
+
+  AIGatewayId:
+    Condition: CreateAIGateway
+    Label: { zh-cn: AI 网关 ID, en: AI Gateway ID }
+    Value:
+      Fn::GetAtt: [AIGateway, GatewayId]
+
+  AIGatewayHttpApiId:
+    Condition: CreateAIGateway
+    Label: { zh-cn: AI 网关 HttpApi ID, en: AI Gateway HttpApi ID }
+    Value:
+      Fn::GetAtt: [AIGatewayHttpApi, HttpApiId]
+
+  AIGatewayNote:
+    Condition: CreateAIGateway
+    Label: { zh-cn: AI 网关说明, en: AI Gateway Note }
+    Value: 'Environment ID 和 Gateway Domain 将在平台启动时自动通过 APIG API 获取并配置'
+
+Metadata:
+  ALIYUN::ROS::Interface:
+    ParameterGroups:
+      - Parameters: [WhitelistConfirmation]
+        Label: { zh-cn: 前置确认, en: Prerequisite Confirmation }
+      - Parameters: [ClusterId, PlatformNamespaceName]
+        Label: { zh-cn: Sandbox 配置, en: Sandbox Configuration }
+      - Parameters:
+          - SupabaseDeploymentMode
+          - SupabaseProjectSpec
+          - SupabaseStorageSize
+          - ExistingSupabaseUrl
+          - ExistingSupabaseInternalUrl
+          - ExistingSupabaseAnonKey
+          - ExistingSupabaseServiceRoleKey
+          - ExistingSupabaseDatabaseUrl
+          - ZoneId
+          - VpcId
+          - VSwitchId
+        Label: { zh-cn: Supabase 配置（推荐托管版）, en: Supabase Configuration (Hosted Recommended) }
+      - Parameters: [OssOption, ExistingBucketName]
+        Label: { zh-cn: OSS 存储配置, en: OSS Storage Configuration }
+      - Parameters: [SkillHubConfig]
+        Label: { zh-cn: SkillHub OSS 配置, en: SkillHub OSS Configuration }
+      - Parameters: [EnableAIGateway, DashScopeApiKey, AIGatewaySpec, AIGatewayNetworkType]
+        Label: { zh-cn: AI 网关配置, en: AI Gateway Configuration }
+      - Parameters: [AccessKeyMode, ExistingAccessKeyRequiredPolicy, ExistingAccessKeyId, ExistingAccessKeySecret]
+        Label: { zh-cn: 云资源访问凭证, en: Cloud Resource Credentials }

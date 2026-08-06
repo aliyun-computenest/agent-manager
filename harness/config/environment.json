@@ -1,0 +1,126 @@
+{
+  "version": "2.0",
+  "_meta": {
+    "generated_by": "harness-creator",
+    "project": "agent-manager",
+    "notes": [
+      "All databases / services are managed SaaS (Supabase, E2B, Aliyun APIG, K8s ACK).",
+      "No Docker containers are owned by this harness; setup-env.sh only validates env vars.",
+      "secrets[].test_value is intentionally empty — fill from your own .env or shell exports."
+    ]
+  },
+  "runtime": {
+    "language": "typescript",
+    "version": "node>=18",
+    "build_command": "cd agent-manager && npm run build",
+    "dev_command": "cd agent-manager && npm run dev",
+    "test_command": "cd agent-manager && npx vitest run tests/unit",
+    "install_command": "cd agent-manager && npm install && cd server && npm install"
+  },
+  "databases": [
+    {
+      "type": "postgresql",
+      "provider": "supabase",
+      "env_vars": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SERVICE_ROLE_KEY": "${SERVICE_ROLE_KEY}",
+        "DATABASE_URL": "${DATABASE_URL}"
+      },
+      "docker": null,
+      "test_alternative": "Use a dedicated Supabase project (e.g. *.supabase.co) configured for the test env; no local PG."
+    }
+  ],
+  "services": [
+    {
+      "type": "e2b-code-interpreter",
+      "purpose": "Per-instance agent sandbox (remote container)",
+      "env_vars": {
+        "E2B_API_KEY": "${E2B_API_KEY}",
+        "E2B_DOMAIN": "${E2B_DOMAIN}",
+        "E2B_HOSTS_IP": "${E2B_HOSTS_IP}",
+        "NATIVE_AGENT_UI_ENABLED": "${NATIVE_AGENT_UI_ENABLED}",
+        "PLATFORM_PUBLIC_URL": "${PLATFORM_PUBLIC_URL}"
+      }
+    },
+    {
+      "type": "aliyun-apig",
+      "purpose": "AI Gateway routing (provider auth + consumer keys). Optional.",
+      "env_vars": {
+        "ENABLE_AI_GATEWAY": "${ENABLE_AI_GATEWAY}",
+        "ALIBABA_CLOUD_ACCESS_KEY_ID": "${ALIBABA_CLOUD_ACCESS_KEY_ID}",
+        "ALIBABA_CLOUD_ACCESS_KEY_SECRET": "${ALIBABA_CLOUD_ACCESS_KEY_SECRET}",
+        "SKILLHUB_ASSUME_ROLE_ARN": "${SKILLHUB_ASSUME_ROLE_ARN}",
+        "SKILLHUB_REGION_ID": "${SKILLHUB_REGION_ID}",
+        "SKILL_INSTALL_TIMEOUT_SECONDS": "${SKILL_INSTALL_TIMEOUT_SECONDS}",
+        "SKILLHUB_STS_DURATION_SECONDS": "${SKILLHUB_STS_DURATION_SECONDS}"
+      },
+      "optional": true
+    },
+    {
+      "type": "kubernetes",
+      "purpose": "ACK / ACS cluster for SandboxSet CRD admin views. Optional.",
+      "env_vars": {
+        "KUBECONFIG": "${KUBECONFIG}"
+      },
+      "optional": true
+    }
+  ],
+  "secrets": [
+    {
+      "name": "API_ENCRYPTION_KEY",
+      "description": "AES-GCM key used by server/utils/crypto.js to encrypt provider / channel credentials at rest. 32 bytes base64.",
+      "test_value": ""
+    },
+    {
+      "name": "SERVICE_ROLE_KEY",
+      "description": "Supabase service-role JWT used by the backend admin client.",
+      "test_value": ""
+    },
+    {
+      "name": "E2B_API_KEY",
+      "description": "E2B sandbox provisioning key.",
+      "test_value": ""
+    },
+    {
+      "name": "TERMINAL_SESSION_SECRET",
+      "description": "HMAC secret for terminal session tokens (services/terminal.js).",
+      "test_value": ""
+    }
+  ],
+  "test_environment": {
+    "env_vars": {
+      "NODE_ENV": "test",
+      "PORT": "3001",
+      "LOG_LEVEL": "info",
+      "DEPLOY_ENVIRONMENT": "local-dev"
+    }
+  },
+  "functional_scenarios": [
+    {
+      "name": "health_check",
+      "description": "Backend boots and /api/health returns 200 with status:up.",
+      "prerequisites": ["supabase"],
+      "steps": [
+        "Run harness/scripts/setup-env.sh",
+        "Run harness/scripts/start-server.sh (binds PORT=3001)",
+        "GET http://localhost:3001/api/health -> 200 {status:'up'}"
+      ],
+      "expected_outcome": "Server is healthy, Supabase reachable from boot."
+    },
+    {
+      "name": "version_endpoint",
+      "description": "/api/version reflects agent-manager/version.json.",
+      "prerequisites": [],
+      "steps": [
+        "GET http://localhost:3001/api/version",
+        "Compare response.version with cat agent-manager/version.json | jq -r .version"
+      ],
+      "expected_outcome": "Versions match exactly."
+    }
+  ],
+  "scripts": {
+    "setup": "harness/scripts/setup-env.sh",
+    "start": "harness/scripts/start-server.sh",
+    "teardown": "harness/scripts/teardown-env.sh"
+  }
+}

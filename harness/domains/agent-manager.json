@@ -1,0 +1,241 @@
+{
+  "schemaVersion": "1.0",
+  "domain": "agent-manager",
+  "repository": "agent-manager",
+  "designDocRoots": [
+    "docs/design",
+    "docs/design-docs"
+  ],
+  "uiEvidenceRoots": [
+    "docs/design",
+    "agent-manager/tests/ui",
+    "agent-manager/playwright-report",
+    "agent-manager/test-results"
+  ],
+  "commands": {
+    "build": "make build",
+    "unit": "make test",
+    "lintArch": "make lint-arch",
+    "smoke": "make test-smoke",
+    "integration": "cd agent-manager && npm run test:integration",
+    "checkpointBackupIntegration": "cd agent-manager && TEST_SUITE_DIR=checkpoint-backups TEST_CHECKPOINT_BACKUP_CREATE_CANCEL=true npm run test:integration",
+    "checkpointBackupUnit": "cd agent-manager && npx vitest run tests/unit/checkpoint-backup-service.test.js tests/unit/checkpoint-backup-rebuild.test.js tests/unit/backup-mounts-service.test.js",
+    "checkpointBackupUi": "cd agent-manager && OPENCLAW_FRONTEND_URL=<baseUrl> npx playwright test tests/ui/checkpoint-backup-admin.spec.ts --reporter=line",
+    "checkpointBackupDeliveryRun": "node harness/scripts/validate-delivery-run.mjs --manifest harness/manifests/checkpoint-backup.json --run harness/tests/fixtures/checkpoint-backup-delivery-run-pass.json",
+    "checkpointBackupParallelTrial": "node harness/scripts/run-parallel-flow-trial.mjs --manifest harness/manifests/checkpoint-backup.json --trial harness/tests/fixtures/checkpoint-backup-parallel-trial.json",
+    "sandboxUpgradeIntegration": "cd agent-manager && npm run test:integration:sandbox-upgrade",
+    "ui": "cd agent-manager && npx playwright test --config playwright.config.ts",
+    "harnessRules": "node harness/scripts/validate-rules.mjs",
+    "harnessDeliveryRun": "node harness/scripts/validate-delivery-run.mjs --manifest <manifest> --run <delivery-run.json>",
+    "harnessReport": "node harness/scripts/render-delivery-report.mjs --run <delivery-run.json>"
+  },
+  "ciPipelines": {
+    "repo": "acs-automation/agent-manager",
+    "branchPlaceholder": "<remote-branch>",
+    "pipelineIdPolicy": "平台初始化项目时按 yamlPath 解析或创建 pipeline id；Agent 运行阶段只引用平台返回的 pipeline id，不在仓库中保存。",
+    "lifecycle": {
+      "envCreate": {
+        "stage": "env_prepare",
+        "yamlPath": ".aoneci/harness_env_create.yaml",
+        "purpose": "使用 AutoPilot 凭证按 ComputeNest API RegionId 查询最新 ACS Sandbox 服务实例，并通过 Filter.ServiceId + Filter.DeployRegionId 精确筛选部署地域；测试集群、VPC/VSwitch/Zone、SkillHub OSS 和 Supabase 规格使用固定测试 Profile，再用当前分支 ROS 模板创建专属 namespace、Service、运行时 Secret 引用和环境 ConfigMap。",
+        "requiredParams": [
+          "work_item_id"
+        ],
+        "optionalParams": [
+          "namespace",
+          "namespace_prefix",
+          "service_name",
+          "service_prefix",
+          "source_secret_namespace",
+          "app_secret_name",
+          "ca_secret_name",
+          "image_pull_secret_name",
+          "base_url",
+          "computenest_region",
+          "deploy_region_id",
+          "acs_region",
+          "acs_service_id",
+          "acs_instance_id",
+          "acs_cluster_id",
+          "vpc_id",
+          "vswitch_id",
+          "zone_id",
+          "skillhub_oss_bucket",
+          "skillhub_oss_region",
+          "supabase_deployment_mode",
+          "supabase_project_spec",
+          "supabase_storage_size",
+          "bootstrap_image",
+          "agent_manager_artifact_id",
+          "agent_manager_artifact_region",
+          "agent_manager_artifact_version",
+          "ros_region",
+          "ros_template_path",
+          "ros_parameter_file",
+          "ros_stack_name"
+        ],
+        "deprecatedParams": [
+          "acs_region"
+        ],
+        "requiredSecrets": [
+          "AutoPilotKey",
+          "AutoPilotSecret",
+          "HZ_KUBECONFIG_B64"
+        ],
+        "resolveCommand": "a1 ci pipeline get-by-path --repo acs-automation/agent-manager --code-file-url https://code.alibaba-inc.com/acs-automation/agent-manager/blob/<remote-branch>/.aoneci/harness_env_create.yaml --format json",
+        "runCommand": "a1 ci pipeline run <env_create_pipeline_id> --repo acs-automation/agent-manager --branch <remote-branch> --param work_item_id=<work_item_id> --param namespace=<namespace> --param service_name=<service_name> --param computenest_region=ap-southeast-1 --param deploy_region_id=cn-hongkong --param acs_service_id=service-731298a621304868a3a4 --param acs_cluster_id=c2aa8f25b3d9443d28012b53cf7482920 --param vpc_id=vpc-j6c11tziiynqsicwit1gv --param vswitch_id=vsw-j6ceq555bjkzfgmm5kewl --param zone_id=cn-hongkong-d --param skillhub_oss_bucket=skillhub-pre-test-intl --param skillhub_oss_region=cn-hongkong --param agent_manager_artifact_id=artifact-d17025551f9b40a6a3ec --param agent_manager_artifact_region=ap-southeast-1 --param ros_region=cn-hongkong --param ros_template_path=template/platform_template.yaml --watch",
+        "evidence": [
+          "AOneCI run id",
+          "ComputeNest list-service-instances result for ServiceId=service-731298a621304868a3a4 and DeployRegionId=cn-hongkong",
+          "ACS service instance id",
+          "fixed test Profile: ClusterId=c2aa8f25b3d9443d28012b53cf7482920, VpcId=vpc-j6c11tziiynqsicwit1gv, VSwitchId=vsw-j6ceq555bjkzfgmm5kewl, ZoneId=cn-hongkong-d, SkillHub=skillhub-pre-test-intl/cn-hongkong",
+          "Bootstrap image readback: direct ROS CreateStack must replace {{ computenest::acrimage::agent-manager }} with the latest ImagePullPath from artifact-d17025551f9b40a6a3ec unless bootstrap_image is explicitly provided",
+          "ROS Stack id",
+          "namespace label harness.alibaba-inc.com/work-item",
+          "Service readback",
+          "agent-manager-env-prepare ConfigMap"
+        ]
+      },
+      "buildDeploy": {
+        "stage": "deploy_ephemeral",
+        "yamlPath": ".aoneci/harness_build_deploy.yaml",
+        "purpose": "构建当前分支镜像，使用 AutoPilot 凭证推送 ACR，并更新 ROS 已创建的 Deployment 镜像，复用专属 namespace/service。",
+        "requiredParams": [
+          "image_tag",
+          "namespace",
+          "service_name",
+          "work_item_id"
+        ],
+        "optionalParams": [
+          "service_port",
+          "target_port",
+          "api_port",
+          "container_name",
+          "app_secret_name",
+          "ca_secret_name",
+          "image_pull_secret_name",
+          "skip_singapore",
+          "run_migrations",
+          "init_admin"
+        ],
+        "requiredSecrets": [
+          "AutoPilotKey",
+          "AutoPilotSecret",
+          "HZ_KUBECONFIG_B64"
+        ],
+        "resolveCommand": "a1 ci pipeline get-by-path --repo acs-automation/agent-manager --code-file-url https://code.alibaba-inc.com/acs-automation/agent-manager/blob/<remote-branch>/.aoneci/harness_build_deploy.yaml --format json",
+        "runCommand": "a1 ci pipeline run <build_deploy_pipeline_id> --repo acs-automation/agent-manager --branch <remote-branch> --param image_tag=<image_tag> --param namespace=<namespace> --param service_name=<service_name> --param work_item_id=<work_item_id> --watch",
+        "evidence": [
+          "AOneCI run id",
+          "image reference",
+          "rollout status",
+          "/api/health readback",
+          "pod/deployment/service readback",
+          "ROS Service reuse evidence"
+        ]
+      },
+      "envCleanup": {
+        "stage": "deploy",
+        "yamlPath": ".aoneci/harness_env_cleanup.yaml",
+        "purpose": "在工作项完成、取消或人工要求清理时删除专属 namespace。",
+        "requiredParams": [
+          "namespace"
+        ],
+        "optionalParams": [
+          "namespace_prefix",
+          "work_item_id",
+          "wait"
+        ],
+        "requiredSecrets": [
+          "HZ_KUBECONFIG_B64"
+        ],
+        "resolveCommand": "a1 ci pipeline get-by-path --repo acs-automation/agent-manager --code-file-url https://code.alibaba-inc.com/acs-automation/agent-manager/blob/<remote-branch>/.aoneci/harness_env_cleanup.yaml --format json",
+        "runCommand": "a1 ci pipeline run <env_cleanup_pipeline_id> --repo acs-automation/agent-manager --branch <remote-branch> --param namespace=<namespace> --param work_item_id=<work_item_id> --watch",
+        "evidence": [
+          "AOneCI run id",
+          "namespace label guard result",
+          "namespace delete result"
+        ]
+      }
+    }
+  },
+  "testSuites": [
+    {
+      "id": "unit",
+      "stage": "test_unit",
+      "command": "make test",
+      "evidence": [
+        "stdout",
+        "exitCode"
+      ]
+    },
+    {
+      "id": "integration-smoke",
+      "stage": "integration_live",
+      "command": "make test-smoke",
+      "evidence": [
+        "stdout",
+        "TEST_RUN_ID",
+        "integration.xml when CI=true"
+      ]
+    },
+    {
+      "id": "ui-playwright",
+      "stage": "test_e2e",
+      "command": "cd agent-manager && npx playwright test --config playwright.config.ts",
+      "evidence": [
+        "playwright JSON report",
+        "screenshots or trace for requested feature"
+      ]
+    },
+    {
+      "id": "checkpoint-backup-real-dev-flow",
+      "stage": "test_e2e",
+      "command": "node harness/scripts/validate-delivery-run.mjs --manifest harness/manifests/checkpoint-backup.json --run harness/tests/fixtures/checkpoint-backup-delivery-run-pass.json",
+      "evidence": [
+        "ComputeNest ServiceId and DeployRegionId filter evidence",
+        "checkpoint backup unit test output",
+        "API request/response evidence",
+        "checkpoint backup Playwright report",
+        "OOS execution and Checkpoint/ConfigMap readback locators",
+        "platform evidence boundary"
+      ]
+    },
+    {
+      "id": "checkpoint-backup-parallel-trial",
+      "stage": "develop",
+      "command": "node harness/scripts/run-parallel-flow-trial.mjs --manifest harness/manifests/checkpoint-backup.json --trial harness/tests/fixtures/checkpoint-backup-parallel-trial.json",
+      "evidence": [
+        "backend-backup-api and frontend-backup-ui in the same wave",
+        "observedMax >= 2",
+        "no resource or writeScope conflicts"
+      ]
+    }
+  ],
+  "liveEvidenceChains": {
+    "checkpointBackup": [
+      "OOS execution record",
+      "OOS task logs or execution template",
+      "temporary kubeconfig source via aliyun cs DescribeClusterUserKubeconfig",
+      "Checkpoint/ConfigMap readback",
+      "Manager API response or integration test output"
+    ],
+    "sandboxUpgrade": [
+      "upgrade API response",
+      "SandboxUpdateOps resource",
+      "target pod or sandbox status",
+      "retention evidence for files, uploads, workspace state, or user configuration"
+    ],
+    "instanceLifecycle": [
+      "API status flow create -> running -> stop -> stopped -> start -> running -> delete",
+      "instance id and sandbox id",
+      "Supabase cleanup assertion"
+    ]
+  },
+  "defaultResourceLocks": [
+    "supabase:test",
+    "e2b:quota",
+    "k8s:target-namespace",
+    "oos:backup-template"
+  ]
+}
