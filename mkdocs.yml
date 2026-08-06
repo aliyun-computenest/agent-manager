@@ -8,21 +8,7 @@ docs_dir: docs/user-docs
 site_dir: site
 
 theme:
-  name: material
-  language: zh
-  features:
-    - navigation.sections
-    - navigation.top
-    - navigation.tracking
-    - search.highlight
-    - search.suggest
-    - content.code.copy
-  palette:
-    primary: blue
-    accent: blue
-
-plugins:
-  - search
+  name: aliyuncomputenest
 
 markdown_extensions:
   - admonition
@@ -31,10 +17,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
-  - pymdownx.details
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.superfences
+  - fenced_code
 
 nav:
   - 首页: index.md
